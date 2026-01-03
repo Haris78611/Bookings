@@ -1,0 +1,7 @@
+{
+  "name": "Copy of UmrahStay - Premium Booking Portal",
+  "description": "A comprehensive three-portal system for Umrah hotel bookings featuring Customer, Agent, and Admin dashboards with currency conversion and bulk inventory management.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
