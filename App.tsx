@@ -29,8 +29,9 @@ const LoginPage = () => {
   const [credentials, setCredentials] = React.useState({ email: '', password: '' });
 
   const handleLogin = (role: UserRole) => {
+    // Exact match for Admin credentials as requested
     if (role === UserRole.ADMIN) {
-      if (credentials.email === '990990' && credentials.password === 'Haris@1122@11') {
+      if (credentials.email.trim() === '990990' && credentials.password === 'Haris@1122@11') {
         setCurrentUser({
           id: 'ADM-1',
           name: 'System Administrator',
@@ -39,44 +40,77 @@ const LoginPage = () => {
         });
         navigate('/admin');
         return;
-      } else if (credentials.email !== '990990') {
-        alert("Enter '990990' in the ID field to access Admin Demo.");
+      } else {
+        alert("Invalid Administrative Credentials. Please use the designated ID and Password.");
         return;
       }
     }
 
+    // Agent Login - Must match the agency ID in AppContext (id: '1234')
+    if (role === UserRole.AGENT) {
+      setCurrentUser({
+        id: 'AGENT-USER-1',
+        name: 'Haris T&Q Manager',
+        email: credentials.email || 'agent@test.com',
+        role: UserRole.AGENT,
+        agencyId: '1234' // Matches the '1234' agency in context
+      });
+      navigate('/agent');
+      return;
+    }
+
+    // Customer Login
     setCurrentUser({
-      id: role === UserRole.AGENT ? 'AGENT-1' : 'CUST-1',
-      name: role === UserRole.AGENT ? 'Travel Partner X' : 'Sami Khan',
+      id: 'CUST-1',
+      name: 'Sami Khan',
       email: credentials.email || 'user@test.com',
-      role,
-      agencyId: role === UserRole.AGENT ? 'AG-001' : undefined
+      role: UserRole.CUSTOMER
     });
-    
-    if (role === UserRole.AGENT) navigate('/agent');
-    else navigate('/my-bookings');
+    navigate('/my-bookings');
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutralLight px-4 py-20 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#006D77 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-      <Card className="w-full max-w-md p-10 text-center relative z-10 border-none shadow-2xl rounded-2xl">
+      <Card className="w-full max-w-md p-10 text-center relative z-10 border-none shadow-2xl rounded-2xl bg-white">
         <div className="mb-10">
-          <h2 className="text-4xl font-bold text-primary mb-2 italic tracking-tighter">UmrahStay</h2>
+          <h2 className="text-4xl font-black text-primary mb-2 italic tracking-tighter">UmrahStay</h2>
           <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">Portal Authentication</p>
         </div>
         <div className="space-y-5 text-left">
-          <Input label="Registry ID" placeholder="e.g. 990990" value={credentials.email} onChange={e => setCredentials({...credentials, email: e.target.value})} />
-          <Input label="Security Password" type="password" placeholder="••••••••" value={credentials.password} onChange={e => setCredentials({...credentials, password: e.target.value})} />
-          <Button onClick={() => handleLogin(UserRole.CUSTOMER)} fullWidth size="lg">Continue as Pilgrim</Button>
+          <Input 
+            label="Registry ID / Email" 
+            placeholder="e.g. 990990" 
+            value={credentials.email} 
+            onChange={e => setCredentials({...credentials, email: e.target.value})} 
+          />
+          <Input 
+            label="Security Password" 
+            type="password" 
+            placeholder="••••••••" 
+            value={credentials.password} 
+            onChange={e => setCredentials({...credentials, password: e.target.value})} 
+          />
+          
+          <div className="pt-2">
+            <Button onClick={() => handleLogin(UserRole.CUSTOMER)} fullWidth size="lg">Login as Pilgrim</Button>
+          </div>
+
           <div className="flex items-center gap-3 py-6 text-gray-300">
             <div className="flex-1 h-px bg-gray-200"></div>
             <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Partner Access</span>
             <div className="flex-1 h-px bg-gray-200"></div>
           </div>
+
           <div className="grid grid-cols-2 gap-3">
-            <Button onClick={() => handleLogin(UserRole.AGENT)} fullWidth variant="outline" size="sm">Partner Portal</Button>
-            <Button onClick={() => handleLogin(UserRole.ADMIN)} fullWidth variant="ghost" size="sm" className="border border-gray-100">Control Desk</Button>
+            <Button onClick={() => handleLogin(UserRole.AGENT)} fullWidth variant="outline" size="sm" className="!rounded-lg font-black">Agent Portal</Button>
+            <Button onClick={() => handleLogin(UserRole.ADMIN)} fullWidth variant="ghost" size="sm" className="!rounded-lg border border-gray-100 font-black">Control Desk</Button>
+          </div>
+          
+          <div className="mt-8 p-4 bg-gray-50 border border-dashed border-gray-200 text-[9px] font-medium text-gray-400 leading-relaxed rounded-lg">
+            <p className="font-bold uppercase mb-1">Demo Access Credentials:</p>
+            <p>Admin ID: 990990 | Pass: Haris@1122@11</p>
+            <p>Agent: Any email | Pass: Any</p>
           </div>
         </div>
       </Card>
@@ -97,11 +131,9 @@ const BookingConfirmation = () => {
     </div>
   );
 
-  const displayTotalPrice = formatPrice(Number(booking.totalPrice) || 0);
-
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-neutralLight py-16 px-4">
-      <Card className="max-w-md w-full text-center p-8 md:p-12 border-none shadow-2xl rounded-2xl animate-in fade-in zoom-in duration-500">
+      <Card className="max-w-md w-full text-center p-8 md:p-12 border-none shadow-2xl rounded-2xl animate-in fade-in zoom-in duration-500 bg-white">
         <div className="w-16 h-16 bg-[#FFF9DB] rounded-full flex items-center justify-center text-3xl mx-auto mb-6 text-[#FCC419] shadow-sm">
           🕒
         </div>
@@ -135,7 +167,7 @@ const BookingConfirmation = () => {
 
           <div className="flex justify-between items-center border-t border-gray-100 pt-3">
             <span className="text-sm font-bold text-gray-600">Amount</span>
-            <span className="text-2xl font-black text-primary">{displayTotalPrice}</span>
+            <span className="text-2xl font-black text-primary">{formatPrice(booking.totalPrice)}</span>
           </div>
         </div>
 
@@ -154,16 +186,10 @@ const App: React.FC = () => {
       <Router>
         <ScrollToTop />
         <Routes>
-          <Route path="/admin" element={<AdminPortal view="dashboard" />} />
-          <Route path="/admin/hotels" element={<AdminPortal view="hotels" />} />
-          <Route path="/admin/agencies" element={<AdminPortal view="agencies" />} />
-          <Route path="/admin/bookings" element={<AdminPortal view="bookings" />} />
-          <Route path="/admin/requests" element={<AdminPortal view="requests" />} />
-          <Route path="/admin/bulk-orders" element={<AdminPortal view="bulk-orders" />} />
-          <Route path="/admin/invoices" element={<AdminPortal view="invoices" />} />
-          <Route path="/admin/financials" element={<AdminPortal view="financials" />} />
-          <Route path="/admin/settings" element={<AdminPortal view="settings" />} />
-          <Route path="/admin/notifications" element={<AdminPortal view="notifications" />} />
+          <Route path="/admin" element={<AdminPortal />} />
+          <Route path="/admin/:view" element={<AdminPortal />} />
+          <Route path="/agent" element={<AgentPortal />} />
+          <Route path="/agent/:view" element={<AgentPortal />} />
 
           <Route path="/*" element={
             <>
@@ -179,7 +205,6 @@ const App: React.FC = () => {
                   <Route path="/my-bookings" element={<MyBookingsPage />} />
                   <Route path="/track" element={<TrackBookingPage />} />
                   <Route path="/support" element={<SupportPage />} />
-                  <Route path="/agent" element={<AgentPortal />} />
                 </Routes>
               </main>
               <Footer />

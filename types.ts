@@ -25,7 +25,7 @@ export interface Room {
   id: string;
   type: string;
   description: string;
-  image?: string; // Added for visual room selection
+  images: string[]; // Changed from image?: string to images: string[]
   amenities: string[];
   purchasePricePerNight: number; // PKR
   agentPricePerNight: number;    // PKR

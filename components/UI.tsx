@@ -1,5 +1,6 @@
 
 import React, { useEffect } from 'react';
+import { Hotel } from '../types';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'outline' | 'danger' | 'ghost' | 'teal';
@@ -201,3 +202,62 @@ export const NotificationTicker: React.FC<{ notifications: string[] }> = ({ noti
     </div>
   );
 };
+
+export const HotelCard: React.FC<{ hotel: Hotel; formatPrice: (price: number) => string; navigate: (path: string) => void; }> = ({ hotel, formatPrice, navigate }) => (
+  <Card 
+    className="bg-white overflow-hidden border border-gray-100 flex flex-col h-full transition-shadow duration-300 group cursor-pointer shadow-md !rounded-none hover:shadow-2xl" 
+    onClick={() => navigate(`/hotel/${hotel.id}`)}
+  >
+    <div className="relative h-56 overflow-hidden shrink-0 !rounded-none">
+      <img 
+        src={hotel.images[0]} 
+        alt={hotel.name} 
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 !rounded-none" 
+      />
+      <div className="absolute top-0 right-0 bg-[#E29578] text-white px-3 py-1 text-[11px] font-bold !rounded-none">
+        {hotel.stars}-Star
+      </div>
+    </div>
+
+    <div className="p-6 flex-1 flex flex-col !rounded-none">
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="text-[17px] font-bold text-[#006D77] tracking-tight leading-tight flex-1">
+          {hotel.name}
+        </h3>
+        <div className="flex gap-0.5 ml-3 shrink-0">
+          {[...Array(5)].map((_, i) => (
+            <span key={i} className={`text-sm ${i < hotel.stars ? 'text-[#FFCC00]' : 'text-gray-200'}`}>★</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center text-[12px] text-gray-500 mb-5 font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>{hotel.city} - {hotel.distanceToHaram}m from Haram</span>
+      </div>
+
+      <p className="text-gray-500 text-[13px] mb-8 line-clamp-3 leading-relaxed font-normal opacity-90 flex-1">
+        {hotel.description}
+      </p>
+      
+      <div className="pt-5 border-t border-gray-50 flex justify-between items-end !rounded-none">
+        <div>
+          <span className="text-[11px] text-gray-400 block font-medium mb-1">Starts from</span>
+          <div className="text-[#006D77] font-bold whitespace-nowrap">
+            <span className="text-[18px]">{formatPrice(hotel.rooms[0]?.customerPricePerNight || 0)}</span>
+            <span className="text-[13px] text-gray-500 font-medium lowercase">/night</span>
+          </div>
+        </div>
+        <button 
+          className="bg-[#006D77] hover:bg-[#005c65] text-white px-6 py-2.5 !rounded-none font-bold text-[13px] transition-all shadow-sm active:scale-95"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/hotel/${hotel.id}`);
+          }}
+        >
+          View Details
+        </button>
+      </div>
+    </div>
+  </Card>
+);

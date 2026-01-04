@@ -1,8 +1,38 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { Button, Modal, Input, AmenityPill, StarRating, Card, Badge } from '../components/UI';
-import { BookingStatus } from '../types';
+import { BookingStatus, Room } from '../types';
+
+const RoomGallery: React.FC<{ images: string[] }> = ({ images }) => {
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  if (!images || images.length === 0) return (
+    <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">No Image</div>
+  );
+
+  return (
+    <div className="relative group w-full h-full">
+      <img 
+        src={images[activeIdx]} 
+        className="w-full h-full object-cover transition-all duration-500" 
+        alt="Room" 
+      />
+      {images.length > 1 && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 px-4">
+          {images.map((img, idx) => (
+            <button
+              key={idx}
+              onClick={(e) => { e.stopPropagation(); setActiveIdx(idx); }}
+              className={`h-1.5 transition-all duration-300 rounded-full shadow-sm ${idx === activeIdx ? 'w-6 bg-white' : 'w-1.5 bg-white/50'}`}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 const HotelDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -12,7 +42,6 @@ const HotelDetailsPage: React.FC = () => {
   const hotel = hotels.find(h => h.id === id);
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const [promoCode, setPromoCode] = useState('');
   const [bookingDetails, setBookingDetails] = useState({ 
     name: '', 
     email: '', 
@@ -68,7 +97,7 @@ const HotelDetailsPage: React.FC = () => {
   const selectedRoom = hotel.rooms.find(r => r.id === selectedRoomId);
 
   return (
-    <div className="bg-[#F8FAFA] min-h-screen">
+    <div className="bg-[#F8FAFA] min-h-screen pb-20">
       {/* 1. Header Section */}
       <div className="bg-white pt-8 pb-10 md:pt-12 md:pb-16 border-b border-gray-100 shadow-sm relative z-30">
         <div className="container mx-auto px-4 md:px-6">
@@ -93,9 +122,10 @@ const HotelDetailsPage: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 md:px-6 py-10 md:py-20">
-        <div className="max-w-5xl mx-auto">
-          {/* Main Column */}
+        <div className="max-w-6xl mx-auto">
+          {/* Main Content Area - Full Width No Sidebar */}
           <div className="flex flex-col gap-12 md:gap-24">
+            
             {/* Gallery Block */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 relative z-10">
               <div className="md:col-span-2 relative overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-auto md:h-[520px] shadow-xl md:shadow-2xl border-2 md:border-4 border-white">
@@ -133,26 +163,49 @@ const HotelDetailsPage: React.FC = () => {
 
             {/* Allocation Units */}
             <section className="flex flex-col gap-8 md:gap-16 pb-12 md:pb-20 relative z-10">
-              <h2 className="text-2xl md:text-4xl font-black text-[#006D77] tracking-tighter flex items-center gap-4 md:gap-8 uppercase">
-                Allocation
-                <div className="h-0.5 flex-1 bg-gray-200/50"></div>
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl md:text-4xl font-black text-[#006D77] tracking-tighter uppercase">
+                  Unit Allocation
+                </h2>
+                <div className="h-0.5 flex-1 bg-gray-200/50 ml-8 hidden md:block"></div>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 {hotel.rooms.map(room => (
-                  <Card key={room.id} className="bg-white overflow-hidden flex flex-col items-start hover:shadow-2xl transition-all duration-700 border-none shadow-md rounded-none">
-                    <div className="w-full h-48 md:h-56 relative overflow-hidden">
-                       <img src={room.image || hotel.images[0]} className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt={room.type} />
-                       <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-white/95 backdrop-blur-md px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest text-[#006D77] shadow-lg">Registry Unit</div>
+                  <Card key={room.id} className="bg-white overflow-hidden flex flex-col items-start hover:shadow-2xl transition-all duration-700 border-none shadow-md rounded-2xl group">
+                    <div className="w-full h-56 md:h-64 relative overflow-hidden">
+                       <RoomGallery images={room.images} />
+                       <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-white/95 backdrop-blur-md px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest text-[#006D77] shadow-lg z-10">Registry Unit</div>
                     </div>
                     <div className="p-6 md:p-10 w-full flex-1 flex flex-col">
-                      <h3 className="text-lg md:text-2xl font-black text-neutralDark mb-2 md:mb-4 uppercase tracking-tight">{room.type}</h3>
+                      <div className="flex justify-between items-start mb-4">
+                        <h3 className="text-lg md:text-2xl font-black text-neutralDark uppercase tracking-tight leading-tight">{room.type}</h3>
+                        <div className="bg-[#F0F7F8] px-3 py-1 rounded-lg text-[10px] font-black text-[#006D77] uppercase tracking-widest border border-[#DCEEF0]">
+                          Cap: {room.capacity}
+                        </div>
+                      </div>
                       <p className="text-gray-500 text-xs md:text-sm mb-8 md:mb-12 font-medium italic leading-relaxed line-clamp-2 opacity-80">"{room.description}"</p>
+                      
+                      <div className="flex flex-wrap gap-2 mb-8">
+                        {room.amenities.map(am => (
+                          <span key={am} className="text-[8px] font-black text-gray-400 uppercase tracking-widest border border-gray-100 px-2 py-1 rounded-md">
+                            {am}
+                          </span>
+                        ))}
+                      </div>
+
                       <div className="mt-auto pt-6 md:pt-8 border-t border-gray-50 flex items-center justify-between">
                         <div className="space-y-0.5 md:space-y-1">
                           <span className="text-[7px] md:text-[9px] text-gray-400 font-black uppercase tracking-widest block">Nightly Rate</span>
                           <span className="text-xl md:text-3xl font-black text-[#006D77] tracking-tighter">{formatPrice(room.customerPricePerNight)}</span>
                         </div>
-                        <Button variant="teal" className="h-10 md:h-14 px-5 md:px-8 text-[9px] md:text-[10px]" onClick={() => handleBookNow(room.id)}>Book</Button>
+                        <Button 
+                          variant="teal" 
+                          className="h-10 md:h-14 px-5 md:px-8 text-[9px] md:text-[10px] rounded-xl" 
+                          onClick={() => handleBookNow(room.id)}
+                        >
+                          Book Unit
+                        </Button>
                       </div>
                     </div>
                   </Card>
@@ -169,7 +222,7 @@ const HotelDetailsPage: React.FC = () => {
           <div className="space-y-6 md:space-y-8">
             <div className="bg-[#F0F7F8] p-4 md:p-6 rounded-xl md:rounded-[2rem] border border-[#DCEEF0] flex items-center gap-4 md:gap-6 shadow-inner">
                <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-2xl overflow-hidden shadow-xl border-2 md:border-4 border-white shrink-0">
-                  <img src={selectedRoom?.image || hotel.images[0]} className="w-full h-full object-cover" alt="Unit" />
+                  <img src={selectedRoom?.images[0] || hotel.images[0]} className="w-full h-full object-cover" alt="Unit" />
                </div>
                <div className="overflow-hidden">
                   <h4 className="text-sm md:text-lg font-black text-[#005B5C] tracking-tighter leading-none uppercase truncate">{hotel.name}</h4>

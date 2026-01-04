@@ -1,233 +1,218 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { Button, Input, Modal, Select, Card, Badge, TableWrapper } from '../components/UI';
-import { BulkOrderStatus, UserRole, BookingStatus } from '../types';
+import { Button, Card, Badge, TableWrapper, Input, Select, Modal } from '../components/UI';
+import { UserRole, Currency, BulkOrderStatus, BulkOrder, BookingStatus, Booking } from '../types';
+import DashboardLayout from '../components/DashboardLayout';
 
-const AgentPortal: React.FC = () => {
-  const { 
-    currentUser, formatPrice, agencies, hotels, bulkOrders, addBulkOrder, updateAgentWallet, addBooking 
-  } = useAppContext();
-  
-  const [activeTab, setActiveTab] = useState<'inventory' | 'purchase' | 'wallet'>('inventory');
-  const [isPurchaseModalOpen, setIsPurchaseModalOpen] = useState(false);
-  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
-  
-  const [purchaseForm, setPurchaseForm] = useState({ hotelId: '', roomId: '', quantity: 1, checkIn: '', checkOut: '' });
-  const [assignForm, setAssignForm] = useState({ guestName: '', guestEmail: '', guestPhone: '', orderId: '' });
-
+const DashboardView: React.FC = () => {
+  const { currentUser, agencies, formatPrice, bookings } = useAppContext();
   const agent = agencies.find(a => a.id === currentUser?.agencyId);
-  const agentOrders = bulkOrders.filter(o => o.agencyId === agent?.id);
+  const agentBookings = bookings.filter(b => b.agencyId === agent?.id);
   
-  if (!currentUser || currentUser.role !== UserRole.AGENT || !agent) return (
-    <div className="min-h-screen flex items-center justify-center bg-neutralLight px-4">
-      <Card className="p-8 md:p-12 text-center max-w-sm">
-         <div className="text-4xl md:text-5xl mb-6">💼</div>
-         <h2 className="text-xl md:text-2xl font-black uppercase tracking-tighter mb-4">Partner Login</h2>
-         <p className="text-gray-500 text-sm mb-8 font-medium">Authorized travel partner access required for B2B portal.</p>
-         <Button fullWidth variant="primary" onClick={() => window.location.hash = '#/login'}>Partner Auth</Button>
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">💳</div>
+          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Wallet Balance</p><p className="text-[#005B5C] text-2xl font-bold">{formatPrice(agent?.walletBalance || 0)}</p></div>
+        </Card>
+        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">🏢</div>
+          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Bookings</p><p className="text-[#005B5C] text-2xl font-bold">{agentBookings.length}</p></div>
+        </Card>
+        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">📋</div>
+          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Agency Status</p><p className="text-[#005B5C] text-2xl font-bold">{agent?.status}</p></div>
+        </Card>
+      </div>
+      <Card className="p-8 border-none shadow-sm rounded-xl bg-white border border-gray-50">
+        <h3 className="text-[#005B5C] text-lg font-bold mb-4">Welcome, {agent?.agencyName}!</h3>
+        <p className="text-gray-500 text-sm leading-relaxed max-w-4xl font-medium">
+          This is your central hub for managing hotel bookings for your clients. 
+          You can create new bulk orders or view and manage your existing agency bookings using the sections in the sidebar.
+        </p>
       </Card>
     </div>
   );
+};
 
-  const handleBulkPurchase = () => {
-    const hotel = hotels.find(h => h.id === purchaseForm.hotelId);
-    const room = hotel?.rooms.find(r => r.id === purchaseForm.roomId);
-    if (!hotel || !room) return;
+const BulkBookingView: React.FC = () => {
+  const { currentUser, agencies, formatPrice, hotels, bulkOrders, addBulkOrder, deleteBulkOrder, updateAgentWallet, addBooking } = useAppContext();
+  const agent = agencies.find(a => a.id === currentUser?.agencyId)!;
+  const agentBulkOrders = bulkOrders.filter(o => o.agencyId === agent.id);
 
-    const totalCost = room.agentPricePerNight * purchaseForm.quantity;
+  const [purchaseForm, setPurchaseForm] = useState({ hotelId: '', roomId: '', checkIn: '2026-04-01', checkOut: '2026-05-01', quantity: 1 });
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assignTarget, setAssignTarget] = useState<BulkOrder | null>(null);
+  const [assignForm, setAssignForm] = useState({ guestName: '', guestEmail: '', guestPhone: '', showPriceOnVoucher: true });
+
+  const selectedHotel = hotels.find(h => h.id === purchaseForm.hotelId);
+  const selectedRoom = selectedHotel?.rooms.find(r => r.id === purchaseForm.roomId);
+
+  const handleBulkSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!purchaseForm.hotelId || !purchaseForm.roomId || !selectedRoom) {
+      alert("Please select a valid hotel and room."); return;
+    }
+    const nights = (new Date(purchaseForm.checkOut).getTime() - new Date(purchaseForm.checkIn).getTime()) / 86400000;
+    if (nights <= 0) { alert("Check-out must be after check-in."); return; }
+    
+    const totalCost = selectedRoom.agentPricePerNight * purchaseForm.quantity * nights;
     if (agent.walletBalance < totalCost) {
-      alert("Insufficient wallet balance for this wholesale operation!");
-      return;
+      alert(`Insufficient Wallet Balance. Needed: ${formatPrice(totalCost)}`); return;
     }
 
-    const newOrder = {
-      id: `WHL-${Date.now()}`,
-      agencyId: agent.id,
-      hotelId: hotel.id,
-      roomId: room.id,
-      checkIn: purchaseForm.checkIn,
-      checkOut: purchaseForm.checkOut,
-      quantity: purchaseForm.quantity,
-      totalCost,
-      status: BulkOrderStatus.PENDING,
-      createdAt: new Date().toLocaleDateString()
+    const order: BulkOrder = {
+      id: `BO-${Date.now()}`, agencyId: agent.id, hotelId: purchaseForm.hotelId, roomId: purchaseForm.roomId, checkIn: purchaseForm.checkIn, checkOut: purchaseForm.checkOut,
+      quantity: purchaseForm.quantity, totalCost, status: BulkOrderStatus.CONFIRMED, createdAt: new Date().toISOString()
     };
-
-    updateAgentWallet(agent.id, totalCost, 'Debit', `Bulk Order Allocation: ${hotel.name}`);
-    addBulkOrder(newOrder);
-    setIsPurchaseModalOpen(false);
+    addBulkOrder(order);
+    updateAgentWallet(agent.id, totalCost, 'Debit', `Bulk Purchase: ${order.id}`);
+    alert(`Bulk purchase ${order.id} confirmed.`);
+    setPurchaseForm({ hotelId: '', roomId: '', checkIn: '2026-04-01', checkOut: '2026-05-01', quantity: 1 });
   };
-
-  const handleAssign = (orderId: string) => {
-    const order = bulkOrders.find(o => o.id === orderId);
-    if (!order) return;
-
-    const hotel = hotels.find(h => h.id === order.hotelId);
-    const room = hotel?.rooms.find(r => r.id === order.roomId);
-
-    const newBooking = {
-      id: `VCH-${Date.now()}`,
-      hotelId: order.hotelId,
-      hotelName: hotel?.name || 'Unknown',
-      roomId: order.roomId,
-      roomType: room?.type || 'Standard',
-      checkIn: order.checkIn,
-      checkOut: order.checkOut,
-      guestName: assignForm.guestName,
-      guestEmail: assignForm.guestEmail,
-      guestPhone: assignForm.guestPhone,
-      totalPrice: 0, 
-      status: BookingStatus.CONFIRMED,
-      agencyId: agent.id,
-      createdAt: new Date().toLocaleDateString()
-    };
-
-    addBooking(newBooking);
+  
+  const handleAssign = (order: BulkOrder) => {
+    setAssignTarget(order);
+    setAssignForm({ guestName: '', guestEmail: '', guestPhone: '', showPriceOnVoucher: true });
+    setIsAssignModalOpen(true);
+  };
+  
+  const submitAssignment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!assignTarget) return;
+    const hotel = hotels.find(h => h.id === assignTarget.hotelId);
+    const room = hotel?.rooms.find(r => r.id === assignTarget.roomId);
+    
+    addBooking({
+      id: `VCH-${Date.now()}`, hotelId: assignTarget.hotelId, hotelName: hotel?.name || 'N/A', roomId: assignTarget.roomId, roomType: room?.type || 'N/A',
+      checkIn: assignTarget.checkIn, checkOut: assignTarget.checkOut, guestName: assignForm.guestName, guestEmail: assignForm.guestEmail, guestPhone: assignForm.guestPhone,
+      totalPrice: assignTarget.totalCost / assignTarget.quantity, status: BookingStatus.CONFIRMED, agencyId: agent.id, createdAt: new Date().toISOString()
+    });
+    
     setIsAssignModalOpen(false);
+    alert(`Voucher issued for ${assignForm.guestName}.`);
   };
 
   return (
-    <div className="bg-[#fcfdfd] min-h-screen">
-      <div className="bg-white border-b py-8 md:py-12">
-        <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6 md:gap-8">
-          <div className="text-center md:text-left">
-            <h1 className="text-2xl md:text-4xl font-black text-primary tracking-tight uppercase">{agent.agencyName}</h1>
-            <div className="flex items-center justify-center md:justify-start gap-4 mt-2">
-              <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">ID: {agent.id}</span>
-              <Badge variant="success">Verified Partner</Badge>
-            </div>
+    <div className="space-y-10">
+      <Card className="p-8 border-none shadow-sm rounded-xl bg-white">
+        <h3 className="text-[#005B5C] text-xl font-bold mb-8">1. Create New Bulk Purchase</h3>
+        <form onSubmit={handleBulkSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+            <Select label="Hotel" value={purchaseForm.hotelId} onChange={e => setPurchaseForm({...purchaseForm, hotelId: e.target.value, roomId: ''})} options={[{label:'Select Hotel', value:''}, ...hotels.map(h => ({label: h.name, value: h.id}))]} className="!rounded-md"/>
+            <Select label="Room" value={purchaseForm.roomId} disabled={!purchaseForm.hotelId} onChange={e => setPurchaseForm({...purchaseForm, roomId: e.target.value})} options={[{label:'Select Type', value:''}, ...(selectedHotel?.rooms || []).map(r => ({label: r.type, value: r.id}))]} className="!rounded-md"/>
+            <Input label="Check-in" type="date" value={purchaseForm.checkIn} onChange={e => setPurchaseForm({...purchaseForm, checkIn: e.target.value})} className="!rounded-md" />
+            <Input label="Check-out" type="date" value={purchaseForm.checkOut} onChange={e => setPurchaseForm({...purchaseForm, checkOut: e.target.value})} className="!rounded-md" />
+            <Input label="# Rooms" type="number" min="1" value={purchaseForm.quantity} onChange={e => setPurchaseForm({...purchaseForm, quantity: Number(e.target.value)})} className="!rounded-md" />
           </div>
-          <Card className="w-full md:w-auto flex flex-col items-center md:items-end p-5 md:p-6 border-none shadow-xl bg-primary text-white">
-            <span className="text-[8px] md:text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1 md:mb-2">Partner Balance</span>
-            <div className="text-2xl md:text-4xl font-black">{formatPrice(agent.walletBalance)}</div>
-          </Card>
-        </div>
-      </div>
+          <Button type="submit">+ Add to Purchase</Button>
+        </form>
+      </Card>
 
-      <div className="container mx-auto px-4 py-8 md:py-16">
-        <div className="flex overflow-x-auto gap-3 mb-8 md:mb-12 pb-2 custom-scrollbar">
-          {['inventory', 'purchase', 'wallet'].map((tab) => (
-            <button 
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`px-6 py-2 md:px-8 md:py-3 rounded-xl md:rounded-2xl font-black text-[10px] md:text-[11px] uppercase tracking-widest transition-all shrink-0 ${activeTab === tab ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white text-gray-400 border border-gray-100'}`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
-
-        {activeTab === 'inventory' && (
-          <div className="space-y-8 md:space-y-10">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-              <h2 className="text-xl md:text-2xl font-black text-neutralDark uppercase tracking-tighter">Allocations</h2>
-              <Button variant="secondary" size="sm" onClick={() => setIsPurchaseModalOpen(true)}>Wholesale Buy</Button>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {agentOrders.filter(o => o.status === BulkOrderStatus.CONFIRMED).map(order => {
-                 const hotel = hotels.find(h => h.id === order.hotelId);
-                 const room = hotel?.rooms.find(r => r.id === order.roomId);
-                 return (
-                   <Card key={order.id} className="p-0 overflow-hidden hover:shadow-xl transition-all border-none ring-1 ring-gray-100">
-                     <div className="p-6 md:p-8">
-                       <div className="flex justify-between items-center mb-6">
-                          <Badge variant="info">{hotel?.city}</Badge>
-                          <span className="text-[8px] font-mono text-gray-400">REF: {order.id.slice(-8)}</span>
-                       </div>
-                       <h3 className="font-black text-lg md:text-xl mb-1 text-neutralDark uppercase truncate">{hotel?.name}</h3>
-                       <p className="text-[10px] md:text-xs text-gray-400 mb-6 font-bold uppercase tracking-widest">{room?.type} • {order.quantity} Units</p>
-                       <div className="flex justify-between text-[9px] font-black text-gray-400 uppercase tracking-widest mb-8 pb-4 border-b">
-                         <div>IN: <span className="text-neutralDark">{order.checkIn}</span></div>
-                         <div>OUT: <span className="text-neutralDark">{order.checkOut}</span></div>
-                       </div>
-                       <Button variant="outline" fullWidth size="sm" onClick={() => { setAssignForm({ ...assignForm, orderId: order.id }); setIsAssignModalOpen(true); }}>Assign Voucher</Button>
-                     </div>
-                   </Card>
-                 );
-              })}
-              {agentOrders.filter(o => o.status === BulkOrderStatus.CONFIRMED).length === 0 && (
-                 <div className="col-span-full py-20 text-center opacity-30">
-                    <div className="text-5xl md:text-6xl mb-4 md:mb-6">📦</div>
-                    <p className="font-black uppercase tracking-[0.3em] text-[10px]">Zero Active Inventory</p>
-                 </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {activeTab === 'purchase' && (
-          <Card className="overflow-hidden">
-             <TableWrapper>
-               <table className="w-full text-left">
-                 <thead className="bg-gray-50 text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest border-b">
-                   <tr>
-                     <th className="px-6 py-5">Order ID</th>
-                     <th className="px-6 py-5">Asset</th>
-                     <th className="px-6 py-5">Units</th>
-                     <th className="px-6 py-5">Value</th>
-                     <th className="px-6 py-5">Status</th>
-                   </tr>
-                 </thead>
-                 <tbody className="divide-y divide-gray-50 text-[11px] md:text-sm">
-                   {agentOrders.map(order => (
-                     <tr key={order.id} className="hover:bg-gray-50/50 transition">
-                       <td className="px-6 py-6 font-bold text-neutralDark font-mono">{order.id.slice(-8)}</td>
-                       <td className="px-6 py-6">
-                          <div className="font-black text-gray-800 uppercase text-[10px] md:text-xs truncate max-w-[150px]">{hotels.find(h => h.id === order.hotelId)?.name}</div>
-                          <div className="text-[9px] text-gray-400">{order.checkIn}</div>
-                       </td>
-                       <td className="px-6 py-6 font-black">{order.quantity}</td>
-                       <td className="px-6 py-6 font-black text-primary">{formatPrice(order.totalCost)}</td>
-                       <td className="px-6 py-6">
-                          <Badge variant={order.status === BulkOrderStatus.CONFIRMED ? 'success' : order.status === BulkOrderStatus.REJECTED ? 'danger' : 'warning'}>
-                            {order.status}
-                          </Badge>
-                       </td>
-                     </tr>
-                   ))}
-                 </tbody>
-               </table>
-             </TableWrapper>
-          </Card>
-        )}
-      </div>
-
-      {/* Modals are already responsive via UI.tsx update */}
-      <Modal isOpen={isPurchaseModalOpen} onClose={() => setIsPurchaseModalOpen(false)} title="Wholesale Allocation">
-        <div className="space-y-6">
-          <Select 
-            label="Property" 
-            options={hotels.map(h => ({ label: `${h.name}`, value: h.id }))} 
-            onChange={e => setPurchaseForm({ ...purchaseForm, hotelId: e.target.value })}
-          />
-          {purchaseForm.hotelId && (
-            <Select 
-              label="Unit Type" 
-              options={hotels.find(h => h.id === purchaseForm.hotelId)?.rooms.map(r => ({ label: `${r.type}`, value: r.id })) || []}
-              onChange={e => setPurchaseForm({ ...purchaseForm, roomId: e.target.value })}
-            />
-          )}
-          <Input label="Quantity" type="number" min="1" value={purchaseForm.quantity} onChange={e => setPurchaseForm({ ...purchaseForm, quantity: Number(e.target.value) })} />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Arrival" type="date" value={purchaseForm.checkIn} onChange={e => setPurchaseForm({ ...purchaseForm, checkIn: e.target.value })} />
-            <Input label="Departure" type="date" value={purchaseForm.checkOut} onChange={e => setPurchaseForm({ ...purchaseForm, checkOut: e.target.value })} />
-          </div>
-          <Button variant="secondary" fullWidth className="mt-4 font-black text-[10px] uppercase" onClick={handleBulkPurchase}>Submit Request</Button>
-        </div>
-      </Modal>
-
-      <Modal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} title="Generate Voucher">
-        <div className="space-y-6">
-           <p className="text-xs text-gray-500 font-medium">Assign reserved unit instantly to pilgrim group.</p>
-           <Input label="Full Name" placeholder="As per ID" value={assignForm.guestName} onChange={e => setAssignForm({ ...assignForm, guestName: e.target.value })} />
-           <Input label="Contact Email" value={assignForm.guestEmail} onChange={e => setAssignForm({ ...assignForm, guestEmail: e.target.value })} />
-           <Input label="Phone" value={assignForm.guestPhone} onChange={e => setAssignForm({ ...assignForm, guestPhone: e.target.value })} />
-           <Button variant="primary" fullWidth className="mt-4 font-black text-[10px] uppercase" onClick={() => handleAssign(assignForm.orderId)}>Activate Voucher</Button>
-        </div>
+      <Card className="p-8 border-none shadow-sm rounded-xl bg-white">
+        <h3 className="text-[#005B5C] text-xl font-bold mb-8">2. My Bulk Purchases</h3>
+        <TableWrapper>
+           <table className="w-full text-left text-xs">
+              <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-5 px-4">Order</th><th className="py-5 px-4">Details</th><th className="py-5 px-4">Qty</th><th className="py-5 px-4">Cost</th><th className="py-5 px-4 text-right">Actions</th></tr></thead>
+              <tbody>
+                {agentBulkOrders.length === 0 ? <tr><td colSpan={5} className="py-20 text-center text-gray-400 italic">No bulk purchases found.</td></tr> : 
+                agentBulkOrders.map(o => {
+                  const hotel = hotels.find(h => h.id === o.hotelId);
+                  const room = hotel?.rooms.find(r => r.id === o.roomId);
+                  return <tr key={o.id}><td className="py-4 px-4 font-bold">{o.id}</td><td><div><p className="font-bold text-gray-800">{hotel?.name}</p><p className="text-[10px] text-gray-400">{room?.type}</p></div></td><td className="py-4 px-4 font-bold">{o.quantity}</td><td className="py-4 px-4 font-bold text-primary">{formatPrice(o.totalCost)}</td><td className="py-4 px-4 text-right space-x-2"><Button size="sm" onClick={() => handleAssign(o)}>Assign</Button><Button variant="danger" size="sm" onClick={() => deleteBulkOrder(o.id)}>X</Button></td></tr>
+                })}
+              </tbody>
+           </table>
+        </TableWrapper>
+      </Card>
+      
+      <Modal isOpen={isAssignModalOpen} onClose={() => setIsAssignModalOpen(false)} title="Assign Inventory Unit">
+        <form onSubmit={submitAssignment} className="space-y-6"><Input label="Pilgrim Full Name" required value={assignForm.guestName} onChange={e => setAssignForm({...assignForm, guestName: e.target.value})} /><Input label="Contact Email" type="email" required value={assignForm.guestEmail} onChange={e => setAssignForm({...assignForm, guestEmail: e.target.value})} /><Input label="WhatsApp/Phone" required value={assignForm.guestPhone} onChange={e => setAssignForm({...assignForm, guestPhone: e.target.value})} /><Button type="submit" fullWidth>Confirm Assignment</Button></form>
       </Modal>
     </div>
+  );
+};
+
+const MyBookingsView: React.FC = () => {
+    const { currentUser, bookings, formatPrice } = useAppContext();
+    const agentBookings = bookings.filter(b => b.agencyId === currentUser?.agencyId);
+    
+    return (
+        <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
+           <TableWrapper>
+              <table className="w-full text-left text-xs">
+                 <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-5 px-4">Booking ID</th><th className="py-5 px-4">Guest</th><th className="py-5 px-4">Hotel</th><th className="py-5 px-4">Total Price</th><th className="py-5 px-4">Status</th><th className="py-5 px-4 text-right">Actions</th></tr></thead>
+                 <tbody>
+                    {agentBookings.length === 0 ? <tr><td colSpan={6} className="py-20 text-center text-gray-400 italic">No bookings found.</td></tr> : 
+                    agentBookings.map(b => (
+                        <tr key={b.id}><td>{b.id}</td><td>{b.guestName}</td><td>{b.hotelName}</td><td>{formatPrice(b.totalPrice)}</td><td><Badge variant="success">{b.status}</Badge></td><td className="text-right"><a href={`/#/confirmation/${b.id}`} target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">Voucher</a></td></tr>
+                    ))}
+                 </tbody>
+              </table>
+           </TableWrapper>
+        </Card>
+    );
+};
+
+const SettingsView: React.FC = () => {
+    const { currentUser, agencies, updateAgency } = useAppContext();
+    const agent = agencies.find(a => a.id === currentUser?.agencyId)!;
+    const [form, setForm] = useState({ agencyName: agent.agencyName, email: agent.email });
+
+    useEffect(() => { setForm({ agencyName: agent.agencyName, email: agent.email }); }, [agent]);
+    
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        updateAgency({ ...agent, ...form });
+        alert("Settings updated.");
+    };
+
+    return (
+      <Card className="p-8 border-none shadow-sm rounded-xl bg-white max-w-2xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <Input label="Agency Name" value={form.agencyName} onChange={e => setForm({...form, agencyName: e.target.value})} />
+          <Input label="Contact Email" type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
+          <div className="flex justify-end pt-4"><Button type="submit">Save Changes</Button></div>
+        </form>
+      </Card>
+    );
+};
+
+const AgentPortal: React.FC = () => {
+  const { currentUser } = useAppContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  if (!currentUser || currentUser.role !== UserRole.AGENT) {
+    return (<div className="min-h-screen flex items-center justify-center bg-[#F8FAFB] px-4"><Card className="p-12 text-center max-w-sm border-none shadow-2xl rounded-2xl bg-white"><div className="text-6xl mb-6">💼</div><h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Partner Login Required</h2><Button fullWidth variant="primary" onClick={() => navigate('/login')}>Login as Partner</Button></Card></div>);
+  }
+
+  const renderView = () => {
+    const view = location.pathname.split('/')[2] || 'dashboard';
+    switch (view) {
+      case 'dashboard': return <DashboardView />;
+      case 'bulk': return <BulkBookingView />;
+      case 'bookings': return <MyBookingsView />;
+      case 'settings': return <SettingsView />;
+      default: return <DashboardView />;
+    }
+  };
+
+  const getTitle = () => {
+    const view = location.pathname.split('/')[2] || 'dashboard';
+    return view.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="p-6 lg:p-8">
+        <h2 className="text-[#005B5C] text-2xl font-bold tracking-tight mb-8">{getTitle()}</h2>
+        {renderView()}
+      </div>
+    </DashboardLayout>
   );
 };
 

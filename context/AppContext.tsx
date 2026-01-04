@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   Hotel, Booking, User, Currency, Agent, BulkOrder, Invoice, SiteSettings, 
   UserRole, BookingStatus, BulkOrderStatus, PromoCode 
@@ -31,6 +31,7 @@ interface AppContextType {
   updateAgentWallet: (agencyId: string, amount: number, type: 'Credit' | 'Debit', desc: string) => void;
   bulkOrders: BulkOrder[];
   addBulkOrder: (order: BulkOrder) => void;
+  deleteBulkOrder: (id: string) => void;
   updateBulkOrderStatus: (id: string, status: BulkOrderStatus) => void;
   invoices: Invoice[];
   promoCodes: PromoCode[];
@@ -46,52 +47,24 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [currency, setCurrency] = useState<Currency>('PKR');
   const [hotels, setHotels] = useState<Hotel[]>(INITIAL_HOTELS);
   const [notifications, setNotifications] = useState<string[]>([
-    "UmrahStay V2.5 Live - Professional Sanctuary Portal Active",
-    "Special Ramadan 2025 Inventory now available for Partners",
-    "New High-Speed Voucher Generation active for all Pilgrims",
-    "Partner Wallet Approval queue currently under 10 minutes"
+    "Booking Open for Ramadan 1447, Good Luck",
+    "Good Morning • Make Bookings for Ramadan and Hajj 2026 • good luck",
+    "Special Partner Rates active for Clock Tower properties"
   ]);
   
-  const [bookings, setBookings] = useState<Booking[]>([
-    {
-      id: 'BK-9901',
-      hotelId: 'h1',
-      hotelName: 'Makkah Clock Royal Tower, A Fairmont Hotel',
-      roomId: 'r1',
-      roomType: 'Signature Haram View Suite',
-      checkIn: '2025-05-10',
-      checkOut: '2025-05-15',
-      guestName: 'Sami Khan',
-      guestEmail: 'sami@example.com',
-      guestPhone: '+923001234567',
-      totalPrice: 264500,
-      purchaseCost: 180000,
-      status: BookingStatus.CONFIRMED,
-      userId: 'CUST-1',
-      createdAt: new Date().toISOString()
-    }
-  ]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   
-  const [currentUser, setCurrentUser] = useState<User | null>({
-    id: 'ADM-1',
-    name: 'Haris Administrator',
-    email: 'admin@umrahstay.com',
-    role: UserRole.ADMIN,
-  });
+  // User state is null by default, requiring login.
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [agencies, setAgencies] = useState<Agent[]>([
-    { id: 'AG-001', agencyName: 'Hajj & Umrah Travel PK', email: 'agent@travel.com', status: 'Active', walletBalance: 500000 },
+    { id: '1234', agencyName: 'Haris T&Q', email: 'socialpalaces@gmail.com', status: 'Active', walletBalance: 2300800 },
     { id: 'AG-002', agencyName: 'Universal Pilgrims Ltd', email: 'universal@travel.com', status: 'Active', walletBalance: 1250000 }
   ]);
 
   const [bulkOrders, setBulkOrders] = useState<BulkOrder[]>([]);
-  const [invoices, setInvoices] = useState<Invoice[]>([
-    { id: 'INV-101', agencyId: 'AG-001', amount: 500000, type: 'Credit', description: 'Opening Balance', date: '2025-01-01' }
-  ]);
-  
-  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([
-    { id: 'p1', code: 'WELCOME10', discount: 10, type: 'percentage' }
-  ]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
 
   const formatPrice = (priceInPKR: number) => {
     const rate = CURRENCY_RATES[currency];
@@ -99,6 +72,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
     }).format(converted);
   };
 
@@ -106,17 +81,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const updateHotel = (hotel: Hotel) => setHotels(prev => prev.map(h => h.id === hotel.id ? hotel : h));
   const deleteHotel = (id: string) => setHotels(prev => prev.filter(h => h.id !== id));
 
-  const addBooking = (booking: Booking) => {
-    const hotel = hotels.find(h => h.id === booking.hotelId);
-    const room = hotel?.rooms.find(r => r.id === booking.roomId);
-    const cost = room ? room.purchasePricePerNight : 0;
-    setBookings(prev => [{ ...booking, purchaseCost: cost }, ...prev]);
-    setNotifications(prev => [...prev, `Booking Alert: ${booking.id} created for ${booking.guestName}`]);
-  };
+  const addBooking = (booking: Booking) => setBookings(prev => [booking, ...prev]);
 
   const updateBookingStatus = (id: string, status: BookingStatus) => {
     setBookings(prev => prev.map(b => b.id === id ? { ...b, status } : b));
-    setNotifications(prev => [...prev, `Status Change: Booking ${id} is now ${status}`]);
   };
 
   const deleteBookings = (ids: string[]) => setBookings(prev => prev.filter(b => !ids.includes(b.id)));
@@ -130,24 +98,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       ...a, 
       walletBalance: type === 'Credit' ? a.walletBalance + amount : a.walletBalance - amount 
     } : a));
-    const invId = `INV-${Date.now()}`;
     setInvoices(prev => [{ 
-      id: invId, agencyId, amount, type, description: desc, date: new Date().toISOString() 
+      id: `INV-${Date.now()}`, agencyId, amount, type, description: desc, date: new Date().toISOString() 
     }, ...prev]);
-    setNotifications(prev => [...prev, `Wallet Transaction: ${invId} issued to ${agencyId} for ${amount} PKR`]);
   };
 
   const addBulkOrder = (order: BulkOrder) => setBulkOrders(prev => [order, ...prev]);
+  const deleteBulkOrder = (id: string) => setBulkOrders(prev => prev.filter(o => o.id !== id));
+  
   const updateBulkOrderStatus = (id: string, status: BulkOrderStatus) => {
-    setBulkOrders(prev => prev.map(o => {
-      if (o.id === id) {
-        if (status === BulkOrderStatus.REJECTED && o.status === BulkOrderStatus.PENDING) {
-          updateAgentWallet(o.agencyId, o.totalCost, 'Credit', `Refund for Rejected Order ${id}`);
-        }
-        return { ...o, status };
-      }
-      return o;
-    }));
+    setBulkOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
   };
 
   const addPromoCode = (promo: PromoCode) => setPromoCodes(prev => [promo, ...prev]);
@@ -160,7 +120,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       siteSettings, setSiteSettings, currency, setCurrency, formatPrice, hotels, setHotels, addHotel, updateHotel, deleteHotel,
       bookings, addBooking, updateBookingStatus, deleteBookings, currentUser, setCurrentUser, logout,
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 
-      bulkOrders, addBulkOrder, updateBulkOrderStatus, invoices, promoCodes, addPromoCode, deletePromoCode,
+      bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, invoices, promoCodes, addPromoCode, deletePromoCode,
       notifications
     }}>
       {children}

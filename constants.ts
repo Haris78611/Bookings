@@ -24,7 +24,11 @@ export const INITIAL_HOTELS: Hotel[] = [
         id: 'r1',
         type: 'Signature Haram View Suite',
         description: 'Breathtaking direct views of the Holy Kaaba.',
-        image: 'https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=800&auto=format&fit=crop',
+        images: [
+          'https://images.unsplash.com/photo-1618773928121-c32242e63f39?q=80&w=800&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1540518614846-7eded433c457?q=80&w=800&auto=format&fit=crop'
+        ],
         amenities: ['Butler Service', 'Haram View', 'WiFi', 'Espresso Machine'],
         purchasePricePerNight: 180000,
         agentPricePerNight: 220000,
@@ -49,7 +53,10 @@ export const INITIAL_HOTELS: Hotel[] = [
         id: 'r2',
         type: 'Deluxe City View',
         description: 'Spacious and modern with premium bedding.',
-        image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
+        images: [
+          'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=800&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=800&auto=format&fit=crop'
+        ],
         amenities: ['AC', 'WiFi', 'Shower'],
         purchasePricePerNight: 150000,
         agentPricePerNight: 180000,
@@ -74,7 +81,10 @@ export const INITIAL_HOTELS: Hotel[] = [
         id: 'r3',
         type: 'Superior Twin Room',
         description: 'Classic comfort in the heart of the city.',
-        image: 'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=800&auto=format&fit=crop',
+        images: [
+          'https://images.unsplash.com/photo-1566665797739-1674de7a421a?q=80&w=800&auto=format&fit=crop',
+          'https://images.unsplash.com/photo-1590490359683-658d3d23f972?q=80&w=800&auto=format&fit=crop'
+        ],
         amenities: ['AC', 'WiFi', 'Mini Bar'],
         purchasePricePerNight: 140000,
         agentPricePerNight: 170000,

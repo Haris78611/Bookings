@@ -1,9 +1,8 @@
-
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { LoadingSpinner, Card, Input, Select } from '../components/UI';
-import { HotelCard } from './HomePage';
+// Fix: Corrected the import path for HotelCard. It should be imported from '../components/UI'.
+import { LoadingSpinner, Card, Input, Select, HotelCard } from '../components/UI';
 
 const SearchPage: React.FC = () => {
   const { hotels, formatPrice } = useAppContext();

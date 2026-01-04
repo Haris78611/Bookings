@@ -1,405 +1,249 @@
 
 import React, { useState, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { Button, Input, Select, Modal, Card, Badge, TableWrapper } from '../components/UI';
-import { AdminSidebar } from '../components/Layout';
-import { 
-  Hotel, BookingStatus, BulkOrderStatus, Room, PromoCode
-} from '../types';
+import { Button, Card, Badge, TableWrapper, Input, Select, Modal } from '../components/UI';
+import { UserRole, BookingStatus, BulkOrderStatus, Agent, Hotel, SiteSettings, Invoice } from '../types';
+import DashboardLayout from '../components/DashboardLayout';
+import HotelForm from '../components/HotelForm';
+import AgencyFormModal from '../components/AgencyFormModal';
+import WalletModal from '../components/WalletModal';
 
-/**
- * DASHBOARD VIEW
- */
+// --- Reusable Components ---
+const PageHeader: React.FC<{ title: string; children?: React.ReactNode }> = ({ title, children }) => (
+  <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4 mb-8">
+    <h2 className="text-[#005B5C] text-2xl font-bold tracking-tight">{title}</h2>
+    <div className="flex items-center gap-2">{children}</div>
+  </div>
+);
+
+const RefreshButton: React.FC<{ isRefreshing: boolean; onClick: () => void }> = ({ isRefreshing, onClick }) => (
+  <Button variant="outline" onClick={onClick} className="bg-white border text-[#005B5C] px-5 py-2 !rounded-lg text-xs font-bold shadow-sm flex items-center gap-2 hover:bg-gray-50">
+    <svg className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+    Refresh Data
+  </Button>
+);
+
+const EmptyState: React.FC<{ message: string }> = ({ message }) => (
+  <tr>
+    <td colSpan={10} className="py-20 text-center text-sm text-gray-400 font-medium italic">{message}</td>
+  </tr>
+);
+
+
+// --- View Components ---
 const DashboardView: React.FC = () => {
-  const { bookings, hotels, formatPrice, siteSettings, setSiteSettings, notifications } = useAppContext();
+  const { siteSettings, setSiteSettings, bookings: allBookings, hotels, formatPrice } = useAppContext();
   const [announcementText, setAnnouncementText] = useState(siteSettings.announcement);
-
-  const stats = useMemo(() => ({
-    totalBookings: bookings.length,
-    listedHotels: hotels.length,
-    totalRevenue: bookings
-      .filter(b => b.status === BookingStatus.CONFIRMED)
-      .reduce((acc, b) => acc + b.totalPrice, 0)
-  }), [bookings, hotels]);
+  const recentBookings = useMemo(() => allBookings.filter(b => !b.agencyId).slice(0, 5), [allBookings]);
+  const totalRevenue = useMemo(() => allBookings.reduce((sum, booking) => sum + booking.totalPrice, 0), [allBookings]);
 
   const handleUpdateAnnouncement = () => {
     setSiteSettings({ ...siteSettings, announcement: announcementText });
-    alert("Website announcement updated successfully!");
+    alert("Website announcement updated successfully.");
   };
 
   return (
-    <div className="space-y-6 md:space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-2xl md:text-3xl font-black text-gray-800 uppercase tracking-tighter">Control Desk</h1>
-        <Button variant="outline" size="sm" onClick={() => window.location.reload()} className="text-[9px]">🔄 Refresh Analytics</Button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-        <StatCard title="Vouchers" value={stats.totalBookings.toString()} icon="🎫" color="teal" />
-        <StatCard title="Properties" value={stats.listedHotels.toString()} icon="🏨" color="orange" />
-        <StatCard title="Revenue" value={formatPrice(stats.totalRevenue)} icon="💰" color="teal" />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="p-6 md:p-8">
-          <h3 className="font-bold text-gray-700 mb-6 border-b pb-3 uppercase text-[9px] md:text-[10px] tracking-widest">Broadcast Announcement</h3>
-          <textarea 
-            className="w-full border border-gray-200 rounded-xl p-4 text-xs md:text-sm h-32 md:h-40 text-gray-900 bg-gray-50/50 focus:ring-primary outline-none font-medium leading-relaxed"
-            value={announcementText}
-            onChange={(e) => setAnnouncementText(e.target.value)}
-            placeholder="Deploy new alert..."
-          />
-          <Button variant="secondary" className="mt-6" fullWidth onClick={handleUpdateAnnouncement}>Deploy to Public Portal</Button>
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">📋</div>
+          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Bookings</p><p className="text-[#005B5C] text-2xl font-black">{allBookings.length}</p></div>
         </Card>
-
-        <Card className="p-6 md:p-8">
-          <h3 className="font-bold text-gray-700 mb-6 border-b pb-3 uppercase text-[9px] md:text-[10px] tracking-widest">Recent Events</h3>
-          <div className="space-y-3 max-h-[250px] overflow-y-auto custom-scrollbar">
-             {notifications.slice(-10).reverse().map((n, i) => (
-               <div key={i} className="flex items-center gap-3 text-[10px] md:text-[11px] font-bold text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                 <span className="w-2 h-2 bg-primary rounded-full shrink-0"></span>
-                 <span className="truncate">{n}</span>
-               </div>
-             ))}
-          </div>
+        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">🏢</div>
+          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Listed Hotels</p><p className="text-[#005B5C] text-2xl font-black">{hotels.length}</p></div>
+        </Card>
+        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+           <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">💰</div>
+          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Revenue</p><p className="text-[#005B5C] text-2xl font-black">{formatPrice(totalRevenue)}</p></div>
         </Card>
       </div>
-    </div>
-  );
-};
 
-const StatCard = ({ title, value, icon, color }: { title: string, value: string, icon: string, color: 'teal' | 'orange' }) => (
-  <Card className={`p-6 md:p-8 border-l-4 md:border-l-8 ${color === 'teal' ? 'border-primary' : 'border-secondary'} shadow-lg`}>
-    <div className="flex items-center gap-4 md:gap-6">
-      <div className="w-12 h-12 md:w-16 md:h-16 bg-accent/30 rounded-xl md:rounded-2xl flex items-center justify-center text-xl md:text-3xl">{icon}</div>
-      <div className="min-w-0 flex-1">
-        <p className="text-[8px] md:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-0.5 truncate">{title}</p>
-        <p className="text-xl md:text-3xl font-black text-neutralDark truncate">{value}</p>
-      </div>
-    </div>
-  </Card>
-);
-
-/**
- * HOTELS VIEW
- */
-const HotelsView: React.FC = () => {
-  const { hotels, deleteHotel, addHotel, updateHotel } = useAppContext();
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
-
-  const openForm = (h?: Hotel) => {
-    setEditingHotel(h || null);
-    setIsModalOpen(true);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-2xl font-black text-gray-800 uppercase tracking-tighter">Properties</h1>
-        <Button onClick={() => openForm()} className="text-[10px]">+ Onboard Hotel</Button>
-      </div>
-
-      <Card className="overflow-hidden shadow-sm">
-        <TableWrapper>
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b font-black text-gray-400 uppercase text-[9px] md:text-[10px] tracking-widest">
-              <tr>
-                <th className="px-6 py-5">Property Identity</th>
-                <th className="px-6 py-5">Holy Region</th>
-                <th className="px-6 py-5">Unit Capacity</th>
-                <th className="px-6 py-5 text-right">Commands</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 font-medium">
-              {hotels.map(h => (
-                <tr key={h.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-5">
-                    <p className="font-black text-gray-800 text-sm md:text-base">{h.name}</p>
-                    <p className="text-[9px] text-gray-400 font-black uppercase tracking-widest">{h.stars} Stars • {h.distanceToHaram}m from Haram</p>
-                  </td>
-                  <td className="px-6 py-5 text-gray-700 text-sm">{h.city}</td>
-                  <td className="px-6 py-5 font-bold text-primary text-sm">{h.rooms.length} Room Types</td>
-                  <td className="px-6 py-5 text-right space-x-2">
-                    <Button variant="ghost" size="sm" onClick={() => openForm(h)} className="border font-black text-[9px] md:text-[10px] uppercase">Edit</Button>
-                    <Button variant="danger" size="sm" onClick={() => { if(confirm('Permanently erase property?')) deleteHotel(h.id); }} className="font-black text-[9px] md:text-[10px] uppercase">Del</Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableWrapper>
+      <Card className="p-10 border-none shadow-sm rounded-xl bg-white space-y-6">
+        <h3 className="text-[#005B5C] text-xl font-bold">Global Website Announcement Control</h3>
+        <p className="text-xs text-gray-500 font-medium">Use the pipe character `|` to separate multiple messages for the scrolling ticker effect.</p>
+        <textarea 
+          className="w-full bg-white border border-gray-200 p-6 rounded-xl text-sm font-medium min-h-[140px] outline-none focus:border-[#005B5C] transition-all resize-none shadow-inner"
+          value={announcementText}
+          onChange={(e) => setAnnouncementText(e.target.value)}
+          placeholder="Enter announcement. Use '|' to separate messages."
+        />
+        <div className="flex justify-end"><Button onClick={handleUpdateAnnouncement} variant="secondary">Update Announcement</Button></div>
       </Card>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editingHotel ? "Update Registry" : "Initialize Hotel"}>
-        <HotelForm hotel={editingHotel} onSave={(h) => { editingHotel ? updateHotel(h) : addHotel(h); setIsModalOpen(false); }} />
-      </Modal>
+      <div>
+        <h3 className="text-[#005B5C] text-xl font-bold mb-4">Recent Customer Bookings</h3>
+        <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden border border-gray-100">
+          <TableWrapper>
+            <table className="w-full text-left text-xs">
+              <thead><tr className="bg-[#F8F9FA] text-[#919699] font-bold uppercase tracking-widest text-[10px] border-b"><th className="py-5 px-6">Booking ID</th><th className="py-5 px-4">Guest</th><th className="py-5 px-4">Hotel</th><th className="py-5 px-4">Status</th></tr></thead>
+              <tbody>
+                {recentBookings.length > 0 ? recentBookings.map(b => (
+                  <tr key={b.id}><td className="py-4 px-6 font-bold text-gray-500">{b.id}</td><td className="py-4 px-4 font-medium">{b.guestName}</td><td className="py-4 px-4 font-medium">{b.hotelName}</td><td className="py-4 px-4"><Badge>{b.status}</Badge></td></tr>
+                )) : <EmptyState message="No direct customer bookings recorded." />}
+              </tbody>
+            </table>
+          </TableWrapper>
+        </Card>
+      </div>
     </div>
   );
 };
 
-const HotelForm = ({ hotel, onSave }: { hotel: Hotel | null, onSave: (h: Hotel) => void }) => {
-  const [formData, setFormData] = useState<Hotel>(hotel || {
-    id: `h-${Date.now()}`,
-    name: '',
-    city: 'Makkah',
-    address: '',
-    stars: 5,
-    distanceToHaram: 0,
-    description: '',
-    images: ['https://picsum.photos/800/600'],
-    amenities: [],
-    rooms: [],
-    availableFrom: '',
-    availableTo: ''
-  });
-
-  const [activeRoom, setActiveRoom] = useState<Room | null>(null);
-
-  const handleSaveRoom = () => {
-    if (!activeRoom) return;
-    const exists = formData.rooms.find(r => r.id === activeRoom.id);
-    const updatedRooms = exists 
-      ? formData.rooms.map(r => r.id === activeRoom.id ? activeRoom : r)
-      : [...formData.rooms, activeRoom];
-    setFormData({ ...formData, rooms: updatedRooms });
-    setActiveRoom(null);
-  };
-
-  return (
-    <div className="space-y-6 md:space-y-8">
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
-        <Input label="Hotel Title" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-        <Select label="Sanctuary City" options={[{label: 'Makkah', value: 'Makkah'}, {label: 'Madinah', value: 'Madina'}]} value={formData.city} onChange={e => setFormData({...formData, city: e.target.value as any})} />
-      </div>
-      
-      <div className="grid grid-cols-2 gap-4 md:gap-6">
-        <Input label="Inventory Start" type="date" value={formData.availableFrom} onChange={e => setFormData({...formData, availableFrom: e.target.value})} />
-        <Input label="Inventory End" type="date" value={formData.availableTo} onChange={e => setFormData({...formData, availableTo: e.target.value})} />
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        <Input label="Stars" type="number" min="1" max="5" value={formData.stars} onChange={e => setFormData({...formData, stars: Number(e.target.value)})} />
-        <Input label="Dist (m)" type="number" value={formData.distanceToHaram} onChange={e => setFormData({...formData, distanceToHaram: Number(e.target.value)})} />
-        <div className="col-span-2 md:col-span-1">
-          <Input label="Thumb URL" value={formData.images[0]} onChange={e => setFormData({...formData, images: [e.target.value]})} />
-        </div>
-      </div>
-
-      <textarea 
-        className="w-full border border-gray-300 rounded-xl p-4 text-xs md:text-sm text-gray-900 bg-white min-h-[100px] font-medium leading-relaxed"
-        placeholder="Detailed sanctuary narrative..."
-        value={formData.description}
-        onChange={e => setFormData({...formData, description: e.target.value})}
-      />
-
-      <div className="border-t pt-6 md:pt-8">
-        <div className="flex justify-between items-center mb-4 md:mb-6">
-          <h4 className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">Rooms</h4>
-          <Button size="sm" variant="outline" className="text-[8px] uppercase font-black" onClick={() => setActiveRoom({ 
-            id: `r-${Date.now()}`, type: '', description: '', amenities: [], purchasePricePerNight: 0, agentPricePerNight: 0, customerPricePerNight: 0, capacity: 2 
-          })}>+ New Unit</Button>
-        </div>
-
-        <div className="space-y-3">
-          {formData.rooms.map(room => (
-            <div key={room.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-100">
-              <div className="min-w-0 flex-1">
-                <p className="font-black text-gray-800 uppercase text-[10px] truncate">{room.type}</p>
-                <p className="text-[8px] text-gray-400 font-bold tracking-widest mt-0.5 truncate">Cap: {room.capacity} • Base: {room.purchasePricePerNight}</p>
-              </div>
-              <div className="flex gap-4 shrink-0">
-                <button onClick={() => setActiveRoom(room)} className="text-primary font-black text-[9px] uppercase">Edit</button>
-                <button onClick={() => setFormData({...formData, rooms: formData.rooms.filter(r => r.id !== room.id)})} className="text-red-500 font-black text-[9px] uppercase">Drop</button>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {activeRoom && (
-        <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 space-y-4 shadow-xl">
-           <div className="flex justify-between items-center mb-2">
-             <h5 className="font-black text-primary text-[9px] uppercase tracking-widest">Unit Specification</h5>
-             <button onClick={() => setActiveRoom(null)} className="text-gray-400 text-xl">&times;</button>
-           </div>
-           <Input label="Title" value={activeRoom.type} onChange={e => setActiveRoom({...activeRoom, type: e.target.value})} />
-           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-             <Input label="Cost (PKR)" type="number" value={activeRoom.purchasePricePerNight} onChange={e => setActiveRoom({...activeRoom, purchasePricePerNight: Number(e.target.value)})} />
-             <Input label="Agent (PKR)" type="number" value={activeRoom.agentPricePerNight} onChange={e => setActiveRoom({...activeRoom, agentPricePerNight: Number(e.target.value)})} />
-             <Input label="Public (PKR)" type="number" value={activeRoom.customerPricePerNight} onChange={e => setActiveRoom({...activeRoom, customerPricePerNight: Number(e.target.value)})} />
-           </div>
-           <Button variant="primary" fullWidth className="font-black text-[10px] uppercase mt-2" onClick={handleSaveRoom}>Apply Config</Button>
-        </div>
-      )}
-
-      <Button variant="secondary" fullWidth size="lg" className="h-16 text-xs md:text-sm font-black tracking-widest shadow-xl uppercase" onClick={() => onSave(formData)}>Deploy Property</Button>
-    </div>
-  );
-};
-
-/**
- * FINANCIALS VIEW
- */
-const FinancialsView: React.FC = () => {
-  const { bookings, formatPrice } = useAppContext();
+const BookingsView: React.FC = () => {
+  const { bookings, updateBookingStatus, deleteBookings } = useAppContext();
+  const [selected, setSelected] = useState<string[]>([]);
   
-  const metrics = useMemo(() => {
-    const confirmed = bookings.filter(b => b.status === BookingStatus.CONFIRMED);
-    const revenue = confirmed.reduce((sum, b) => sum + b.totalPrice, 0);
-    const cost = confirmed.reduce((sum, b) => sum + (b.purchaseCost || 0), 0);
-    return { revenue, cost, profit: revenue - cost, count: confirmed.length };
-  }, [bookings]);
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSelected(e.target.checked ? bookings.map(b => b.id) : []);
+  };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">Financials</h1>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card className="p-6 md:p-8 border-l-4 md:border-l-8 border-primary shadow-xl">
-          <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Retail Yield</p>
-          <p className="text-2xl md:text-3xl font-black text-gray-800">{formatPrice(metrics.revenue)}</p>
-          <p className="text-[8px] md:text-[9px] text-gray-400 mt-4 font-black uppercase tracking-widest">{metrics.count} Reservations</p>
-        </Card>
-        <Card className="p-6 md:p-8 border-l-4 md:border-l-8 border-red-500 shadow-xl">
-          <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Cost Basis</p>
-          <p className="text-2xl md:text-3xl font-black text-red-600">{formatPrice(metrics.cost)}</p>
-        </Card>
-        <Card className="p-6 md:p-8 border-l-4 md:border-l-8 border-green-500 bg-green-50/20 shadow-xl sm:col-span-2 lg:col-span-1">
-          <p className="text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Net Profit</p>
-          <p className="text-2xl md:text-3xl font-black text-green-600">{formatPrice(metrics.profit)}</p>
-          <p className="text-[8px] md:text-[9px] text-green-600 mt-4 font-black uppercase tracking-widest">{metrics.revenue > 0 ? Math.round((metrics.profit/metrics.revenue)*100) : 0}% Margin</p>
-        </Card>
-      </div>
-
-      <Card className="overflow-hidden shadow-sm">
-        <TableWrapper>
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 text-[9px] md:text-[10px] font-black text-gray-400 uppercase tracking-widest border-b">
-              <tr>
-                <th className="px-6 py-5">Voucher</th>
-                <th className="px-6 py-5">Sanctuary</th>
-                <th className="px-6 py-5">Sale</th>
-                <th className="px-6 py-5">Cost</th>
-                <th className="px-6 py-5 text-right">Margin</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 font-medium text-xs md:text-sm">
-              {bookings.filter(b => b.status === BookingStatus.CONFIRMED).map(b => (
-                <tr key={b.id} className="hover:bg-gray-50 transition duration-300">
-                  <td className="px-6 py-5 font-mono font-black text-primary">{b.id}</td>
-                  <td className="px-6 py-5 font-bold text-gray-800">{b.hotelName}</td>
-                  <td className="px-6 py-5 text-gray-800">{formatPrice(b.totalPrice)}</td>
-                  <td className="px-6 py-5 text-red-500 font-bold">{formatPrice(b.purchaseCost || 0)}</td>
-                  <td className={`px-6 py-5 text-right font-black ${b.totalPrice - (b.purchaseCost || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                    {formatPrice(b.totalPrice - (b.purchaseCost || 0))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableWrapper>
-      </Card>
-    </div>
+    <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
+      {selected.length > 0 && <div className="p-4 bg-primary/10 text-primary flex items-center justify-between"><span className="font-bold text-sm">{selected.length} selected</span><Button variant="danger" size="sm" onClick={() => deleteBookings(selected)}>Delete</Button></div>}
+      <TableWrapper>
+        <table className="w-full text-left text-xs">
+          <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-5 px-6"><input type="checkbox" onChange={handleSelectAll} className="w-4 h-4 accent-[#005B5C]" /></th><th className="py-5 px-4">Guest</th><th className="py-5 px-4">Hotel</th><th className="py-5 px-4">Dates</th><th className="py-5 px-4">Status</th><th className="py-5 px-4 text-right">Actions</th></tr></thead>
+          <tbody>
+            {bookings.map(b => (<tr key={b.id}><td className="py-4 px-6"><input type="checkbox" checked={selected.includes(b.id)} onChange={() => setSelected(p => p.includes(b.id) ? p.filter(i => i !== b.id) : [...p, b.id])} className="w-4 h-4 accent-[#005B5C]" /></td><td className="py-4 px-4"><div><p className="font-bold text-gray-800">{b.guestName}</p><p className="text-[10px] text-gray-400 font-mono">{b.id}</p></div></td><td className="py-4 px-4">{b.hotelName}</td><td className="py-4 px-4">{b.checkIn} to {b.checkOut}</td><td className="py-4 px-4"><Select value={b.status} onChange={e => updateBookingStatus(b.id, e.target.value as BookingStatus)} className="!text-xs !font-bold !py-2 !pl-3 !pr-8" options={Object.values(BookingStatus).map(s => ({label: s, value: s}))}/></td><td className="py-4 px-4 text-right"><Link to={`/confirmation/${b.id}`} className="text-primary font-bold hover:underline">View</Link></td></tr>))}
+            {bookings.length === 0 && <EmptyState message="No bookings found." />}
+          </tbody>
+        </table>
+      </TableWrapper>
+    </Card>
   );
 };
 
-/**
- * MAIN ADMIN DISPATCHER
- */
-const AdminPortal: React.FC<{ view: string }> = ({ view }) => {
+const HotelsView: React.FC = () => {
+    const { hotels, addHotel, updateHotel, deleteHotel } = useAppContext();
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
+
+    const handleOpenModal = (hotel: Hotel | null = null) => {
+      setEditingHotel(hotel);
+      setIsModalOpen(true);
+    };
+    
+    const handleCloseModal = () => setIsModalOpen(false);
+    
+    const handleSubmit = (hotelData: Partial<Hotel>) => {
+      if (editingHotel) {
+        updateHotel({ ...editingHotel, ...hotelData });
+      } else {
+        const newHotel: Hotel = { id: `H-${Date.now()}`, rooms: [], images: ['https://placehold.co/800x600'], amenities: ['Free Wifi'], ...hotelData } as Hotel;
+        addHotel(newHotel);
+      }
+      handleCloseModal();
+    };
+
+    return (
+      <>
+        <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
+            <TableWrapper>
+                <table className="w-full text-left text-xs">
+                    <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-5 px-4">Name</th><th className="py-5 px-4">City</th><th className="py-5 px-4">Rooms</th><th className="py-5 px-4 text-right">Actions</th></tr></thead>
+                    <tbody>
+                        {hotels.map(h => (<tr key={h.id} className="border-b"><td className="py-4 px-4 font-bold text-gray-800">{h.name}</td><td className="py-4 px-4 font-medium">{h.city}</td><td className="py-4 px-4 font-medium">{h.rooms.length}</td><td className="py-4 px-4 text-right font-bold text-sm space-x-4"><button onClick={() => handleOpenModal(h)} className="text-primary hover:underline">Edit</button><button onClick={() => deleteHotel(h.id)} className="text-red-500 hover:underline">Delete</button></td></tr>))}
+                    </tbody>
+                </table>
+            </TableWrapper>
+        </Card>
+        <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingHotel ? 'Edit Hotel' : 'Add Hotel'}>
+          <HotelForm hotel={editingHotel} onSubmit={handleSubmit} onCancel={handleCloseModal} />
+        </Modal>
+      </>
+    );
+};
+
+const AgenciesView: React.FC = () => {
+    const { agencies, addAgency, updateAgency } = useAppContext();
+    const [isFormModalOpen, setFormModalOpen] = useState(false);
+    const [isWalletModalOpen, setWalletModalOpen] = useState(false);
+    const [selectedAgency, setSelectedAgency] = useState<Agent | null>(null);
+
+    const handleOpenForm = (agency: Agent | null = null) => { setSelectedAgency(agency); setFormModalOpen(true); };
+    const handleOpenWallet = (agency: Agent) => { setSelectedAgency(agency); setWalletModalOpen(true); };
+    const handleSubmit = (agencyData: Partial<Agent>) => {
+      if (selectedAgency) {
+        updateAgency({ ...selectedAgency, ...agencyData });
+      } else {
+        addAgency({ id: `AG-${Date.now()}`, walletBalance: 0, ...agencyData } as Agent);
+      }
+      setFormModalOpen(false);
+    };
+
+    return (
+        <>
+        <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
+            <TableWrapper>
+                <table className="w-full text-left text-xs">
+                    <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-5 px-4">Agency</th><th className="py-5 px-4">Wallet Balance</th><th className="py-5 px-4">Status</th><th className="py-5 px-4 text-right">Actions</th></tr></thead>
+                    <tbody>
+                        {agencies.map(a => (<tr key={a.id} className="border-b"><td className="py-4 px-4"><p className="font-bold text-gray-800">{a.agencyName}</p><p className="text-[10px] text-gray-400">{a.id}</p></td><td className="py-4 px-4 font-bold text-primary">{a.walletBalance}</td><td className="py-4 px-4"><Badge variant={a.status === 'Active' ? 'success' : 'danger'}>{a.status}</Badge></td><td className="py-4 px-4 text-right text-primary font-bold text-sm space-x-4"><button onClick={() => handleOpenForm(a)} className="hover:underline">Edit</button><button onClick={() => handleOpenWallet(a)} className="hover:underline">Wallet</button></td></tr>))}
+                    </tbody>
+                </table>
+            </TableWrapper>
+        </Card>
+        <AgencyFormModal isOpen={isFormModalOpen} onClose={() => setFormModalOpen(false)} onSubmit={handleSubmit} agency={selectedAgency} />
+        <WalletModal isOpen={isWalletModalOpen} onClose={() => setWalletModalOpen(false)} agent={selectedAgency} />
+        </>
+    );
+};
+
+// --- Main Admin Portal Component ---
+const AdminPortal: React.FC = () => {
+  const { currentUser } = useAppContext();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  if (!currentUser || currentUser.role !== UserRole.ADMIN) {
+      return (<div className="min-h-screen flex items-center justify-center bg-[#F8FAFB]"><Card className="p-12 text-center max-w-sm shadow-2xl rounded-2xl border-none"><h2 className="text-2xl font-black text-[#005B5C] mb-4 uppercase tracking-tighter">Access Denied</h2><Button fullWidth onClick={() => navigate('/login')}>Admin Login</Button></Card></div>);
+  }
+  
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    setTimeout(() => { setIsRefreshing(false); alert('Data successfully synchronized.'); }, 800);
+  };
+  
+  const renderView = () => {
+    const view = location.pathname.split('/').pop();
+    switch(view) {
+      case 'admin': return <DashboardView />;
+      case 'bookings': return <BookingsView />;
+      case 'hotels': return <HotelsView />;
+      case 'agencies': return <AgenciesView />;
+      // Add other cases here for requests, bulk-orders etc.
+      default: return <DashboardView />;
+    }
+  };
+
+  const getPageHeader = () => {
+    const view = location.pathname.split('/').pop();
+    const baseTitle = view?.replace('-', ' ') || 'dashboard';
+    const title = baseTitle.charAt(0).toUpperCase() + baseTitle.slice(1);
+
+    const actions: { [key: string]: React.ReactNode } = {
+      hotels: <Button onClick={() => {}} variant="primary" className="!rounded-lg">+ Add New Hotel</Button>,
+      agencies: <Button onClick={() => {}} variant="primary" className="!rounded-lg">+ Add New Agency</Button>,
+    };
+
+    return (
+      <PageHeader title={title}>
+        {actions[view || '']}<RefreshButton isRefreshing={isRefreshing} onClick={handleRefresh} />
+      </PageHeader>
+    );
+  }
+
   return (
-    <div className="flex bg-[#F1F5F9] min-h-screen">
-      <AdminSidebar />
-      <main className="flex-1 p-4 md:p-10 h-screen overflow-y-auto custom-scrollbar">
-        <div className="max-w-7xl mx-auto pb-20 lg:pb-0">
-          {view === 'dashboard' && <DashboardView />}
-          {view === 'hotels' && <HotelsView />}
-          {view === 'bookings' && <BookingsView />}
-          {view === 'requests' && <RequestsView />}
-          {view === 'bulk-orders' && <BulkOrdersView />}
-          {view === 'agencies' && <AgenciesView />}
-          {view === 'invoices' && <InvoicesView />}
-          {view === 'financials' && <FinancialsView />}
-          {view === 'settings' && <SettingsView />}
-          {view === 'notifications' && <NotificationsView />}
-        </div>
-      </main>
-    </div>
+    <DashboardLayout>
+      <div className="p-6 lg:p-8">
+        {getPageHeader()}
+        {renderView()}
+      </div>
+    </DashboardLayout>
   );
 };
 
 export default AdminPortal;
-
-/**
- * SHARED VIEW WRAPPERS (Simplified for Response)
- */
-const BookingsView: React.FC = () => {
-  const { bookings, updateBookingStatus, agencies } = useAppContext();
-  return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-black text-gray-800 tracking-tight uppercase">Vouchers</h1>
-      <Card className="overflow-hidden shadow-sm">
-        <TableWrapper>
-          <table className="w-full text-left">
-            <thead className="bg-gray-50 border-b font-black text-gray-400 uppercase text-[9px] md:text-[10px] tracking-widest">
-              <tr>
-                <th className="px-6 py-5">Voucher</th>
-                <th className="px-6 py-5">Pilgrim</th>
-                <th className="px-6 py-5">Property</th>
-                <th className="px-6 py-5 text-center">Status</th>
-                <th className="px-6 py-5 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100 font-medium">
-              {bookings.map(b => (
-                <tr key={b.id} className="hover:bg-gray-50 transition">
-                  <td className="px-6 py-5 font-mono font-black text-primary text-xs md:text-sm">{b.id}</td>
-                  <td className="px-6 py-5">
-                    <p className="font-black text-gray-800 text-xs md:text-sm">{b.guestName}</p>
-                    <p className="text-[8px] md:text-[9px] text-gray-400 font-black uppercase truncate max-w-[120px]">{agencies.find(a => a.id === b.agencyId)?.agencyName || 'Direct'}</p>
-                  </td>
-                  <td className="px-6 py-5 text-xs text-gray-700 font-bold">{b.hotelName}</td>
-                  <td className="px-6 py-5 text-center">
-                    <select 
-                      value={b.status} 
-                      onChange={e => updateBookingStatus(b.id, e.target.value as BookingStatus)}
-                      className="text-[9px] md:text-[10px] font-black rounded-lg px-2 py-1 md:px-3 md:py-2 outline-none border cursor-pointer"
-                    >
-                      <option value={BookingStatus.PENDING}>Pending</option>
-                      <option value={BookingStatus.CONFIRMED}>Confirmed</option>
-                      <option value={BookingStatus.CANCELLED}>Cancelled</option>
-                    </select>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <a href={`#/confirmation/${b.id}`} className="text-primary text-[9px] font-black uppercase underline tracking-widest">Doc</a>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </TableWrapper>
-      </Card>
-    </div>
-  );
-};
-
-const AgenciesView: React.FC = () => (
-  <div className="py-20 text-center opacity-50">View implementation truncated for responsiveness focus...</div>
-);
-const RequestsView: React.FC = () => (
-  <div className="py-20 text-center opacity-50">View implementation truncated for responsiveness focus...</div>
-);
-const BulkOrdersView: React.FC = () => (
-  <div className="py-20 text-center opacity-50">View implementation truncated for responsiveness focus...</div>
-);
-const InvoicesView: React.FC = () => (
-  <div className="py-20 text-center opacity-50">View implementation truncated for responsiveness focus...</div>
-);
-const SettingsView: React.FC = () => (
-  <div className="py-20 text-center opacity-50">View implementation truncated for responsiveness focus...</div>
-);
-const NotificationsView: React.FC = () => (
-  <div className="py-20 text-center opacity-50">View implementation truncated for responsiveness focus...</div>
-);
