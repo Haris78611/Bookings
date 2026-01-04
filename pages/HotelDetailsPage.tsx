@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
@@ -70,7 +69,7 @@ const HotelDetailsPage: React.FC = () => {
 
   return (
     <div className="bg-[#F8FAFA] min-h-screen">
-      {/* 1. Header Section - Fluid Typography */}
+      {/* 1. Header Section */}
       <div className="bg-white pt-8 pb-10 md:pt-12 md:pb-16 border-b border-gray-100 shadow-sm relative z-30">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 md:gap-10">
@@ -93,13 +92,11 @@ const HotelDetailsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Content Area - Fully Fluid */}
       <div className="container mx-auto px-4 md:px-6 py-10 md:py-20">
-        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
-          {/* Left Column: Primary Content */}
-          <div className="flex-1 flex flex-col gap-12 md:gap-24">
-            
-            {/* Gallery Block - Responsive stacking */}
+        <div className="max-w-5xl mx-auto">
+          {/* Main Column */}
+          <div className="flex flex-col gap-12 md:gap-24">
+            {/* Gallery Block */}
             <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 relative z-10">
               <div className="md:col-span-2 relative overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-auto md:h-[520px] shadow-xl md:shadow-2xl border-2 md:border-4 border-white">
                  <img src={hotel.images[0]} className="w-full h-full object-cover" alt={hotel.name} />
@@ -134,7 +131,7 @@ const HotelDetailsPage: React.FC = () => {
               </div>
             </section>
 
-            {/* Units Selection */}
+            {/* Allocation Units */}
             <section className="flex flex-col gap-8 md:gap-16 pb-12 md:pb-20 relative z-10">
               <h2 className="text-2xl md:text-4xl font-black text-[#006D77] tracking-tighter flex items-center gap-4 md:gap-8 uppercase">
                 Allocation
@@ -142,7 +139,7 @@ const HotelDetailsPage: React.FC = () => {
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 {hotel.rooms.map(room => (
-                  <Card key={room.id} className="bg-white overflow-hidden flex flex-col items-start hover:shadow-2xl transition-all duration-700 border-none shadow-md">
+                  <Card key={room.id} className="bg-white overflow-hidden flex flex-col items-start hover:shadow-2xl transition-all duration-700 border-none shadow-md rounded-none">
                     <div className="w-full h-48 md:h-56 relative overflow-hidden">
                        <img src={room.image || hotel.images[0]} className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt={room.type} />
                        <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-white/95 backdrop-blur-md px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest text-[#006D77] shadow-lg">Registry Unit</div>
@@ -163,50 +160,13 @@ const HotelDetailsPage: React.FC = () => {
               </div>
             </section>
           </div>
-
-          {/* Right Column: Sidebar - Stacks on mobile */}
-          <aside className="w-full lg:w-1/3">
-            <div className="sticky top-24 md:top-32 flex flex-col gap-8 md:gap-10">
-              <Card className="p-8 md:p-12 bg-[#005B5C] text-white border-none shadow-2xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 md:w-48 h-32 md:h-48 bg-white/5 rounded-full -mr-16 md:-mr-24 -mt-16 md:-mt-24 pointer-events-none"></div>
-                
-                <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12 relative z-10">
-                   <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-3xl border border-white/10 shadow-xl">🛡️</div>
-                   <div>
-                     <h3 className="text-lg md:text-xl font-black tracking-tight leading-none uppercase">Support Desk</h3>
-                     <p className="text-[8px] md:text-[9px] text-white/40 font-black uppercase tracking-[0.4em] mt-2 md:mt-3">Authorized Channel</p>
-                   </div>
-                </div>
-                
-                <p className="text-sm md:text-base text-white/80 mb-8 md:mb-12 font-medium leading-relaxed italic opacity-90 relative z-10">"Registry synchronization bridge active 24/7 for guaranteed arrival clearance."</p>
-                
-                <div className="space-y-4 md:space-y-6 mb-8 md:mb-12 relative z-10">
-                  <div className="flex items-center gap-4 md:gap-5 p-4 md:p-5 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 group hover:bg-white/10 transition-all cursor-pointer">
-                    <span className="text-xl md:text-2xl opacity-50">📞</span>
-                    <span className="font-black tracking-tight text-white/95 text-sm md:text-lg truncate">{hotel.address.slice(0, 15)}...</span>
-                  </div>
-                  <div className="flex items-center gap-4 md:gap-5 p-4 md:p-5 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 group hover:bg-white/10 transition-all cursor-pointer">
-                    <span className="text-xl md:text-2xl opacity-50">✉️</span>
-                    <span className="font-black uppercase tracking-tighter truncate text-white/95 text-xs md:text-sm">support@umrahstay.com</span>
-                  </div>
-                </div>
-                
-                <Button variant="outline" fullWidth className="h-12 md:h-16 bg-white text-[#005B5C] border-none font-black uppercase text-[9px] md:text-xs tracking-widest rounded-xl md:rounded-2xl">Verify GDS Vouchers</Button>
-              </Card>
-              
-              <div className="p-6 md:p-8 text-center bg-gray-100/50 rounded-2xl md:rounded-[2rem] border border-dashed border-gray-200">
-                <p className="text-[8px] md:text-[9px] text-gray-400 font-black uppercase tracking-[0.5em]">UmrahStay Registry v2.5</p>
-              </div>
-            </div>
-          </aside>
         </div>
       </div>
 
-      {/* Booking Modal - Optimized for all screens */}
+      {/* Booking Modal */}
       <Modal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} title="Confirm Your Stay">
         <form onSubmit={confirmBooking} className="flex flex-col gap-6 md:gap-10">
           <div className="space-y-6 md:space-y-8">
-            {/* Asset Summary */}
             <div className="bg-[#F0F7F8] p-4 md:p-6 rounded-xl md:rounded-[2rem] border border-[#DCEEF0] flex items-center gap-4 md:gap-6 shadow-inner">
                <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-2xl overflow-hidden shadow-xl border-2 md:border-4 border-white shrink-0">
                   <img src={selectedRoom?.image || hotel.images[0]} className="w-full h-full object-cover" alt="Unit" />
@@ -217,68 +177,20 @@ const HotelDetailsPage: React.FC = () => {
                </div>
             </div>
 
-            {/* Date Registry */}
             <div className="grid grid-cols-2 gap-4 md:gap-6">
-              <Input 
-                label="Arrival" 
-                type="date" 
-                required
-                value={bookingDetails.checkIn} 
-                onChange={e => setBookingDetails({...bookingDetails, checkIn: e.target.value})} 
-              />
-              <Input 
-                label="Departure" 
-                type="date" 
-                required
-                value={bookingDetails.checkOut} 
-                onChange={e => setBookingDetails({...bookingDetails, checkOut: e.target.value})} 
-              />
+              <Input label="Arrival" type="date" required value={bookingDetails.checkIn} onChange={e => setBookingDetails({...bookingDetails, checkIn: e.target.value})} />
+              <Input label="Departure" type="date" required value={bookingDetails.checkOut} onChange={e => setBookingDetails({...bookingDetails, checkOut: e.target.value})} />
             </div>
 
-            {/* Pilgrim Details */}
             <div className="space-y-4 md:space-y-6">
-               <Input 
-                label="Full Legal Name" 
-                placeholder="As per Passport..." 
-                required
-                value={bookingDetails.name} 
-                onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} 
-               />
+               <Input label="Full Legal Name" placeholder="As per Passport..." required value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} />
                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                <Input 
-                  label="Email Registry" 
-                  type="email"
-                  placeholder="pilgrim@registry.com" 
-                  required
-                  value={bookingDetails.email} 
-                  onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} 
-                />
-                <Input 
-                  label="Contact Vector" 
-                  type="tel"
-                  placeholder="+XX XXXXXXXX" 
-                  required
-                  value={bookingDetails.phone} 
-                  onChange={e => setBookingDetails({...bookingDetails, phone: e.target.value})} 
-                />
+                <Input label="Email Registry" type="email" placeholder="pilgrim@registry.com" required value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} />
+                <Input label="Contact Vector" type="tel" placeholder="+XX XXXXXXXX" required value={bookingDetails.phone} onChange={e => setBookingDetails({...bookingDetails, phone: e.target.value})} />
                </div>
-            </div>
-
-            {/* Promo Code */}
-            <div className="flex gap-2 md:gap-4 items-end">
-               <div className="flex-1">
-                 <Input 
-                    label="Promo Registry Code" 
-                    placeholder="Enter Coupon..." 
-                    value={promoCode} 
-                    onChange={e => setPromoCode(e.target.value.toUpperCase())}
-                 />
-               </div>
-               <Button type="button" variant="outline" className="h-10 md:h-12 border-2 px-4 md:px-6 text-[9px] md:text-[10px]">Apply</Button>
             </div>
           </div>
 
-          {/* Grand Total - Above Confirm Button */}
           <div className="pt-6 md:pt-8 border-t border-gray-100 mt-auto flex flex-col gap-4">
              <div className="flex justify-between items-end px-1">
                 <div>
@@ -287,27 +199,12 @@ const HotelDetailsPage: React.FC = () => {
                     {formatPrice(selectedRoom?.customerPricePerNight || 0)}
                   </div>
                 </div>
-                <div className="hidden sm:block text-[8px] md:text-[10px] text-secondary font-black uppercase tracking-widest italic mb-1">
-                   Guaranteed Rate
-                </div>
+                <div className="hidden sm:block text-[8px] md:text-[10px] text-secondary font-black uppercase tracking-widest italic mb-1">Guaranteed Rate</div>
              </div>
 
              <div className="flex gap-2 md:gap-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="flex-1 h-12 md:h-14 uppercase font-black text-[9px] md:text-[11px] tracking-widest border-2" 
-                  onClick={() => setIsBookingModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button 
-                  type="submit" 
-                  variant="teal" 
-                  className="flex-[2] h-12 md:h-14 uppercase font-black text-[9px] md:text-[11px] tracking-[0.1em] md:tracking-[0.2em] shadow-xl"
-                >
-                  Confirm Booking
-                </Button>
+                <Button type="button" variant="outline" className="flex-1 h-12 md:h-14 uppercase font-black text-[9px] md:text-[11px] tracking-widest border-2" onClick={() => setIsBookingModalOpen(false)}>Cancel</Button>
+                <Button type="submit" variant="teal" className="flex-[2] h-12 md:h-14 uppercase font-black text-[9px] md:text-[11px] tracking-[0.1em] md:tracking-[0.2em] shadow-xl">Confirm Booking</Button>
              </div>
           </div>
         </form>

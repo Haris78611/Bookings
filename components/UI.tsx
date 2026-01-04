@@ -86,7 +86,7 @@ export const Badge: React.FC<{ children: React.ReactNode; variant?: 'success' | 
 export const Card: React.FC<{ children: React.ReactNode; className?: string; onClick?: () => void }> = ({ children, className, onClick }) => (
   <div 
     onClick={onClick}
-    className={`bg-white rounded-[1.5rem] md:rounded-[2.5rem] border border-gray-100 transition-shadow duration-300 ${className}`}
+    className={`bg-white border border-gray-100 transition-shadow duration-300 ${className}`}
   >
     {children}
   </div>
@@ -105,7 +105,7 @@ export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
     {label && <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">{label}</label>}
     <div className="relative">
       <input 
-        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-xl md:rounded-2xl focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none transition-all font-bold text-xs md:text-sm ${className}`}
+        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-none focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none transition-all font-bold text-xs md:text-sm ${className}`}
         {...props}
       />
       {props.type === 'date' && (
@@ -125,7 +125,7 @@ export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & {
     {label && <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">{label}</label>}
     <div className="relative">
       <select 
-        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-xl md:rounded-2xl focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none appearance-none transition-all font-bold text-xs md:text-sm ${className}`}
+        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-none focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none appearance-none transition-all font-bold text-xs md:text-sm ${className}`}
         {...props}
       >
         {options.map((opt, i) => (
@@ -152,14 +152,13 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center bg-black/80 md:bg-black/95 p-0 md:p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center bg-black/90 p-0 md:p-4 animate-in fade-in duration-200">
       <div 
-        className="bg-white rounded-t-[2rem] md:rounded-[2rem] shadow-[0_50px_100px_rgba(0,0,0,0.9)] w-full max-w-xl flex flex-col overflow-hidden relative border border-white/10 h-[90vh] md:h-auto md:max-h-[85vh]"
+        className="bg-white shadow-[0_50px_100px_rgba(0,0,0,0.6)] w-full max-w-xl flex flex-col overflow-hidden relative h-[90vh] md:h-auto md:max-h-[85vh] rounded-none"
       >
-        {/* Rigid Header */}
         <div className="px-6 py-4 md:px-8 md:py-6 border-b bg-white shrink-0 flex justify-between items-center z-50">
           <div className="flex items-center gap-3 md:gap-4">
-             <div className="w-8 h-8 md:w-10 md:h-10 bg-[#005B5C] rounded-lg md:rounded-xl flex items-center justify-center text-lg md:text-xl shadow-lg shadow-[#005B5C]/20">🕋</div>
+             <div className="w-8 h-8 md:w-10 md:h-10 bg-[#005B5C] rounded-none flex items-center justify-center text-lg md:text-xl shadow-lg shadow-[#005B5C]/20">🕋</div>
              <div>
                 <h3 className="text-sm md:text-lg font-black text-[#005B5C] uppercase tracking-tight leading-none">{title}</h3>
                 <p className="text-[7px] md:text-[9px] text-gray-400 font-black uppercase tracking-[0.3em] mt-1 opacity-60">Verified Registry Inquiry</p>
@@ -171,7 +170,6 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
           >&times;</button>
         </div>
 
-        {/* Content Body - Allowing scroll */}
         <div className="flex-1 bg-white p-6 md:p-8 overflow-y-auto custom-scrollbar">
            {children}
         </div>

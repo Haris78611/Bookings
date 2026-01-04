@@ -27,8 +27,8 @@ export const Header: React.FC = () => {
           <nav className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <Link to="/" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Home</Link>
             <Link to="/search" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Hotels</Link>
-            <Link to="/my-bookings" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Bookings</Link>
-            <Link to="/track" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Verify</Link>
+            <Link to="/my-bookings" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">My Bookings</Link>
+            <Link to="/track" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Track Booking</Link>
           </nav>
 
           {/* Right-side Tools */}
@@ -73,8 +73,8 @@ export const Header: React.FC = () => {
               {[
                 { label: 'Home Dashboard', path: '/' },
                 { label: 'Hotels Catalog', path: '/search' },
-                { label: 'Personal Bookings', path: '/my-bookings' },
-                { label: 'Voucher Verification', path: '/track' },
+                { label: 'My Bookings', path: '/my-bookings' },
+                { label: 'Track Booking', path: '/track' },
                 { label: 'Global Support', path: '/support' },
               ].map(item => (
                 <Link 
@@ -127,7 +127,7 @@ export const Footer: React.FC = () => {
           <h4 className="font-bold mb-6 text-[#E29578] text-[10px] uppercase tracking-widest">Core Portal</h4>
           <ul className="text-gray-400 text-xs space-y-4 font-black uppercase tracking-widest">
             <li><Link to="/search" className="hover:text-white transition">Hotels Catalog</Link></li>
-            <li><Link to="/track" className="hover:text-white transition">Verify Voucher</Link></li>
+            <li><Link to="/track" className="hover:text-white transition">Track Booking</Link></li>
             <li><Link to="/support" className="hover:text-white transition">Global Support</Link></li>
           </ul>
         </div>
@@ -163,7 +163,7 @@ export const AdminSidebar: React.FC = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: '📊' },
-    { label: 'Bookings', path: '/admin/bookings', icon: '🎫' },
+    { label: 'My Bookings', path: '/admin/bookings', icon: '🎫' },
     { label: 'Requests', path: '/admin/requests', icon: '📩' },
     { label: 'Bulk Orders', path: '/admin/bulk-orders', icon: '📦' },
     { label: 'Hotels', path: '/admin/hotels', icon: '🏨' },
