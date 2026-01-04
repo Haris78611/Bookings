@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { Button, StarRating, Badge, LoadingSpinner } from '../components/UI';
+import { Button, LoadingSpinner, Card } from '../components/UI';
 
 const SearchPage: React.FC = () => {
   const { hotels, formatPrice } = useAppContext();
@@ -11,14 +11,14 @@ const SearchPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [filters, setFilters] = useState({
     city: 'All',
-    priceRange: 500000,
-    distanceRange: 2000,
+    priceRange: 1000000,
+    distanceRange: 3000,
     minStars: 0,
     sortBy: 'price-asc'
   });
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 800);
+    const timer = setTimeout(() => setIsLoading(false), 600);
     return () => clearTimeout(timer);
   }, []);
 
@@ -40,148 +40,85 @@ const SearchPage: React.FC = () => {
     return result;
   }, [hotels, filters]);
 
-  if (isLoading) return <div className="min-h-screen bg-[#F8F9FA]"><LoadingSpinner /></div>;
+  if (isLoading) return <div className="min-h-screen bg-[#f2f4f5]"><LoadingSpinner /></div>;
 
   return (
-    <div className="bg-[#F8F9FA] min-h-screen py-16">
-      <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-12">
-        
-        {/* Sidebar Filter Card - Restored Styling with Enhancements */}
-        <div className="w-full lg:w-80 shrink-0">
-          <div className="bg-white p-8 rounded-3xl shadow-xl shadow-primary/5 border-2 border-primary/5 sticky top-28 overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-primary/5 rounded-full -mr-12 -mt-12"></div>
+    <div className="bg-[#f2f4f5] min-h-screen py-16">
+      <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
+        {/* Sidebar Filters */}
+        <div className="w-full lg:w-72 shrink-0">
+          <div className="bg-white p-6 rounded-md shadow-sm border border-gray-100 sticky top-28">
+            <div className="flex justify-between items-center mb-6 border-b border-gray-50 pb-3">
+               <h3 className="font-bold text-sm text-[#006D77] uppercase tracking-wider">Refine Hotels</h3>
+               <button 
+                  className="text-[10px] font-black text-secondary uppercase hover:underline"
+                  onClick={() => setFilters({ city: 'All', priceRange: 1000000, distanceRange: 3000, minStars: 0, sortBy: 'price-asc' })}
+               >
+                 Reset
+               </button>
+            </div>
             
-            <h3 className="font-black text-xl text-[#006D77] mb-8 uppercase text-xs tracking-[0.2em] relative">Refine Catalog</h3>
-            
-            <div className="space-y-10 relative">
+            <div className="space-y-6">
               <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Target Region</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2.5">Location</label>
                 <select 
-                  className="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-bold text-gray-700 outline-none shadow-inner"
+                  className="block w-full p-2 bg-gray-50 border border-gray-100 rounded text-xs font-bold text-neutralDark outline-none"
                   value={filters.city}
                   onChange={(e) => setFilters({...filters, city: e.target.value})}
                 >
-                  <option value="All">All Regions</option>
+                  <option value="All">All Cities</option>
                   <option value="Makkah">Makkah</option>
-                  <option value="Madina">Madina</option>
+                  <option value="Madina">Madinah</option>
                 </select>
               </div>
 
               <div>
-                <label className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                  Price Ceiling <span>{formatPrice(filters.priceRange)}</span>
+                <label className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2.5">
+                  Stars
                 </label>
-                <input 
-                  type="range" min="0" max="1000000" step="10000"
-                  value={filters.priceRange}
-                  onChange={(e) => setFilters({...filters, priceRange: Number(e.target.value)})}
-                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-                <div className="mt-3 flex justify-between text-[9px] font-black text-[#006D77] opacity-60">
-                  <span>PKR 0</span>
-                  <span>1M+</span>
+                <div className="flex gap-1">
+                   {[3, 4, 5].map(star => (
+                     <button 
+                        key={star}
+                        onClick={() => setFilters({...filters, minStars: star})}
+                        className={`flex-1 py-1.5 rounded-md text-[10px] font-bold transition-all border ${filters.minStars === star ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100 hover:border-primary'}`}
+                     >
+                       {star}★
+                     </button>
+                   ))}
                 </div>
               </div>
 
               <div>
-                <label className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                  Distance: <span>{filters.distanceRange}m</span>
-                </label>
-                <input 
-                  type="range" min="0" max="3000" step="100"
-                  value={filters.distanceRange}
-                  onChange={(e) => setFilters({...filters, distanceRange: Number(e.target.value)})}
-                  className="w-full h-1.5 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-primary"
-                />
-                <div className="mt-3 flex justify-between text-[9px] font-black text-[#006D77] opacity-60">
-                  <span>Direct</span>
-                  <span>3km</span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Min Stars</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[3, 4, 5].map(s => (
-                    <button 
-                      key={s} 
-                      onClick={() => setFilters({...filters, minStars: s})}
-                      className={`py-2 rounded-xl border-2 text-xs font-bold transition-all ${filters.minStars === s ? 'bg-[#006D77] text-white border-[#006D77] shadow-lg shadow-[#006D77]/20' : 'bg-white text-gray-400 border-gray-100 hover:border-primary/20'}`}
-                    >
-                      {s}★
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Display Logic</label>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2.5">Sorting</label>
                 <select 
-                  className="w-full bg-gray-50 border-none rounded-xl p-3 text-sm font-bold text-gray-700 outline-none shadow-inner"
+                  className="block w-full p-2 bg-gray-50 border border-gray-100 rounded text-xs font-bold text-neutralDark outline-none"
                   value={filters.sortBy}
                   onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
                 >
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
+                  <option value="price-asc">Price Low-High</option>
+                  <option value="price-desc">Price High-Low</option>
                 </select>
               </div>
             </div>
-
-            <Button 
-              variant="outline" fullWidth className="mt-12 rounded-xl py-3 font-black text-[10px] uppercase tracking-widest hover:bg-primary/5"
-              onClick={() => setFilters({ city: 'All', priceRange: 500000, distanceRange: 2000, minStars: 0, sortBy: 'price-asc' })}
-            >
-              Reset Filters
-            </Button>
           </div>
         </div>
 
         {/* Results Grid */}
         <div className="flex-1">
-          <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <h1 className="text-4xl font-black text-[#006D77] tracking-tight">Hotel Directory</h1>
-              <p className="text-gray-400 font-bold text-sm mt-2 uppercase tracking-widest">{filteredHotels.length} Verified Properties Found</p>
-            </div>
-            <div className="bg-primary/5 px-4 py-2 rounded-lg border border-primary/10 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-              <span className="text-[10px] font-black text-primary uppercase tracking-widest">Live Inventory</span>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-black text-[#006D77] tracking-tight uppercase">Verified Hotels</h1>
+            <p className="text-gray-400 font-bold text-xs mt-1 uppercase tracking-widest">{filteredHotels.length} Properties matched</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {filteredHotels.map(hotel => (
-              <div key={hotel.id} className="bg-white rounded-2xl shadow-lg overflow-hidden border border-gray-50 flex flex-col hover:shadow-2xl transition duration-500 group">
-                <div className="relative h-64 overflow-hidden">
-                  <img src={hotel.images[0]} alt={hotel.name} className="w-full h-full object-cover group-hover:scale-110 transition duration-700" />
-                  <div className="absolute top-4 right-4"><Badge variant="star">{hotel.stars}-Star</Badge></div>
-                  <div className="absolute bottom-4 left-4">
-                    <div className="bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-[9px] font-black text-primary uppercase tracking-widest shadow-sm">
-                      {hotel.distanceToHaram}m to Haram
-                    </div>
-                  </div>
-                </div>
-                <div className="p-8 flex-1 flex flex-col">
-                  <h3 className="text-xl font-bold text-[#006D77] leading-tight mb-2 group-hover:text-secondary transition">{hotel.name}</h3>
-                  <div className="flex items-center text-sm text-gray-500 mb-6 font-medium">
-                    <span className="mr-2 text-[#E29578]">📍</span>
-                    <span>{hotel.city} Sanctuary</span>
-                  </div>
-                  <div className="mt-auto pt-8 border-t border-gray-50 flex justify-between items-center">
-                    <div>
-                      <span className="text-[11px] text-gray-400 block font-bold uppercase tracking-widest mb-1">Starts from</span>
-                      <span className="text-2xl font-black text-[#006D77]">{formatPrice(hotel.rooms[0]?.customerPricePerNight || 0)}</span>
-                    </div>
-                    <Button variant="teal" className="rounded-xl px-10 h-12 shadow-lg shadow-primary/10" onClick={() => navigate(`/hotel/${hotel.id}`)}>Details</Button>
-                  </div>
-                </div>
-              </div>
+              <HotelCard key={hotel.id} hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
             ))}
             {filteredHotels.length === 0 && (
-              <div className="col-span-full py-32 text-center bg-white rounded-[3rem] border-2 border-dashed border-gray-100">
-                <div className="text-8xl mb-6">🕋</div>
-                <h3 className="text-2xl font-black text-gray-300 uppercase tracking-widest">No properties match your refined search</h3>
-              </div>
+               <div className="col-span-full py-20 text-center bg-white rounded-md border border-dashed border-gray-200">
+                  <p className="text-gray-400 font-bold uppercase tracking-widest text-sm">No results match your criteria.</p>
+               </div>
             )}
           </div>
         </div>
@@ -189,5 +126,64 @@ const SearchPage: React.FC = () => {
     </div>
   );
 };
+
+const HotelCard = ({ hotel, formatPrice, navigate }: any) => (
+  <Card 
+    className="bg-white overflow-hidden border border-gray-100 flex flex-col h-full transition-shadow duration-300 group cursor-pointer shadow-md rounded-md" 
+    onClick={() => navigate(`/hotel/${hotel.id}`)}
+  >
+    <div className="relative h-52 overflow-hidden shrink-0">
+      <img 
+        src={hotel.images[0] || 'https://images.unsplash.com/photo-1564769625905-50e93615e769?auto=format&fit=crop&q=60&w=800'} 
+        alt={hotel.name} 
+        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+      />
+      <div className="absolute top-0 right-0 bg-[#E29578] text-white px-3 py-1 text-[11px] font-bold">
+        {hotel.stars}-Star
+      </div>
+    </div>
+
+    <div className="p-6 flex-1 flex flex-col">
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="text-[17px] font-bold text-[#006D77] tracking-tight leading-tight flex-1">
+          {hotel.name}
+        </h3>
+        <div className="flex gap-0.5 ml-3 shrink-0">
+          {[...Array(5)].map((_, i) => (
+            <span key={i} className={`text-sm ${i < hotel.stars ? 'text-[#FFCC00]' : 'text-gray-200'}`}>★</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="flex items-center text-[12px] text-gray-500 mb-5 font-medium">
+        <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5 mr-1.5 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+        <span>{hotel.city} - {hotel.distanceToHaram}m from Haram</span>
+      </div>
+
+      <p className="text-gray-500 text-[13px] mb-8 line-clamp-3 leading-relaxed font-normal opacity-90 flex-1">
+        {hotel.description}
+      </p>
+      
+      <div className="pt-5 border-t border-gray-50 flex justify-between items-end">
+        <div>
+          <span className="text-[11px] text-gray-400 block font-medium mb-1">Starts from</span>
+          <div className="text-[#006D77] font-bold whitespace-nowrap">
+            <span className="text-[18px]">{formatPrice(hotel.rooms[0]?.customerPricePerNight || 0)}</span>
+            <span className="text-[13px] text-gray-500 font-medium lowercase">/night</span>
+          </div>
+        </div>
+        <button 
+          className="bg-[#006D77] hover:bg-[#005c65] text-white px-6 py-2.5 rounded-md font-bold text-[13px] transition-all shadow-sm active:scale-95"
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/hotel/${hotel.id}`);
+          }}
+        >
+          View Details
+        </button>
+      </div>
+    </div>
+  </Card>
+);
 
 export default SearchPage;

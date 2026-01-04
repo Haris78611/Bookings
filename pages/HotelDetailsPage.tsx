@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { Button, Modal, Input, AmenityPill, StarRating, Card } from '../components/UI';
+import { Button, Modal, Input, AmenityPill, StarRating, Card, Badge } from '../components/UI';
 import { BookingStatus } from '../types';
 
 const HotelDetailsPage: React.FC = () => {
@@ -14,42 +14,54 @@ const HotelDetailsPage: React.FC = () => {
   const [selectedRoomId, setSelectedRoomId] = useState<string | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [promoCode, setPromoCode] = useState('');
-  const [bookingDetails, setBookingDetails] = useState({ name: '', email: '', phone: '', checkIn: '', checkOut: '' });
+  const [bookingDetails, setBookingDetails] = useState({ 
+    name: '', 
+    email: '', 
+    phone: '', 
+    checkIn: '2026-03-01', 
+    checkOut: '2026-04-01' 
+  });
 
-  if (!hotel) return <div className="p-20 text-center text-2xl font-bold">Sanctuary not found in registry.</div>;
+  if (!hotel) return (
+    <div className="p-10 md:p-20 text-center min-h-screen flex flex-col items-center justify-center bg-neutralLight">
+      <h2 className="text-xl md:text-2xl font-bold text-[#006D77]">Registry Entry Not Found</h2>
+      <Button variant="outline" className="mt-6" onClick={() => navigate('/search')}>Return to Catalog</Button>
+    </div>
+  );
 
   const handleBookNow = (roomId: string) => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
+    if (!currentUser) { navigate('/login'); return; }
     setSelectedRoomId(roomId);
     setIsBookingModalOpen(true);
   };
 
-  const confirmBooking = () => {
+  const confirmBooking = (e: React.FormEvent) => {
+    e.preventDefault();
     const room = hotel.rooms.find(r => r.id === selectedRoomId);
     if (!room) return;
 
-    const bookingId = `BK${Date.now().toString().slice(-10)}`;
-    const newBooking = {
+    if (!bookingDetails.name || !bookingDetails.email || !bookingDetails.phone) {
+      alert("Mandatory Registry Data Missing.");
+      return;
+    }
+
+    const bookingId = `BK${Math.floor(100000000000 + Math.random() * 900000000000)}`;
+    addBooking({
       id: bookingId,
       hotelId: hotel.id,
       hotelName: hotel.name,
       roomId: room.id,
       roomType: room.type,
-      checkIn: bookingDetails.checkIn || new Date().toISOString().split('T')[0],
-      checkOut: bookingDetails.checkOut || new Date(Date.now() + 86400000).toISOString().split('T')[0],
-      guestName: bookingDetails.name || currentUser?.name || '',
-      guestEmail: bookingDetails.email || currentUser?.email || '',
-      guestPhone: bookingDetails.phone || '',
-      totalPrice: room.customerPricePerNight, 
+      checkIn: bookingDetails.checkIn,
+      checkOut: bookingDetails.checkOut,
+      guestName: bookingDetails.name,
+      guestEmail: bookingDetails.email,
+      guestPhone: bookingDetails.phone,
+      totalPrice: Number(room.customerPricePerNight) || 0, 
       status: BookingStatus.PENDING,
       userId: currentUser?.id,
       createdAt: new Date().toISOString()
-    };
-
-    addBooking(newBooking);
+    });
     setIsBookingModalOpen(false);
     navigate(`/confirmation/${bookingId}`);
   };
@@ -57,134 +69,248 @@ const HotelDetailsPage: React.FC = () => {
   const selectedRoom = hotel.rooms.find(r => r.id === selectedRoomId);
 
   return (
-    <div className="bg-[#F8F9FA] min-h-screen">
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start gap-6">
-            <div className="space-y-2">
-              <h1 className="text-3xl md:text-4xl font-bold text-[#006D77] tracking-tight">{hotel.name}</h1>
-              <div className="flex items-center gap-4 flex-wrap">
-                <StarRating count={hotel.stars} />
-                <span className="text-sm font-semibold text-gray-500">{hotel.stars.toFixed(1)} Stars</span>
+    <div className="bg-[#F8FAFA] min-h-screen">
+      {/* 1. Header Section - Fluid Typography */}
+      <div className="bg-white pt-8 pb-10 md:pt-12 md:pb-16 border-b border-gray-100 shadow-sm relative z-30">
+        <div className="container mx-auto px-4 md:px-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6 md:gap-10">
+            <div className="space-y-3 md:space-y-5 max-w-2xl">
+              <div className="flex items-center gap-3 md:gap-4">
+                 <Badge variant="info" className="bg-[#006D77] text-white px-4 md:px-5 py-1.5 md:py-2 text-[8px] md:text-[10px] font-black tracking-widest rounded-full">{hotel.stars}-STAR REGISTRY</Badge>
+                 <StarRating count={hotel.stars} />
               </div>
-              <div className="flex items-center text-[#E29578] font-bold text-sm mt-4">
-                <span className="mr-2 text-xl">📍</span>
-                {hotel.distanceToHaram}m from Haram
+              <h1 className="text-3xl md:text-5xl font-black text-[#006D77] tracking-tighter leading-tight uppercase">{hotel.name}</h1>
+              <div className="flex flex-wrap items-center gap-4 md:gap-8 text-[9px] md:text-[11px] font-black text-gray-400 uppercase tracking-[0.2em] md:tracking-[0.3em]">
+                <span className="flex items-center gap-2">📍 {hotel.city} Sanctuary</span>
+                <span className="flex items-center gap-2">🕋 {hotel.distanceToHaram}M From Masjid Al-Haram</span>
               </div>
             </div>
-            <div className="md:text-right">
-              <span className="text-[11px] text-gray-400 block font-bold uppercase tracking-widest">Starts from</span>
-              <span className="text-4xl font-black text-[#006D77]">{formatPrice(hotel.rooms[0].customerPricePerNight)}</span>
-              <span className="text-sm text-gray-400 font-medium">/night</span>
+            <div className="w-full lg:w-auto bg-[#F0F7F8] px-8 py-6 md:px-12 md:py-10 rounded-2xl md:rounded-[2.5rem] border border-[#DCEEF0] text-left lg:text-right shadow-inner">
+              <span className="text-[9px] md:text-[10px] text-[#006D77]/50 block font-black uppercase tracking-[0.3em] mb-1 md:mb-2">Registry Starting From</span>
+              <span className="text-3xl md:text-5xl font-black text-[#006D77] tracking-tighter">{formatPrice(hotel.rooms[0].customerPricePerNight)}</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-          <div className="lg:col-span-2 space-y-12">
-            <div className="flex md:grid md:grid-cols-2 gap-4 overflow-x-auto md:overflow-visible snap-x snap-mandatory scrollbar-hide">
-              {hotel.images.map((img, idx) => (
-                <div key={idx} className="min-w-[85vw] md:min-w-0 snap-center h-[300px] md:h-[400px]">
-                  <img src={img} className="w-full h-full object-cover rounded-2xl shadow-sm" alt={`Hotel view ${idx+1}`} />
-                </div>
-              ))}
-            </div>
+      {/* Main Content Area - Fully Fluid */}
+      <div className="container mx-auto px-4 md:px-6 py-10 md:py-20">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-20">
+          {/* Left Column: Primary Content */}
+          <div className="flex-1 flex flex-col gap-12 md:gap-24">
             
-            <div className="bg-white p-10 rounded-3xl shadow-sm border border-gray-100">
-              <h2 className="text-2xl font-bold text-[#006D77] mb-8">Available Amenities</h2>
-              <div className="flex flex-wrap gap-4">
-                {hotel.amenities.map(a => <AmenityPill key={a} name={a} />)}
-                <AmenityPill name="24-hour front desk" />
-                <AmenityPill name="Family Rooms" />
+            {/* Gallery Block - Responsive stacking */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8 relative z-10">
+              <div className="md:col-span-2 relative overflow-hidden rounded-2xl md:rounded-[3rem] aspect-[4/3] md:aspect-auto md:h-[520px] shadow-xl md:shadow-2xl border-2 md:border-4 border-white">
+                 <img src={hotel.images[0]} className="w-full h-full object-cover" alt={hotel.name} />
               </div>
-              <div className="mt-12 border-t pt-10">
-                 <h2 className="text-2xl font-bold text-[#006D77] mb-6">Hotel Narrative</h2>
-                 <p className="text-gray-600 leading-relaxed text-lg font-light">{hotel.description}</p>
+              <div className="hidden md:flex flex-col gap-4 md:gap-8 h-[520px]">
+                 <div className="h-1/2 rounded-[2.5rem] overflow-hidden shadow-xl border-4 border-white">
+                   <img src={hotel.images[1] || hotel.images[0]} className="w-full h-full object-cover" alt="Interior" />
+                 </div>
+                 <div className="h-1/2 rounded-[2.5rem] overflow-hidden shadow-xl border-4 border-white relative">
+                   <img src={hotel.images[0]} className="w-full h-full object-cover blur-[2px] opacity-80" alt="More" />
+                   <div className="absolute inset-0 flex items-center justify-center text-white font-black text-[11px] uppercase tracking-[0.4em] bg-black/30">Gallery</div>
+                 </div>
               </div>
-            </div>
+            </section>
 
-            <div className="space-y-8 text-center">
-              <h2 className="text-3xl font-bold text-[#006D77]">Available Rooms</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Narrative Block */}
+            <section className="bg-white p-6 md:p-14 rounded-2xl md:rounded-[3.5rem] border border-gray-100 shadow-xl relative z-20">
+              <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 md:gap-12 mb-10 md:mb-16">
+                <div>
+                  <h2 className="text-xl md:text-3xl font-black text-[#006D77] tracking-tighter uppercase mb-2">Stay Amenities</h2>
+                  <div className="h-1 w-12 md:h-1.5 md:w-16 bg-secondary rounded-full"></div>
+                </div>
+                <div className="flex flex-wrap gap-2 md:gap-3">
+                  {hotel.amenities.map(a => <AmenityPill key={a} name={a} />)}
+                </div>
+              </div>
+              <div className="border-t border-gray-50 pt-8 md:pt-12">
+                 <p className="text-gray-400 text-[8px] md:text-[10px] font-black uppercase tracking-[0.4em] mb-4 md:mb-6 flex items-center gap-4">
+                   Official Narrative
+                 </p>
+                 <p className="text-gray-600 leading-relaxed text-lg md:text-2xl font-medium italic opacity-90">"{hotel.description}"</p>
+              </div>
+            </section>
+
+            {/* Units Selection */}
+            <section className="flex flex-col gap-8 md:gap-16 pb-12 md:pb-20 relative z-10">
+              <h2 className="text-2xl md:text-4xl font-black text-[#006D77] tracking-tighter flex items-center gap-4 md:gap-8 uppercase">
+                Allocation
+                <div className="h-0.5 flex-1 bg-gray-200/50"></div>
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
                 {hotel.rooms.map(room => (
-                  <div key={room.id} className="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 flex flex-col items-center hover:shadow-xl transition-all duration-500">
-                    <div className="w-20 h-20 bg-primary/5 rounded-full flex items-center justify-center text-4xl mb-6">🛏️</div>
-                    <h3 className="text-2xl font-extrabold text-neutralDark mb-4">{room.type}</h3>
-                    <div className="mb-8">
-                      <span className="text-3xl font-black text-[#006D77]">{formatPrice(room.customerPricePerNight)}</span>
-                      <span className="text-sm text-gray-400 font-medium">/night</span>
+                  <Card key={room.id} className="bg-white overflow-hidden flex flex-col items-start hover:shadow-2xl transition-all duration-700 border-none shadow-md">
+                    <div className="w-full h-48 md:h-56 relative overflow-hidden">
+                       <img src={room.image || hotel.images[0]} className="w-full h-full object-cover transition-transform duration-700 hover:scale-110" alt={room.type} />
+                       <div className="absolute top-4 left-4 md:top-6 md:left-6 bg-white/95 backdrop-blur-md px-4 py-1.5 md:px-6 md:py-2 rounded-full text-[7px] md:text-[9px] font-black uppercase tracking-widest text-[#006D77] shadow-lg">Registry Unit</div>
                     </div>
-                    <Button variant="teal" fullWidth size="lg" className="rounded-2xl h-14" onClick={() => handleBookNow(room.id)}>Book Room Now</Button>
-                  </div>
+                    <div className="p-6 md:p-10 w-full flex-1 flex flex-col">
+                      <h3 className="text-lg md:text-2xl font-black text-neutralDark mb-2 md:mb-4 uppercase tracking-tight">{room.type}</h3>
+                      <p className="text-gray-500 text-xs md:text-sm mb-8 md:mb-12 font-medium italic leading-relaxed line-clamp-2 opacity-80">"{room.description}"</p>
+                      <div className="mt-auto pt-6 md:pt-8 border-t border-gray-50 flex items-center justify-between">
+                        <div className="space-y-0.5 md:space-y-1">
+                          <span className="text-[7px] md:text-[9px] text-gray-400 font-black uppercase tracking-widest block">Nightly Rate</span>
+                          <span className="text-xl md:text-3xl font-black text-[#006D77] tracking-tighter">{formatPrice(room.customerPricePerNight)}</span>
+                        </div>
+                        <Button variant="teal" className="h-10 md:h-14 px-5 md:px-8 text-[9px] md:text-[10px]" onClick={() => handleBookNow(room.id)}>Book</Button>
+                      </div>
+                    </div>
+                  </Card>
                 ))}
               </div>
-            </div>
+            </section>
           </div>
 
-          <div className="space-y-8">
-            <Card className="p-8 bg-primary text-white border-none shadow-2xl rounded-3xl">
-              <h3 className="text-xl font-bold mb-6">Reservation Assistance</h3>
-              <p className="text-sm text-white/80 mb-8 leading-relaxed">Dedicated to ensuring your pilgrimage stays are as peaceful as your journey.</p>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <span className="w-12 h-12 bg-white/10 rounded-2xl flex items-center justify-center text-xl">📞</span>
-                  <div>
-                    <div className="text-[10px] font-black uppercase tracking-widest opacity-60">Global Hotline</div>
-                    <div className="font-bold text-lg">+92 300 1234567</div>
+          {/* Right Column: Sidebar - Stacks on mobile */}
+          <aside className="w-full lg:w-1/3">
+            <div className="sticky top-24 md:top-32 flex flex-col gap-8 md:gap-10">
+              <Card className="p-8 md:p-12 bg-[#005B5C] text-white border-none shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 md:w-48 h-32 md:h-48 bg-white/5 rounded-full -mr-16 md:-mr-24 -mt-16 md:-mt-24 pointer-events-none"></div>
+                
+                <div className="flex items-center gap-4 md:gap-6 mb-8 md:mb-12 relative z-10">
+                   <div className="w-12 h-12 md:w-16 md:h-16 bg-white/10 rounded-xl md:rounded-2xl flex items-center justify-center text-2xl md:text-3xl border border-white/10 shadow-xl">🛡️</div>
+                   <div>
+                     <h3 className="text-lg md:text-xl font-black tracking-tight leading-none uppercase">Support Desk</h3>
+                     <p className="text-[8px] md:text-[9px] text-white/40 font-black uppercase tracking-[0.4em] mt-2 md:mt-3">Authorized Channel</p>
+                   </div>
+                </div>
+                
+                <p className="text-sm md:text-base text-white/80 mb-8 md:mb-12 font-medium leading-relaxed italic opacity-90 relative z-10">"Registry synchronization bridge active 24/7 for guaranteed arrival clearance."</p>
+                
+                <div className="space-y-4 md:space-y-6 mb-8 md:mb-12 relative z-10">
+                  <div className="flex items-center gap-4 md:gap-5 p-4 md:p-5 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 group hover:bg-white/10 transition-all cursor-pointer">
+                    <span className="text-xl md:text-2xl opacity-50">📞</span>
+                    <span className="font-black tracking-tight text-white/95 text-sm md:text-lg truncate">{hotel.address.slice(0, 15)}...</span>
+                  </div>
+                  <div className="flex items-center gap-4 md:gap-5 p-4 md:p-5 bg-white/5 rounded-xl md:rounded-2xl border border-white/5 group hover:bg-white/10 transition-all cursor-pointer">
+                    <span className="text-xl md:text-2xl opacity-50">✉️</span>
+                    <span className="font-black uppercase tracking-tighter truncate text-white/95 text-xs md:text-sm">support@umrahstay.com</span>
                   </div>
                 </div>
+                
+                <Button variant="outline" fullWidth className="h-12 md:h-16 bg-white text-[#005B5C] border-none font-black uppercase text-[9px] md:text-xs tracking-widest rounded-xl md:rounded-2xl">Verify GDS Vouchers</Button>
+              </Card>
+              
+              <div className="p-6 md:p-8 text-center bg-gray-100/50 rounded-2xl md:rounded-[2rem] border border-dashed border-gray-200">
+                <p className="text-[8px] md:text-[9px] text-gray-400 font-black uppercase tracking-[0.5em]">UmrahStay Registry v2.5</p>
               </div>
-              <Button variant="secondary" fullWidth className="mt-10 h-14 rounded-2xl font-bold">Request Callback</Button>
-            </Card>
-          </div>
+            </div>
+          </aside>
         </div>
       </div>
 
-      <Modal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} title="Confirm Your Booking">
-        <div className="space-y-1">
-          <p className="text-sm text-gray-500 font-medium mb-8">{hotel.name} - {selectedRoom?.type}</p>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Input label="Check-in" type="date" value={bookingDetails.checkIn} onChange={e => setBookingDetails({...bookingDetails, checkIn: e.target.value})} />
-            <Input label="Check-out" type="date" value={bookingDetails.checkOut} onChange={e => setBookingDetails({...bookingDetails, checkOut: e.target.value})} />
-          </div>
+      {/* Booking Modal - Optimized for all screens */}
+      <Modal isOpen={isBookingModalOpen} onClose={() => setIsBookingModalOpen(false)} title="Confirm Your Stay">
+        <form onSubmit={confirmBooking} className="flex flex-col gap-6 md:gap-10">
+          <div className="space-y-6 md:space-y-8">
+            {/* Asset Summary */}
+            <div className="bg-[#F0F7F8] p-4 md:p-6 rounded-xl md:rounded-[2rem] border border-[#DCEEF0] flex items-center gap-4 md:gap-6 shadow-inner">
+               <div className="w-12 h-12 md:w-16 md:h-16 rounded-lg md:rounded-2xl overflow-hidden shadow-xl border-2 md:border-4 border-white shrink-0">
+                  <img src={selectedRoom?.image || hotel.images[0]} className="w-full h-full object-cover" alt="Unit" />
+               </div>
+               <div className="overflow-hidden">
+                  <h4 className="text-sm md:text-lg font-black text-[#005B5C] tracking-tighter leading-none uppercase truncate">{hotel.name}</h4>
+                  <p className="text-[8px] md:text-[10px] text-secondary font-black uppercase mt-1 md:mt-2 tracking-widest">{selectedRoom?.type}</p>
+               </div>
+            </div>
 
-          <div className="mb-6">
-            <Input label="Full Name" placeholder="Enter your full name" value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <Input label="Email Address" placeholder="Enter email address" value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} />
-            <Input label="Contact Number" placeholder="Enter contact number" value={bookingDetails.phone} onChange={e => setBookingDetails({...bookingDetails, phone: e.target.value})} />
-          </div>
-
-          <div className="mb-10">
-            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Promo Code (Optional)</label>
-            <div className="flex gap-2">
-              <input 
-                className="flex-1 bg-white border border-gray-300 rounded-lg px-4 py-2.5 text-sm text-gray-900 focus:ring-2 focus:ring-[#006D77]/20 outline-none transition-all placeholder:text-gray-400 font-medium" 
-                placeholder="e.g. UMRAH2024"
-                value={promoCode}
-                onChange={e => setPromoCode(e.target.value)}
+            {/* Date Registry */}
+            <div className="grid grid-cols-2 gap-4 md:gap-6">
+              <Input 
+                label="Arrival" 
+                type="date" 
+                required
+                value={bookingDetails.checkIn} 
+                onChange={e => setBookingDetails({...bookingDetails, checkIn: e.target.value})} 
               />
-              <Button variant="ghost" className="bg-[#E9ECEF] text-neutralDark px-8">Apply</Button>
+              <Input 
+                label="Departure" 
+                type="date" 
+                required
+                value={bookingDetails.checkOut} 
+                onChange={e => setBookingDetails({...bookingDetails, checkOut: e.target.value})} 
+              />
+            </div>
+
+            {/* Pilgrim Details */}
+            <div className="space-y-4 md:space-y-6">
+               <Input 
+                label="Full Legal Name" 
+                placeholder="As per Passport..." 
+                required
+                value={bookingDetails.name} 
+                onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} 
+               />
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                <Input 
+                  label="Email Registry" 
+                  type="email"
+                  placeholder="pilgrim@registry.com" 
+                  required
+                  value={bookingDetails.email} 
+                  onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} 
+                />
+                <Input 
+                  label="Contact Vector" 
+                  type="tel"
+                  placeholder="+XX XXXXXXXX" 
+                  required
+                  value={bookingDetails.phone} 
+                  onChange={e => setBookingDetails({...bookingDetails, phone: e.target.value})} 
+                />
+               </div>
+            </div>
+
+            {/* Promo Code */}
+            <div className="flex gap-2 md:gap-4 items-end">
+               <div className="flex-1">
+                 <Input 
+                    label="Promo Registry Code" 
+                    placeholder="Enter Coupon..." 
+                    value={promoCode} 
+                    onChange={e => setPromoCode(e.target.value.toUpperCase())}
+                 />
+               </div>
+               <Button type="button" variant="outline" className="h-10 md:h-12 border-2 px-4 md:px-6 text-[9px] md:text-[10px]">Apply</Button>
             </div>
           </div>
 
-          <div className="border-t border-gray-100 pt-6 flex flex-col items-end">
-            <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Total Price</span>
-            <div className="text-3xl font-black text-primary">
-              {formatPrice(selectedRoom?.customerPricePerNight || 0)}
-            </div>
-          </div>
+          {/* Grand Total - Above Confirm Button */}
+          <div className="pt-6 md:pt-8 border-t border-gray-100 mt-auto flex flex-col gap-4">
+             <div className="flex justify-between items-end px-1">
+                <div>
+                   <span className="text-[8px] md:text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] block mb-0.5">Grand Total Allocation</span>
+                   <div className="text-2xl md:text-4xl font-black text-[#005B5C] tracking-tighter">
+                    {formatPrice(selectedRoom?.customerPricePerNight || 0)}
+                  </div>
+                </div>
+                <div className="hidden sm:block text-[8px] md:text-[10px] text-secondary font-black uppercase tracking-widest italic mb-1">
+                   Guaranteed Rate
+                </div>
+             </div>
 
-          <div className="flex gap-4 pt-8">
-            <Button variant="ghost" className="bg-[#E9ECEF] text-neutralDark flex-1 h-14 rounded-xl" onClick={() => setIsBookingModalOpen(false)}>Cancel</Button>
-            <Button variant="secondary" className="flex-[1.5] h-14 rounded-xl shadow-lg font-bold text-lg" onClick={confirmBooking}>Confirm Booking</Button>
+             <div className="flex gap-2 md:gap-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  className="flex-1 h-12 md:h-14 uppercase font-black text-[9px] md:text-[11px] tracking-widest border-2" 
+                  onClick={() => setIsBookingModalOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  type="submit" 
+                  variant="teal" 
+                  className="flex-[2] h-12 md:h-14 uppercase font-black text-[9px] md:text-[11px] tracking-[0.1em] md:tracking-[0.2em] shadow-xl"
+                >
+                  Confirm Booking
+                </Button>
+             </div>
           </div>
-        </div>
+        </form>
       </Modal>
     </div>
   );

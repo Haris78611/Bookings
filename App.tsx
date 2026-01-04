@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { HashRouter as Router, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { HashRouter as Router, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { Header, Footer } from './components/Layout';
 import HomePage from './pages/HomePage';
@@ -13,6 +13,15 @@ import TrackBookingPage from './pages/TrackBookingPage';
 import SupportPage from './pages/SupportPage';
 import { UserRole } from './types';
 import { Card, Button, Input } from './components/UI';
+
+// Helper component to reset scroll to top on navigation
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
 const LoginPage = () => {
   const { setCurrentUser } = useAppContext();
@@ -49,9 +58,9 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 py-20 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-neutralLight px-4 py-20 relative overflow-hidden">
       <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#006D77 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-      <Card className="w-full max-w-md p-10 text-center relative z-10 border-none">
+      <Card className="w-full max-w-md p-10 text-center relative z-10 border-none shadow-2xl rounded-2xl">
         <div className="mb-10">
           <h2 className="text-4xl font-bold text-primary mb-2 italic tracking-tighter">UmrahStay</h2>
           <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">Portal Authentication</p>
@@ -83,98 +92,67 @@ const BookingConfirmation = () => {
   const booking = bookings.find(b => b.id === id);
 
   if (!booking) return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-[#f8f9fa]">
-      <LoadingSpinner />
+    <div className="min-h-[80vh] flex items-center justify-center bg-white">
+      <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
     </div>
   );
 
-  const formatDate = (dateStr: string) => {
-    if (!dateStr) return 'TBD';
-    const d = new Date(dateStr);
-    return `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear()}`;
-  };
+  const displayTotalPrice = formatPrice(Number(booking.totalPrice) || 0);
 
   return (
-    <div className="min-h-[80vh] flex items-center justify-center bg-white py-20 px-4">
-      <div className="max-w-2xl w-full text-center">
-        {/* Yellow Clock Icon */}
-        <div className="w-16 h-16 bg-[#FFF9DB] rounded-full flex items-center justify-center text-3xl mx-auto mb-8 text-[#FCC419]">
+    <div className="min-h-[80vh] flex items-center justify-center bg-neutralLight py-16 px-4">
+      <Card className="max-w-md w-full text-center p-8 md:p-12 border-none shadow-2xl rounded-2xl animate-in fade-in zoom-in duration-500">
+        <div className="w-16 h-16 bg-[#FFF9DB] rounded-full flex items-center justify-center text-3xl mx-auto mb-6 text-[#FCC419] shadow-sm">
           🕒
         </div>
 
-        <h1 className="text-4xl font-bold text-[#006D77] mb-6 tracking-tight">Booking Received!</h1>
-        
-        <p className="text-gray-600 mb-12 text-lg font-medium leading-relaxed max-w-xl mx-auto">
-          Thank you, {booking.guestName}. Your booking request is pending approval. You will receive an email once it's confirmed.
+        <h1 className="text-2xl font-bold text-primary mb-2 tracking-tight">Booking Received!</h1>
+        <p className="text-gray-500 mb-8 text-sm font-medium leading-relaxed px-4 mx-auto">
+          Thank you, <span className="text-primary font-bold">{booking.guestName}</span>. Your request is pending. We will notify you via email shortly.
         </p>
 
-        <div className="border-t border-gray-100 pt-10 text-left space-y-6 max-w-lg mx-auto">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-neutralDark text-sm">Booking ID:</span>
-            <span className="text-[#E29578] font-bold text-sm tracking-wide uppercase">{booking.id}</span>
+        <div className="bg-gray-50/50 rounded-xl p-6 text-left border border-gray-100 space-y-4">
+          <div className="flex justify-between items-center border-b border-gray-100 pb-3">
+            <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Reference</span>
+            <span className="text-secondary font-black text-xs uppercase tracking-widest">{booking.id}</span>
           </div>
 
-          <div className="h-px bg-gray-100 w-full"></div>
-
-          <h3 className="text-xl font-bold text-[#006D77] leading-tight">{booking.hotelName}</h3>
+          <div className="space-y-1">
+            <h3 className="text-lg font-black text-primary leading-tight">{booking.hotelName}</h3>
+            <p className="text-gray-400 font-bold text-[10px] uppercase tracking-widest">{booking.roomType}</p>
+          </div>
           
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-neutralDark text-sm">Room:</span>
-            <span className="text-gray-500 font-medium text-sm">{booking.roomType.split(' ')[0]}</span>
-          </div>
-
-          <div className="flex justify-between items-center text-sm">
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-neutralDark">Check-in:</span>
-              <span className="text-gray-500 font-medium">{formatDate(booking.checkIn)}</span>
+          <div className="grid grid-cols-2 gap-4 py-2">
+            <div>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Check-in</p>
+              <p className="font-bold text-neutralDark text-sm">{booking.checkIn}</p>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="font-bold text-neutralDark">Check-out:</span>
-              <span className="text-gray-500 font-medium">{formatDate(booking.checkOut)}</span>
+            <div>
+              <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-0.5">Check-out</p>
+              <p className="font-bold text-neutralDark text-sm">{booking.checkOut}</p>
             </div>
           </div>
 
-          <div className="h-px bg-gray-100 w-full"></div>
-
-          <div className="flex justify-end items-center gap-2">
-            <span className="text-xl font-bold text-neutralDark">Total:</span>
-            <span className="text-xl font-bold text-[#006D77]">{formatPrice(booking.totalPrice)}</span>
-          </div>
-
-          <div className="h-px bg-gray-100 w-full pt-4"></div>
-
-          <div className="flex gap-4 pt-6">
-            <Button 
-              onClick={() => navigate('/my-bookings')} 
-              variant="secondary" 
-              className="flex-1 h-14 rounded-xl font-bold shadow-lg"
-            >
-              View My Bookings
-            </Button>
-            <Button 
-              onClick={() => navigate('/')} 
-              variant="teal" 
-              className="flex-1 h-14 rounded-xl font-bold"
-            >
-              Back to Home
-            </Button>
+          <div className="flex justify-between items-center border-t border-gray-100 pt-3">
+            <span className="text-sm font-bold text-gray-600">Amount</span>
+            <span className="text-2xl font-black text-primary">{displayTotalPrice}</span>
           </div>
         </div>
-      </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-10">
+          <Button onClick={() => navigate('/my-bookings')} variant="secondary" className="h-11 rounded-lg font-bold text-xs shadow-md">My Bookings</Button>
+          <Button onClick={() => navigate('/')} variant="primary" className="h-11 rounded-lg font-bold text-xs shadow-md">Home Portal</Button>
+        </div>
+      </Card>
     </div>
   );
 };
-
-const LoadingSpinner = () => (
-  <div className="flex flex-col items-center justify-center">
-    <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
-  </div>
-);
 
 const App: React.FC = () => {
   return (
     <AppProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           <Route path="/admin" element={<AdminPortal view="dashboard" />} />
           <Route path="/admin/hotels" element={<AdminPortal view="hotels" />} />
