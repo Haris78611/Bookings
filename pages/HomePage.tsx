@@ -12,13 +12,6 @@ const HomePage: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showResults, setShowResults] = useState(false);
 
-  const [filters, setFilters] = useState({
-    priceRange: 1000000,
-    distanceRange: 3000,
-    minStars: 0,
-    sortBy: 'price-asc'
-  });
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSearching(true);
@@ -35,24 +28,6 @@ const HomePage: React.FC = () => {
       }, 100);
     }, 1500);
   };
-
-  const filteredHotels = useMemo(() => {
-    let result = hotels.filter(h => {
-      const matchesCity = searchData.city === 'All' || h.city === searchData.city;
-      const matchesPrice = h.rooms.some(r => r.customerPricePerNight <= filters.priceRange);
-      const matchesStars = h.stars >= filters.minStars;
-      const matchesDistance = h.distanceToHaram <= filters.distanceRange;
-      return matchesCity && matchesPrice && matchesStars && matchesDistance;
-    });
-
-    if (filters.sortBy === 'price-asc') {
-      result.sort((a, b) => (a.rooms[0]?.customerPricePerNight || 0) - (b.rooms[0]?.customerPricePerNight || 0));
-    } else if (filters.sortBy === 'price-desc') {
-      result.sort((a, b) => (b.rooms[0]?.customerPricePerNight || 0) - (a.rooms[0]?.customerPricePerNight || 0));
-    }
-
-    return result;
-  }, [hotels, searchData.city, filters]);
 
   const featuredHotels = hotels.slice(0, 3);
 
@@ -162,53 +137,19 @@ const HomePage: React.FC = () => {
         <div id="search-results-anchor" className="absolute -top-24"></div>
         
         <div className="container mx-auto px-4">
-          {showResults ? (
-            <div className="flex flex-col lg:flex-row gap-8">
-              <aside className="w-full lg:w-64 space-y-6">
-                <Card className="p-6 sticky top-28 bg-white rounded-md border border-gray-100 shadow-sm">
-                  <h3 className="text-xs font-black text-[#006D77] uppercase tracking-wider mb-6 pb-2 border-b">Refine Search</h3>
-                  <div className="space-y-8">
-                    <div>
-                      <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Stars</label>
-                      <div className="flex gap-1.5">
-                        {[3, 4, 5].map(s => (
-                          <button 
-                            key={s}
-                            onClick={() => setFilters({...filters, minStars: s})}
-                            className={`flex-1 py-1.5 rounded border text-[10px] font-bold transition-all ${filters.minStars === s ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100 hover:border-[#006D77]/30'}`}
-                          >
-                            {s}★
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              </aside>
-
-              <div className="flex-1">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredHotels.map((hotel) => (
-                    <HotelCard key={hotel.id} hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
-                  ))}
+          <div className="space-y-12">
+            <div className="text-center">
+              <h2 className="text-3xl font-black text-[#343A40] tracking-tighter uppercase mb-2">Sacred Collection</h2>
+              <div className="h-1 w-12 bg-[#006D77] mx-auto rounded-full"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {featuredHotels.map((hotel, index) => (
+                <div key={hotel.id} className={`animate-fade-up stagger-${index + 1} opacity-0 fill-mode-forwards`}>
+                  <HotelCard hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
                 </div>
-              </div>
+              ))}
             </div>
-          ) : (
-            <div className="space-y-12">
-              <div className="text-center">
-                <h2 className="text-3xl font-black text-[#343A40] tracking-tighter uppercase mb-2">Sacred Collection</h2>
-                <div className="h-1 w-12 bg-[#006D77] mx-auto rounded-full"></div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                {featuredHotels.map((hotel, index) => (
-                  <div key={hotel.id} className={`animate-fade-up stagger-${index + 1} opacity-0 fill-mode-forwards`}>
-                    <HotelCard hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          </div>
         </div>
       </div>
       <style>{`
@@ -231,7 +172,7 @@ const HomePage: React.FC = () => {
 
 const HotelCard = ({ hotel, formatPrice, navigate }: any) => (
   <Card 
-    className="bg-white overflow-hidden border border-gray-100 flex flex-col h-full transition-shadow duration-300 group cursor-pointer shadow-md rounded-md" 
+    className="bg-white overflow-hidden border border-gray-100 flex flex-col h-full transition-shadow duration-300 group cursor-pointer shadow-md rounded-xl" 
     onClick={() => navigate(`/hotel/${hotel.id}`)}
   >
     {/* Image Container */}
@@ -241,8 +182,8 @@ const HotelCard = ({ hotel, formatPrice, navigate }: any) => (
         alt={hotel.name} 
         className="w-full h-full object-cover transition-transform duration-700" 
       />
-      {/* 5-Star Badge - Matching Salmon color with sharp edges */}
-      <div className="absolute top-0 right-0 bg-[#E29578] text-white px-3 py-1 text-[11px] font-bold">
+      {/* 5-Star Badge - Salmon color, matching the image */}
+      <div className="absolute top-0 right-0 bg-[#E29578] text-white px-3 py-1 text-[11px] font-bold rounded-bl-lg">
         {hotel.stars}-Star
       </div>
     </div>
@@ -267,7 +208,7 @@ const HotelCard = ({ hotel, formatPrice, navigate }: any) => (
         <span>{hotel.city} - {hotel.distanceToHaram}m from Haram</span>
       </div>
 
-      {/* Description - 2 Line Clamp */}
+      {/* Description */}
       <p className="text-gray-500 text-[13px] mb-8 line-clamp-3 leading-relaxed font-normal opacity-90 flex-1">
         {hotel.description}
       </p>
@@ -282,7 +223,7 @@ const HotelCard = ({ hotel, formatPrice, navigate }: any) => (
           </div>
         </div>
         <button 
-          className="bg-[#006D77] hover:bg-[#005c65] text-white px-6 py-2.5 rounded-md font-bold text-[13px] transition-all shadow-sm active:scale-95"
+          className="bg-[#006D77] hover:bg-[#005c65] text-white px-6 py-2.5 rounded-lg font-bold text-[13px] transition-all shadow-sm active:scale-95"
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/hotel/${hotel.id}`);
