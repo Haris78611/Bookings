@@ -105,8 +105,8 @@ const HomePage: React.FC = () => {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                  <div className="text-left">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+                  <div className="text-left md:col-span-2 lg:col-span-2">
                     <label className="block text-[11px] md:text-xs text-gray-500 font-bold mb-1.5 ml-1">City</label>
                     <div className="relative flex items-center">
                       <div className="absolute left-3.5 text-gray-400 pointer-events-none">

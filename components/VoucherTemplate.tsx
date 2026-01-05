@@ -12,13 +12,20 @@ export const VoucherTemplate: React.FC<{ booking: Booking, agent?: Agent | null,
     const { formatPrice, siteSettings } = useAppContext();
 
     if (!siteSettings) return null; // Or a loading state
+    
+    const isLogoUrl = siteSettings.logo && (
+        siteSettings.logo.startsWith('data:image') || 
+        siteSettings.logo.startsWith('http') || 
+        siteSettings.logo.includes('/') ||
+        siteSettings.logo.includes('.')
+    );
 
     return (
         <div id={id} className="w-full max-w-4xl mx-auto bg-white p-0 font-sans text-neutralDark shadow-2xl border-t-8 border-[#005B5C]">
             <div className="p-12">
                 <header className="flex justify-between items-start mb-12">
                     <div className="flex items-center gap-4">
-                        {siteSettings.logo && siteSettings.logo.startsWith('data:image') ? (
+                        {isLogoUrl ? (
                             <img src={siteSettings.logo} alt="Logo" className="h-12 w-12 object-contain bg-gray-100 p-1 rounded-lg shadow-lg" />
                         ) : (
                             <div className="w-12 h-12 bg-[#006D77] flex items-center justify-center rounded-lg shadow-lg">

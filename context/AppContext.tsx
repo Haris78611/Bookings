@@ -82,6 +82,7 @@ interface AppContextType {
 
   addPromoCode: (promoCode: Omit<PromoCode, 'id'>) => Promise<void>;
   deletePromoCode: (id: string) => Promise<void>;
+  validatePromoCode: (code: string) => Promise<PromoCode | null>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -283,6 +284,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         await fetchData(); 
     };
     const deletePromoCode = async (id: string) => { await apiCall('deletePromoCode', { id }); await fetchData(); };
+    const validatePromoCode = async (code: string): Promise<PromoCode | null> => {
+        try {
+            const res = await apiCall('validatePromoCode', { code });
+            return res.success ? res.promo : null;
+        } catch (error) {
+            addToast("Invalid promo code.", 'error');
+            return null;
+        }
+    };
 
     // Settings
     const setSiteSettings = async (settings: SiteSettings) => { await apiCall('updateSettings', { ...settings, ...currencyRates }); await fetchData(); };
@@ -303,7 +313,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setCurrentUser, logout,
             addAgency, updateAgency, deleteAgency, updateAgentWallet,
             addBulkOrder, updateBulkOrderStatus, deleteBulkOrder, assignBulkOrderItem,
-            addPromoCode, deletePromoCode,
+            addPromoCode, deletePromoCode, validatePromoCode,
             isAuthModalOpen, authMode, openAuthModal, closeAuthModal, setAuthMode,
             customerLogin, customerSignUp, agentLogin
         }}>

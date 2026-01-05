@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 import { Button, Modal, Input, StarRating, Card, LoadingSpinner } from '../components/UI';
-import { BookingStatus, Hotel } from '../types';
+import { BookingStatus, Hotel, PromoCode } from '../types';
 
 // Icons
 const WifiIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.111 16.562a4.5 4.5 0 017.778 0M12 20.25a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H12a.75.75 0 01-.75-.75v-.008z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 18a.75.75 0 01.75-.75h.008a.75.75 0 01.75.75v.008a.75.75 0 01-.75.75H12a.75.75 0 01-.75-.75v-.008zM3.055 11.888a15 15 0 0121.89 0" /></svg>;
@@ -39,7 +39,7 @@ const RoomGallery: React.FC<{ images: string[] }> = ({ images }) => {
 
 const HotelDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { hotels, formatPrice, currentUser, addBooking, addToast, openAuthModal, isLoading } = useAppContext();
+  const { hotels, formatPrice, currentUser, addBooking, addToast, openAuthModal, isLoading, validatePromoCode } = useAppContext();
   const navigate = useNavigate();
   
   const [hotel, setHotel] = useState<Hotel | null>(null);
@@ -55,18 +55,40 @@ const HotelDetailsPage: React.FC = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   
   const [bookingDetails, setBookingDetails] = useState({ name: '', email: '', phone: '', checkIn: '2026-03-01', checkOut: '2026-04-01' });
+  const [promoCodeInput, setPromoCodeInput] = useState('');
+  const [appliedPromo, setAppliedPromo] = useState<PromoCode | null>(null);
 
   const selectedRoom = hotel?.rooms.find(r => r.id === selectedRoomId);
   
-  const finalPrice = useMemo(() => {
-    if (!selectedRoom) return 0;
-    return selectedRoom.customerPricePerNight;
-  }, [selectedRoom]);
+  const basePrice = useMemo(() => {
+    if (!selectedRoom || !bookingDetails.checkIn || !bookingDetails.checkOut) return 0;
+    const nights = Math.max(0, (new Date(bookingDetails.checkOut).getTime() - new Date(bookingDetails.checkIn).getTime()) / (1000 * 3600 * 24));
+    return nights * selectedRoom.customerPricePerNight;
+  }, [selectedRoom, bookingDetails.checkIn, bookingDetails.checkOut]);
+  
+  const discount = useMemo(() => {
+      if (!appliedPromo || basePrice === 0) return 0;
+      if (appliedPromo.type === 'fixed') return Math.min(basePrice, appliedPromo.discount);
+      return basePrice * (appliedPromo.discount / 100);
+  }, [appliedPromo, basePrice]);
+
+  const finalPrice = basePrice - discount;
 
   const handleBookNow = (roomId: string) => {
     if (!currentUser) { openAuthModal('customer-login'); return; }
     setSelectedRoomId(roomId);
+    setPromoCodeInput('');
+    setAppliedPromo(null);
     setIsBookingModalOpen(true);
+  };
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput) return;
+    const promo = await validatePromoCode(promoCodeInput);
+    if (promo) {
+        setAppliedPromo(promo);
+        addToast(`Promo code "${promo.code}" applied!`);
+    }
   };
   
   const confirmBooking = async (e: React.FormEvent) => {
@@ -79,7 +101,7 @@ const HotelDetailsPage: React.FC = () => {
         const bookingId = await addBooking({
           hotelId: hotel!.id, hotelName: hotel!.name, roomId: selectedRoom.id, roomType: selectedRoom.type,
           checkIn: bookingDetails.checkIn, checkOut: bookingDetails.checkOut, guestName: bookingDetails.name, guestEmail: bookingDetails.email,
-          guestPhone: bookingDetails.phone, totalPrice: finalPrice, userId: currentUser?.id,
+          guestPhone: bookingDetails.phone, totalPrice: finalPrice, userId: currentUser?.id, promoCode: appliedPromo?.code
         });
         if(bookingId) {
             setIsBookingModalOpen(false);
@@ -175,9 +197,22 @@ const HotelDetailsPage: React.FC = () => {
                 <Input label="Full Name" required value={bookingDetails.name} onChange={e => setBookingDetails({...bookingDetails, name: e.target.value})} />
                 <Input label="Email" type="email" required value={bookingDetails.email} onChange={e => setBookingDetails({...bookingDetails, email: e.target.value})} />
                 <Input label="Phone" type="tel" required value={bookingDetails.phone} onChange={e => setBookingDetails({...bookingDetails, phone: e.target.value})} />
+                
+                <div className="pt-4 border-t">
+                    <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">Promo Code</label>
+                    <div className="flex gap-2">
+                        <Input placeholder="Enter code" value={promoCodeInput} onChange={e => setPromoCodeInput(e.target.value.toUpperCase())} disabled={!!appliedPromo} />
+                        <Button type="button" variant="outline" onClick={handleApplyPromo} disabled={!!appliedPromo || !promoCodeInput}>
+                            {appliedPromo ? 'Applied' : 'Apply'}
+                        </Button>
+                    </div>
+                </div>
             </div>
             <div className="bg-gray-100 p-4 flex justify-between items-center mt-auto">
-                 <div><span className="text-2xl font-black text-primary">{formatPrice(finalPrice)}</span></div>
+                 <div>
+                    {discount > 0 && <p className="text-xs text-green-600 font-bold">Discount: -{formatPrice(discount)}</p>}
+                    <span className="text-2xl font-black text-primary">{formatPrice(finalPrice)}</span>
+                 </div>
                  <Button type="submit">Confirm Booking</Button>
             </div>
         </form>

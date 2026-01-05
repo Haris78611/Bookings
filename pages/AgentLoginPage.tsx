@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
@@ -6,31 +5,26 @@ import { UserRole } from '../types';
 import { Card, Button, Input } from '../components/UI';
 
 const AgentLoginPage: React.FC = () => {
-    const { setCurrentUser, agencies, addToast } = useAppContext();
+    const { agentLogin, addToast } = useAppContext();
     const navigate = useNavigate();
     const [credentials, setCredentials] = useState({ agencyId: '', password: '' });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
-        const agency = agencies.find(a => a.id === credentials.agencyId.trim() && a.password === credentials.password);
+        const success = await agentLogin(credentials.agencyId.trim(), credentials.password);
 
-        if (agency) {
-            setCurrentUser({
-                id: `USER-${agency.id}`,
-                name: agency.agencyName,
-                email: agency.email,
-                role: UserRole.AGENT,
-                agencyId: agency.id
-            });
+        if (success) {
             navigate('/agent');
         } else {
             const errText = 'Invalid Agency ID or password. Access denied.';
-            addToast(errText, 'error');
-            setError(errText);
+            setError(errText); // Keep local error for form display
         }
+        setIsLoading(false);
     };
     
     return (
@@ -61,7 +55,9 @@ const AgentLoginPage: React.FC = () => {
                     {error && <p className="text-red-500 text-xs font-semibold text-center pt-2">{error}</p>}
                     
                     <div className="pt-4">
-                        <Button type="submit" fullWidth variant="primary" size="lg" className="h-14">Secure Login</Button>
+                        <Button type="submit" fullWidth variant="primary" size="lg" className="h-14" disabled={isLoading}>
+                            {isLoading ? 'Verifying...' : 'Secure Login'}
+                        </Button>
                     </div>
                 </form>
             </Card>
