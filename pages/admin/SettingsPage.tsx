@@ -53,7 +53,8 @@ const SettingsPage: React.FC = () => {
   const handleAddPromoCode = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPromoCode.code && newPromoCode.discount > 0) {
-        addPromoCode({ id: `PC-${Date.now()}`, ...newPromoCode });
+        // FIX: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<PromoCode, "id">'. The addPromoCode function generates the ID internally.
+        addPromoCode(newPromoCode);
         addToast(`Promo code "${newPromoCode.code}" added.`);
         setNewPromoCode({ code: '', discount: 10, type: 'percentage' });
     } else {

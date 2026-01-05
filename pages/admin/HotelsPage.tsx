@@ -1,17 +1,16 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { Button, Card, Modal } from '../../components/UI';
+import { Button, Card, Modal, LoadingSpinner } from '../../components/UI';
 import { Hotel } from '../../types';
 import HotelForm from '../../components/HotelForm';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
 
 const HotelsPage: React.FC = () => {
-    const { hotels, addHotel, updateHotel, deleteHotel, addToast } = useAppContext();
+    const { hotels, addHotel, updateHotel, deleteHotel, addToast, isLoading } = useAppContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
-    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleOpenModal = (hotel: Hotel | null = null) => {
       setEditingHotel(hotel);
@@ -23,48 +22,48 @@ const HotelsPage: React.FC = () => {
       setIsModalOpen(false);
     }
     
-    const handleSubmit = (hotelData: Hotel | Omit<Hotel, 'id'>) => {
-      if ('id' in hotelData) {
-        updateHotel(hotelData);
-        addToast(`Hotel "${hotelData.name}" updated successfully.`);
-      } else {
-        const newHotel: Hotel = { 
-          id: `H-${Date.now()}`, 
-          ...hotelData,
-        };
-        addHotel(newHotel);
-        addToast(`Hotel "${newHotel.name}" created successfully.`);
+    const handleSubmit = async (hotelData: Hotel | Omit<Hotel, 'id'>) => {
+      setIsSubmitting(true);
+      try {
+        if ('id' in hotelData) {
+          await updateHotel(hotelData);
+          addToast(`Hotel "${hotelData.name}" updated successfully.`);
+        } else {
+          await addHotel(hotelData);
+          addToast(`Hotel created successfully.`);
+        }
+        handleCloseModal();
+      } catch (error: any) {
+        addToast(`Error: ${error.message}`, 'error');
+      } finally {
+        setIsSubmitting(false);
       }
-      handleCloseModal();
     };
 
-    const handleDelete = (hotel: Hotel) => {
+    const handleDelete = async (hotel: Hotel) => {
       if (window.confirm(`Are you sure you want to delete "${hotel.name}"? This action is irreversible.`)) {
-        deleteHotel(hotel.id);
-        addToast(`Hotel "${hotel.name}" has been deleted.`, 'error');
+        try {
+          await deleteHotel(hotel.id);
+          addToast(`Hotel "${hotel.name}" has been deleted.`, 'error');
+        } catch(error: any) {
+           addToast(`Error: ${error.message}`, 'error');
+        }
       }
-    };
-
-    const handleRefresh = () => {
-        setIsRefreshing(true);
-        setTimeout(() => {
-          setIsRefreshing(false);
-          addToast('Hotel data synchronized.');
-        }, 800);
     };
 
     return (
       <>
         <PageHeader title="Hotel Management">
           <Button onClick={() => handleOpenModal()} variant="primary" className="!rounded-lg">+ Add New Hotel</Button>
-          <RefreshButton isRefreshing={isRefreshing} onClick={handleRefresh} />
         </PageHeader>
         <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
             <TableWrapper>
                 <table className="w-full text-left text-xs">
                     <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-4 px-6">Name</th><th className="py-4 px-4">City</th><th className="py-4 px-4">Stars</th><th className="py-4 px-4">Rooms</th><th className="py-4 px-4 text-right">Actions</th></tr></thead>
                     <tbody>
-                        {hotels.map(h => (
+                        {isLoading ? (
+                            <tr><td colSpan={5}><LoadingSpinner/></td></tr>
+                        ) : hotels.map(h => (
                           <tr key={h.id} className="border-b last:border-0 hover:bg-gray-50/50">
                             <td className="py-4 px-6 font-bold text-gray-800">{h.name}</td>
                             <td className="py-4 px-4 font-medium">{h.city}</td>
@@ -76,13 +75,13 @@ const HotelsPage: React.FC = () => {
                             </td>
                           </tr>
                         ))}
-                        {hotels.length === 0 && <EmptyState message="No hotels in registry." />}
+                        {!isLoading && hotels.length === 0 && <EmptyState message="No hotels in registry." />}
                     </tbody>
                 </table>
             </TableWrapper>
         </Card>
         <Modal isOpen={isModalOpen} onClose={handleCloseModal} title={editingHotel ? 'Edit Hotel & Inventory' : 'Add New Hotel'} size="4xl">
-          <HotelForm hotel={editingHotel} onSubmit={handleSubmit} onCancel={handleCloseModal} />
+          {isSubmitting ? <LoadingSpinner /> : <HotelForm hotel={editingHotel} onSubmit={handleSubmit} onCancel={handleCloseModal} />}
         </Modal>
       </>
     );

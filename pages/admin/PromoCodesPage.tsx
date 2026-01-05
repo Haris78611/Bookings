@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { Button, Card } from '../../components/UI';
@@ -12,7 +11,8 @@ const PromoCodesPage: React.FC = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleSubmit = (data: Omit<PromoCode, 'id'>) => {
-        addPromoCode({ id: `PC-${Date.now()}`, ...data });
+        // FIX: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<PromoCode, "id">'. The addPromoCode function generates the ID internally.
+        addPromoCode(data);
         addToast(`Promo code "${data.code}" created successfully.`);
     };
     
