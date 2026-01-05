@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
@@ -6,7 +5,7 @@ import { UserRole, Currency } from '../types';
 import { NotificationTicker, Button } from './UI';
 
 export const Header: React.FC = () => {
-  const { siteSettings, currency, setCurrency, currentUser, logout } = useAppContext();
+  const { siteSettings, currency, setCurrency, currentUser, logout, openAuthModal } = useAppContext();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const announcementMessages = siteSettings.announcement.split('|').map(msg => msg.trim()).filter(Boolean);
@@ -55,7 +54,7 @@ export const Header: React.FC = () => {
               {currentUser ? (
                  <button onClick={() => { logout(); navigate('/'); }} className="text-[10px] font-black uppercase tracking-widest bg-white/10 px-4 py-2 rounded-lg hover:bg-red-500/20 transition-all">Logout</button>
               ) : (
-                 <Link to="/login" className="text-[10px] font-black uppercase tracking-widest bg-white px-4 py-2 rounded-lg text-[#005B5C] hover:bg-gray-200 transition-all">Login</Link>
+                 <button onClick={() => openAuthModal('customer-login')} className="text-[10px] font-black uppercase tracking-widest bg-white px-4 py-2 rounded-lg text-[#005B5C] hover:bg-gray-200 transition-all">Login</button>
               )}
             </div>
 
@@ -108,7 +107,7 @@ export const Header: React.FC = () => {
               {currentUser ? (
                 <Button variant="danger" fullWidth onClick={() => { logout(); navigate('/'); setIsMobileMenuOpen(false); }}>Revoke Auth / Logout</Button>
               ) : (
-                <Button variant="teal" fullWidth onClick={() => { navigate('/login'); setIsMobileMenuOpen(false); }}>Portal Auth / Login</Button>
+                <Button variant="teal" fullWidth onClick={() => { openAuthModal('customer-login'); setIsMobileMenuOpen(false); }}>Portal Auth / Login</Button>
               )}
             </div>
           </div>
@@ -140,8 +139,8 @@ export const Footer: React.FC = () => {
         <div>
           <h4 className="font-bold mb-6 text-[#E29578] text-[10px] uppercase tracking-widest">Partner Bridge</h4>
           <ul className="text-gray-400 text-xs space-y-4 font-black uppercase tracking-widest">
-            <li><Link to="/login" className="hover:text-white transition">Agent Portal</Link></li>
-            <li><Link to="/login" className="hover:text-white transition">Admin Desk</Link></li>
+            <li><button onClick={() => (window.location.hash = "/agent")} className="hover:text-white transition text-left">Agent Portal</button></li>
+            <li><button onClick={() => (window.location.hash = "/admin")} className="hover:text-white transition text-left">Admin Desk</button></li>
           </ul>
         </div>
         <div>

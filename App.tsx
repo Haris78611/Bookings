@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
@@ -11,8 +10,9 @@ import AdminPortal from './pages/AdminPortal';
 import MyBookingsPage from './pages/MyBookingsPage';
 import TrackBookingPage from './pages/TrackBookingPage';
 import SupportPage from './pages/SupportPage';
-import { UserRole } from './types';
-import { Card, Button, Input } from './components/UI';
+import LoginRedirectPage from './pages/LoginRedirectPage';
+import AuthModal from './components/AuthModal';
+import { Card, Button } from './components/UI';
 import { ToastContainer } from './components/Toast';
 
 // Helper component to reset scroll to top on navigation
@@ -22,84 +22,6 @@ const ScrollToTop = () => {
     window.scrollTo(0, 0);
   }, [pathname]);
   return null;
-};
-
-const LoginPage = () => {
-  const { setCurrentUser } = useAppContext();
-  const navigate = useNavigate();
-  const [credentials, setCredentials] = React.useState({ email: '', password: '' });
-
-  const handleLogin = (role: UserRole) => {
-    // Agent Login - Must match the agency ID in AppContext (id: '1234')
-    if (role === UserRole.AGENT) {
-      setCurrentUser({
-        id: 'AGENT-USER-1',
-        name: 'Haris T&Q Manager',
-        email: credentials.email || 'agent@test.com',
-        role: UserRole.AGENT,
-        agencyId: '1234' // Matches the '1234' agency in context
-      });
-      navigate('/agent');
-      return;
-    }
-
-    // Customer Login
-    setCurrentUser({
-      id: 'CUST-1',
-      name: 'Sami Khan',
-      email: credentials.email || 'user@test.com',
-      role: UserRole.CUSTOMER
-    });
-    navigate('/my-bookings');
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-neutralLight px-4 py-20 relative overflow-hidden">
-      <div className="absolute top-0 left-0 w-full h-full opacity-[0.05] pointer-events-none" style={{ backgroundImage: 'radial-gradient(#006D77 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-      <Card className="w-full max-w-md p-10 text-center relative z-10 border-none shadow-2xl rounded-2xl bg-white">
-        <div className="mb-10">
-          <h2 className="text-4xl font-black text-primary mb-2 italic tracking-tighter">UmrahStay</h2>
-          <p className="text-gray-400 text-[10px] font-bold uppercase tracking-[0.3em]">Portal Authentication</p>
-        </div>
-        <div className="space-y-5 text-left">
-          <Input 
-            label="Registry ID / Email" 
-            placeholder="e.g. 990990" 
-            value={credentials.email} 
-            onChange={e => setCredentials({...credentials, email: e.target.value})} 
-          />
-          <Input 
-            label="Security Password" 
-            type="password" 
-            placeholder="••••••••" 
-            value={credentials.password} 
-            onChange={e => setCredentials({...credentials, password: e.target.value})} 
-          />
-          
-          <div className="pt-2">
-            <Button onClick={() => handleLogin(UserRole.CUSTOMER)} fullWidth size="lg">Login as Pilgrim</Button>
-          </div>
-
-          <div className="flex items-center gap-3 py-6 text-gray-300">
-            <div className="flex-1 h-px bg-gray-200"></div>
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-60">Partner Access</span>
-            <div className="flex-1 h-px bg-gray-200"></div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Button onClick={() => handleLogin(UserRole.AGENT)} fullWidth variant="outline" size="sm" className="!rounded-lg font-black">Agent Portal</Button>
-            <Button onClick={() => navigate('/admin')} fullWidth variant="ghost" size="sm" className="!rounded-lg border border-gray-100 font-black">Control Desk</Button>
-          </div>
-          
-          <div className="mt-8 p-4 bg-gray-50 border border-dashed border-gray-200 text-[9px] font-medium text-gray-400 leading-relaxed rounded-lg">
-            <p className="font-bold uppercase mb-1">Demo Access Credentials:</p>
-            <p>Admin ID: 990990 | Pass: Haris@1122@11</p>
-            <p>Agent: Any email | Pass: Any</p>
-          </div>
-        </div>
-      </Card>
-    </div>
-  );
 };
 
 const BookingConfirmation = () => {
@@ -170,6 +92,7 @@ const App: React.FC = () => {
       <Router>
         <ScrollToTop />
         <ToastContainer />
+        <AuthModal />
         <Routes>
           <Route path="/admin/*" element={<AdminPortal />} />
           <Route path="/agent/*" element={<AgentPortal />} />
@@ -182,8 +105,8 @@ const App: React.FC = () => {
                   <Route path="/" element={<HomePage />} />
                   <Route path="/search" element={<SearchPage />} />
                   <Route path="/hotel/:id" element={<HotelDetailsPage />} />
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<LoginPage />} />
+                  <Route path="/login" element={<LoginRedirectPage />} />
+                  <Route path="/signup" element={<LoginRedirectPage />} />
                   <Route path="/confirmation/:id" element={<BookingConfirmation />} />
                   <Route path="/my-bookings" element={<MyBookingsPage />} />
                   <Route path="/track" element={<TrackBookingPage />} />

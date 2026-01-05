@@ -6,6 +6,8 @@ import {
 } from '../types';
 import { INITIAL_HOTELS, INITIAL_SITE_SETTINGS, CURRENCY_RATES } from '../constants';
 
+type AuthMode = 'customer-login' | 'customer-signup' | 'agent-login';
+
 interface AppContextType {
   siteSettings: SiteSettings;
   setSiteSettings: (settings: SiteSettings) => void;
@@ -49,6 +51,16 @@ interface AppContextType {
   toasts: Toast[];
   addToast: (message: string, type?: 'success' | 'error') => void;
   removeToast: (id: number) => void;
+  // Auth Modal State
+  isAuthModalOpen: boolean;
+  authMode: AuthMode;
+  openAuthModal: (mode: AuthMode) => void;
+  closeAuthModal: () => void;
+  setAuthMode: (mode: AuthMode) => void;
+  // Auth Functions
+  customerLogin: (email: string, pass: string) => boolean;
+  customerSignUp: (name: string, email: string, pass: string) => boolean;
+  agentLogin: (agencyId: string, pass: string) => boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -61,6 +73,20 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [bookings, setBookings] = useState<Booking[]>([]);
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+
+  const [users, setUsers] = useState<User[]>([
+      { id: 'CUST-1', name: 'Sami Khan', email: 'user@test.com', password: 'password', role: UserRole.CUSTOMER }
+  ]);
+  
+  // Auth Modal State
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<AuthMode>('customer-login');
+  
+  const openAuthModal = (mode: AuthMode) => {
+    setAuthMode(mode);
+    setIsAuthModalOpen(true);
+  };
+  const closeAuthModal = () => setIsAuthModalOpen(false);
 
   const [agencies, setAgencies] = useState<Agent[]>([
     { id: '1234', agencyName: 'Haris T&Q', email: 'socialpalaces@gmail.com', password: 'password', status: 'Active', walletBalance: 2300800, iataCode: '24-58671', contactNumber: '+923001234567' },
@@ -98,6 +124,50 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
     }).format(converted);
+  };
+  
+  // --- AUTH FUNCTIONS ---
+  const customerLogin = (email: string, pass: string): boolean => {
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === pass);
+    if (user) {
+      setCurrentUser(user);
+      addToast(`Welcome back, ${user.name}!`);
+      closeAuthModal();
+      return true;
+    }
+    addToast('Invalid email or password.', 'error');
+    return false;
+  };
+  
+  const customerSignUp = (name: string, email: string, pass: string): boolean => {
+    if (users.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+        addToast('An account with this email already exists.', 'error');
+        return false;
+    }
+    const newUser: User = { id: `CUST-${Date.now()}`, name, email, password: pass, role: UserRole.CUSTOMER };
+    setUsers(prev => [...prev, newUser]);
+    setCurrentUser(newUser);
+    addToast(`Welcome, ${name}! Your account has been created.`);
+    closeAuthModal();
+    return true;
+  };
+  
+  const agentLogin = (agencyId: string, pass: string): boolean => {
+    const agent = agencies.find(a => a.id === agencyId && a.password === pass);
+    if (agent) {
+        setCurrentUser({
+            id: `USER-${agent.id}`,
+            name: agent.agencyName,
+            email: agent.email,
+            role: UserRole.AGENT,
+            agencyId: agent.id
+        });
+        addToast(`Welcome, ${agent.agencyName}!`);
+        closeAuthModal();
+        return true;
+    }
+    addToast('Invalid Agency ID or password.', 'error');
+    return false;
   };
 
   const addHotel = (hotel: Hotel) => setHotels(prev => [hotel, ...prev]);
@@ -245,7 +315,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 
       bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, assignBulkOrderItem, invoices, promoCodes, addPromoCode, deletePromoCode,
       emailNotifications,
-      toasts, addToast, removeToast
+      toasts, addToast, removeToast,
+      isAuthModalOpen, authMode, openAuthModal, closeAuthModal, setAuthMode,
+      customerLogin, customerSignUp, agentLogin
     }}>
       {children}
     </AppContext.Provider>
