@@ -63,7 +63,8 @@ const BulkOrderDetailsModal: React.FC<BulkOrderDetailsModalProps> = ({ isOpen, o
                                         </td>
                                         <td className="py-3 px-4 font-mono text-xs">{item.checkIn} &rarr; {item.checkOut}</td>
                                         <td className="py-3 px-4 text-center font-bold">{item.quantity}</td>
-                                        <td className="py-3 px-4 text-center font-bold">{item.assignedCount}</td>
+                                        {/* FIX: The property 'assignedCount' does not exist on BulkOrderItem. The count of assignments should be derived from the length of the 'assignments' array. Displaying as a fraction of total quantity for clarity. */}
+                                        <td className="py-3 px-4 text-center font-bold">{(item.assignments || []).length} / {item.quantity}</td>
                                         <td className="py-3 px-4 text-right font-bold text-primary">{formatPrice(item.subtotal)}</td>
                                     </tr>
                                 ))}

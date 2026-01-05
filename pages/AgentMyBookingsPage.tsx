@@ -4,6 +4,7 @@ import { Card, Badge, TableWrapper, Button, Input } from '../components/UI';
 import { Booking, BookingStatus } from '../types';
 import AgentEditBookingModal from '../components/AgentEditBookingModal';
 import AssignDetailsModal from '../components/AssignDetailsModal';
+import VoucherCustomizationModal from '../components/VoucherCustomizationModal';
 
 const RefreshIcon: React.FC<{ isRefreshing: boolean }> = ({ isRefreshing }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 transition-transform duration-300 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -24,6 +25,9 @@ const AgentMyBookingsPage: React.FC = () => {
     
     const [assigningBooking, setAssigningBooking] = useState<Booking | null>(null);
     const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    
+    const [voucherBooking, setVoucherBooking] = useState<Booking | null>(null);
+    const [isVoucherModalOpen, setIsVoucherModalOpen] = useState(false);
     
     const agentBookings = useMemo(() => {
         const baseBookings = bookings.filter(b => b.agencyId === currentUser?.agencyId);
@@ -96,6 +100,11 @@ const AgentMyBookingsPage: React.FC = () => {
         setIsAssignModalOpen(true);
     };
 
+    const openVoucherModal = (booking: Booking) => {
+        setVoucherBooking(booking);
+        setIsVoucherModalOpen(true);
+    };
+
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -151,12 +160,7 @@ const AgentMyBookingsPage: React.FC = () => {
                                 <td className="py-4 px-4 text-right font-bold text-xs uppercase tracking-widest space-x-2">
                                     <Button size="sm" variant="outline" onClick={() => openEditModal(b)} className="!rounded-md">Edit</Button>
                                     <Button size="sm" variant="teal" onClick={() => openAssignModal(b)} disabled={b.status !== BookingStatus.CONFIRMED} className="!rounded-md">Assign Details</Button>
-                                    <button 
-                                        onClick={() => window.open(`/#/agent/voucher/${b.id}`, '_blank')} 
-                                        className="text-primary hover:underline focus:outline-none px-3 py-1.5 font-black"
-                                    >
-                                        Voucher
-                                    </button>
+                                    <Button size="sm" variant="secondary" onClick={() => openVoucherModal(b)} className="!rounded-md">Voucher</Button>
                                 </td>
                             </tr>
                         ))}
@@ -175,6 +179,12 @@ const AgentMyBookingsPage: React.FC = () => {
                 isOpen={isAssignModalOpen}
                 onClose={() => setIsAssignModalOpen(false)}
                 booking={assigningBooking}
+            />
+
+            <VoucherCustomizationModal
+                isOpen={isVoucherModalOpen}
+                onClose={() => setIsVoucherModalOpen(false)}
+                booking={voucherBooking}
             />
         </div>
     );
