@@ -151,7 +151,7 @@ const TrackBookingPage: React.FC = () => {
             <Card className="overflow-hidden border-none shadow-2xl !rounded-none">
               <div className="bg-[#006D77] p-8 text-white flex justify-between items-center">
                 <div>
-                  <h2 className="text-2xl font-black italic uppercase tracking-tighter">Umrah Hotels</h2>
+                  <h2 className="text-2xl font-black italic uppercase tracking-tighter">{siteSettings.name}</h2>
                   <p className="text-white/60 text-[10px] uppercase font-bold tracking-[0.3em]">Official Voucher Registry</p>
                 </div>
                 <div className="text-right">
@@ -206,23 +206,30 @@ const TrackBookingPage: React.FC = () => {
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Authorized Channel Support</p>
                     <p className="text-sm font-bold text-[#006D77]">{siteSettings.contactEmail}</p>
                   </div>
-                  <div className="flex gap-3 w-full sm:w-auto">
-                    <Button 
-                      variant="outline" 
-                      className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
-                      onClick={() => handleDownloadVoucher(result)}
-                      disabled={isGeneratingPdf}
-                    >
-                      {isGeneratingPdf ? 'Processing...' : 'Download PDF'}
-                    </Button>
-                    <Button 
-                      variant="secondary" 
-                      className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg"
-                      onClick={() => openModifyModal(result)}
-                    >
-                      Modify Stay
-                    </Button>
-                  </div>
+                  {result.status === BookingStatus.CANCELLED ? (
+                      <div className="w-full sm:w-auto bg-red-50 text-red-700 p-4 rounded-lg text-center font-bold text-xs border border-red-200">
+                          <p>This booking has been cancelled.</p>
+                          <p className="font-medium mt-1">Please contact support for assistance.</p>
+                      </div>
+                  ) : (
+                    <div className="flex gap-3 w-full sm:w-auto">
+                      <Button 
+                        variant="outline" 
+                        className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
+                        onClick={() => handleDownloadVoucher(result)}
+                        disabled={isGeneratingPdf}
+                      >
+                        {isGeneratingPdf ? 'Processing...' : 'Download PDF'}
+                      </Button>
+                      <Button 
+                        variant="secondary" 
+                        className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg"
+                        onClick={() => openModifyModal(result)}
+                      >
+                        Modify Stay
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -239,7 +246,7 @@ const TrackBookingPage: React.FC = () => {
                            </svg>
                         </div>
                         <div>
-                          <h1 className="text-3xl font-black text-[#006D77] tracking-tighter uppercase italic">Umrah Hotels</h1>
+                          <h1 className="text-3xl font-black text-[#006D77] tracking-tighter uppercase italic">{siteSettings.name}</h1>
                           <p className="text-[10px] font-black text-[#006D77]/60 tracking-widest uppercase">www.umrahstay.com</p>
                         </div>
                       </div>
@@ -316,7 +323,7 @@ const TrackBookingPage: React.FC = () => {
                         <ul className="space-y-3">
                           {['Please present this voucher upon check-in. A valid photo ID may be required.', 
                             'This booking is non-refundable unless otherwise stated in the booking policy.', 
-                            'For any assistance, please contact us at support@umrahhotels.com.'].map((note, i) => (
+                            `For any assistance, please contact us at ${siteSettings.contactEmail}.`].map((note, i) => (
                             <li key={i} className="flex gap-3 text-xs font-bold text-gray-400 leading-relaxed">
                               <span className="text-[#006D77]">•</span>
                               {note}
@@ -343,52 +350,61 @@ const TrackBookingPage: React.FC = () => {
       <Modal 
         isOpen={isModifyModalOpen} 
         onClose={() => setIsModifyModalOpen(false)} 
-        title="Stay Adjustment"
+        title="Stay Adjustment Request"
       >
-        <form onSubmit={handleModifySubmit} className="space-y-6">
-          <p className="text-xs text-gray-500 font-medium italic">
-            "Request stay adjustments directly from our authorized registry desk. Please select the type of request below."
-          </p>
-          
-          <Select 
-            label="Request Type" 
-            value={modifyForm.requestType}
-            onChange={e => setModifyForm({...modifyForm, requestType: e.target.value})}
-            options={[
-              { label: 'Date Change Request', value: 'Date Change' },
-              { label: 'Booking Cancellation', value: 'Cancellation' },
-              { label: 'Refund Inquiry', value: 'Refund' }
-            ]}
-          />
-
-          {modifyForm.requestType === 'Date Change' && (
-            <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-300">
-              <Input 
-                label="New Arrival" 
-                type="date" 
-                value={modifyForm.checkIn} 
-                onChange={e => setModifyForm({...modifyForm, checkIn: e.target.value})} 
-              />
-              <Input 
-                label="New Departure" 
-                type="date" 
-                value={modifyForm.checkOut} 
-                onChange={e => setModifyForm({...modifyForm, checkOut: e.target.value})} 
-              />
+        <form onSubmit={handleModifySubmit}>
+            <div className="p-6 md:p-8 space-y-6 bg-gray-50/50">
+              <p className="text-xs text-gray-500 font-medium italic leading-relaxed">
+                "Stay modification requests are reviewed within 12 hours. Please provide the necessary details for your request below. Note that changes may be subject to availability and additional fees."
+              </p>
+              <div className="bg-white p-6 rounded-xl border space-y-4">
+                  <Select 
+                    label="Request Type" 
+                    value={modifyForm.requestType}
+                    onChange={e => setModifyForm({...modifyForm, requestType: e.target.value})}
+                    options={[
+                      { label: 'Date Change Request', value: 'Date Change' },
+                      { label: 'Booking Cancellation', value: 'Cancellation' },
+                      { label: 'Other Inquiry', value: 'Other' }
+                    ]}
+                    className="!rounded-lg !bg-gray-100 border-gray-200"
+                  />
+    
+                  {modifyForm.requestType === 'Date Change' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                      <Input 
+                        label="New Arrival" 
+                        type="date" 
+                        value={modifyForm.checkIn} 
+                        onChange={e => setModifyForm({...modifyForm, checkIn: e.target.value})} 
+                        className="!rounded-lg"
+                      />
+                      <Input 
+                        label="New Departure" 
+                        type="date" 
+                        value={modifyForm.checkOut} 
+                        onChange={e => setModifyForm({...modifyForm, checkOut: e.target.value})} 
+                        className="!rounded-lg"
+                      />
+                    </div>
+                  )}
+    
+                  <div>
+                    <label className="block text-[8px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">Reason for Request</label>
+                    <textarea 
+                      className="w-full bg-white border border-gray-200 p-3 rounded-lg text-sm font-medium text-neutralDark outline-none focus:border-[#006D77]/50 min-h-[120px] resize-y"
+                      placeholder="Please provide details to help our team process your request efficiently..."
+                      value={modifyForm.reason}
+                      onChange={e => setModifyForm({...modifyForm, reason: e.target.value})}
+                      required
+                    />
+                  </div>
+              </div>
             </div>
-          )}
-
-          <div className="space-y-4">
-            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">Additional Context / Reason</label>
-            <textarea 
-              className="w-full bg-gray-50 border border-gray-100 p-4 rounded-none text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50 min-h-[100px]"
-              placeholder="Provide context for our review team..."
-              value={modifyForm.reason}
-              onChange={e => setModifyForm({...modifyForm, reason: e.target.value})}
-            />
-          </div>
-
-          <Button type="submit" variant="teal" fullWidth className="!rounded-none h-14 font-black uppercase tracking-widest">Submit Request</Button>
+             <div className="bg-white p-4 flex justify-end gap-2 border-t">
+                <Button type="button" variant="outline" onClick={() => setIsModifyModalOpen(false)} className="!rounded-lg">Cancel</Button>
+                <Button type="submit" variant="teal" className="!rounded-lg">Submit Request</Button>
+            </div>
         </form>
       </Modal>
     </div>

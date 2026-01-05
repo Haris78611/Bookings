@@ -26,9 +26,11 @@ const BookingsPage: React.FC = () => {
 
   const filteredBookings = useMemo(() => {
     if (agencyIdFilter) {
+      // When filtering for a specific agency, show their bookings
       return bookings.filter(b => b.agencyId === agencyIdFilter);
     }
-    return bookings;
+    // By default, show only direct bookings (no agencyId)
+    return bookings.filter(b => !b.agencyId);
   }, [bookings, agencyIdFilter]);
   
   const filteringAgency = agencyIdFilter ? agencies.find(a => a.id === agencyIdFilter) : null;
@@ -70,9 +72,9 @@ const BookingsPage: React.FC = () => {
 
   return (
     <>
-      <PageHeader title={filteringAgency ? `Bookings for ${filteringAgency.agencyName}` : "All Bookings"}>
+      <PageHeader title={filteringAgency ? `Bookings for ${filteringAgency.agencyName}` : "Direct Customer Bookings"}>
         {filteringAgency && (
-          <Link to="/admin/bookings" className="text-sm font-bold text-secondary hover:underline">&larr; Show All Bookings</Link>
+          <Link to="/admin/bookings" className="text-sm font-bold text-secondary hover:underline">&larr; Show All Direct Bookings</Link>
         )}
         <RefreshButton isRefreshing={isRefreshing} onClick={handleRefresh} />
       </PageHeader>
@@ -112,7 +114,7 @@ const BookingsPage: React.FC = () => {
                   </tr>
                 )
               })}
-              {filteredBookings.length === 0 && <EmptyState message={filteringAgency ? `No bookings found for ${filteringAgency.agencyName}.` : "No bookings found."} />}
+              {filteredBookings.length === 0 && <EmptyState message={filteringAgency ? `No bookings found for ${filteringAgency.agencyName}.` : "No direct customer bookings found."} />}
             </tbody>
           </table>
         </TableWrapper>

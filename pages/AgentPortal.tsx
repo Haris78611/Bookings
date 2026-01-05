@@ -11,6 +11,7 @@ import AgentDashboardPage from './AgentDashboardPage';
 import AgentBulkBookingPage from './AgentBulkBookingPage';
 import AgentMyBookingsPage from './AgentMyBookingsPage';
 import AgentSettingsPage from './AgentSettingsPage';
+import AgentVoucherPage from './AgentVoucherPage';
 
 const AgentPortal: React.FC = () => {
   const { currentUser } = useAppContext();
@@ -26,6 +27,7 @@ const AgentPortal: React.FC = () => {
     if (path.includes('/agent/bulk')) return 'Bulk Booking';
     if (path.includes('/agent/bookings')) return 'My Bookings';
     if (path.includes('/agent/settings')) return 'Settings';
+    if (path.includes('/agent/voucher')) return 'Booking Voucher';
     return 'Dashboard';
   };
 
@@ -38,6 +40,7 @@ const AgentPortal: React.FC = () => {
           <Route path="bulk" element={<AgentBulkBookingPage />} />
           <Route path="bookings" element={<AgentMyBookingsPage />} />
           <Route path="settings" element={<AgentSettingsPage />} />
+          <Route path="voucher/:bookingId" element={<AgentVoucherPage />} />
         </Routes>
       </div>
     </DashboardLayout>

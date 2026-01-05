@@ -203,14 +203,16 @@ const MyBookingsPage: React.FC = () => {
                     <div className="p-12">
                       <header className="flex justify-between items-start mb-12">
                         <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-[#006D77] flex items-center justify-center rounded-lg shadow-lg">
-                             <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                             </svg>
-                          </div>
+                            {siteSettings.logo && siteSettings.logo.startsWith('data:image') ? (
+                                <img src={siteSettings.logo} alt="Logo" className="h-12 w-12 object-contain bg-gray-100 p-1 rounded-lg shadow-lg" />
+                            ) : (
+                                <div className="w-12 h-12 bg-[#006D77] flex items-center justify-center rounded-lg shadow-lg">
+                                    <span className="text-2xl text-white">{siteSettings.logo || '🕋'}</span>
+                                </div>
+                            )}
                           <div>
-                            <h1 className="text-3xl font-black text-[#006D77] tracking-tighter uppercase italic">Umrah Hotels</h1>
-                            <p className="text-[10px] font-black text-[#006D77]/60 tracking-widest uppercase">www.umrahstay.com</p>
+                            <h1 className="text-3xl font-black text-[#006D77] tracking-tighter uppercase italic">{siteSettings.name}</h1>
+                            <p className="text-[10px] font-black text-[#006D77]/60 tracking-widest uppercase">{siteSettings.contactEmail}</p>
                           </div>
                         </div>
                         <div className="text-right">
@@ -237,7 +239,7 @@ const MyBookingsPage: React.FC = () => {
                           <h3 className="text-sm font-black text-[#006D77] uppercase tracking-widest mb-2">Hotel Details</h3>
                           <div className="h-0.5 w-full bg-[#006D77] mb-4 opacity-30"></div>
                           <p className="text-2xl font-black text-gray-800 mb-1">{booking.hotelName}</p>
-                          <p className="text-sm font-bold text-gray-400">Authorized Logistics Region, Makkah KSA</p>
+                          <p className="text-sm font-bold text-gray-400">{siteSettings.contactAddress}</p>
                         </div>
                       </div>
 
@@ -288,7 +290,7 @@ const MyBookingsPage: React.FC = () => {
                           <ul className="space-y-3">
                             {['Please present this voucher upon check-in. A valid photo ID may be required.', 
                               'This booking is non-refundable unless otherwise stated in the booking policy.', 
-                              'For any assistance, please contact us at support@umrahhotels.com.'].map((note, i) => (
+                              `For any assistance, please contact us at ${siteSettings.contactEmail}.`].map((note, i) => (
                               <li key={i} className="flex gap-3 text-xs font-bold text-gray-400 leading-relaxed">
                                 <span className="text-[#006D77]">•</span>
                                 {note}
@@ -322,52 +324,61 @@ const MyBookingsPage: React.FC = () => {
       <Modal 
         isOpen={isModifyModalOpen} 
         onClose={() => setIsModifyModalOpen(false)} 
-        title="Stay Adjustment"
+        title="Stay Adjustment Request"
       >
-        <form onSubmit={handleModifySubmit} className="space-y-6">
-          <p className="text-xs text-gray-500 font-medium italic">
-            "Authorized stay modification requests are reviewed within 12 hours. Please select your request type below."
-          </p>
-          
-          <Select 
-            label="Request Type" 
-            value={modifyForm.requestType}
-            onChange={e => setModifyForm({...modifyForm, requestType: e.target.value})}
-            options={[
-              { label: 'Date Change Request', value: 'Date Change' },
-              { label: 'Booking Cancellation', value: 'Cancellation' },
-              { label: 'Refund Inquiry', value: 'Refund' }
-            ]}
-          />
-
-          {modifyForm.requestType === 'Date Change' && (
-            <div className="grid grid-cols-2 gap-4 animate-in fade-in duration-300">
-              <Input 
-                label="New Arrival" 
-                type="date" 
-                value={modifyForm.checkIn} 
-                onChange={e => setModifyForm({...modifyForm, checkIn: e.target.value})} 
-              />
-              <Input 
-                label="New Departure" 
-                type="date" 
-                value={modifyForm.checkOut} 
-                onChange={e => setModifyForm({...modifyForm, checkOut: e.target.value})} 
-              />
+        <form onSubmit={handleModifySubmit}>
+            <div className="p-6 md:p-8 space-y-6 bg-gray-50/50">
+              <p className="text-xs text-gray-500 font-medium italic leading-relaxed">
+                "Stay modification requests are reviewed within 12 hours. Please provide the necessary details for your request below. Note that changes may be subject to availability and additional fees."
+              </p>
+              <div className="bg-white p-6 rounded-xl border space-y-4">
+                  <Select 
+                    label="Request Type" 
+                    value={modifyForm.requestType}
+                    onChange={e => setModifyForm({...modifyForm, requestType: e.target.value})}
+                    options={[
+                      { label: 'Date Change Request', value: 'Date Change' },
+                      { label: 'Booking Cancellation', value: 'Cancellation' },
+                      { label: 'Other Inquiry', value: 'Other' }
+                    ]}
+                    className="!rounded-lg !bg-gray-100 border-gray-200"
+                  />
+    
+                  {modifyForm.requestType === 'Date Change' && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-300">
+                      <Input 
+                        label="New Arrival" 
+                        type="date" 
+                        value={modifyForm.checkIn} 
+                        onChange={e => setModifyForm({...modifyForm, checkIn: e.target.value})} 
+                        className="!rounded-lg"
+                      />
+                      <Input 
+                        label="New Departure" 
+                        type="date" 
+                        value={modifyForm.checkOut} 
+                        onChange={e => setModifyForm({...modifyForm, checkOut: e.target.value})} 
+                        className="!rounded-lg"
+                      />
+                    </div>
+                  )}
+    
+                  <div>
+                    <label className="block text-[8px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">Reason for Request</label>
+                    <textarea 
+                      className="w-full bg-white border border-gray-200 p-3 rounded-lg text-sm font-medium text-neutralDark outline-none focus:border-[#006D77]/50 min-h-[120px] resize-y"
+                      placeholder="Please provide details to help our team process your request efficiently..."
+                      value={modifyForm.reason}
+                      onChange={e => setModifyForm({...modifyForm, reason: e.target.value})}
+                      required
+                    />
+                  </div>
+              </div>
             </div>
-          )}
-
-          <div className="space-y-4">
-            <label className="block text-[8px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">Additional Context / Reason</label>
-            <textarea 
-              className="w-full bg-gray-50 border border-gray-100 p-4 rounded-none text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50 min-h-[100px]"
-              placeholder="Provide details for our administrative team..."
-              value={modifyForm.reason}
-              onChange={e => setModifyForm({...modifyForm, reason: e.target.value})}
-            />
-          </div>
-
-          <Button type="submit" variant="teal" fullWidth className="!rounded-none h-14 font-black uppercase tracking-widest">Transmit Update</Button>
+             <div className="bg-white p-4 flex justify-end gap-2 border-t">
+                <Button type="button" variant="outline" onClick={() => setIsModifyModalOpen(false)} className="!rounded-lg">Cancel</Button>
+                <Button type="submit" variant="teal" className="!rounded-lg">Submit Request</Button>
+            </div>
         </form>
       </Modal>
     </div>

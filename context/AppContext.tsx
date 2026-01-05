@@ -23,6 +23,7 @@ interface AppContextType {
   deleteRoomFromHotel: (hotelId: string, roomId: string) => void;
   bookings: Booking[];
   addBooking: (booking: Booking) => void;
+  updateBooking: (bookingId: string, updatedDetails: Partial<Booking>) => void;
   updateBookingStatus: (id: string, status: BookingStatus, details?: { requestedCheckIn?: string, requestedCheckOut?: string }) => void;
   approveBookingRequest: (id: string) => void;
   rejectBookingRequest: (id: string) => void;
@@ -44,7 +45,6 @@ interface AppContextType {
   promoCodes: PromoCode[];
   addPromoCode: (promo: PromoCode) => void;
   deletePromoCode: (id: string) => void;
-  notifications: string[];
   emailNotifications: Notification[];
   toasts: Toast[];
   addToast: (message: string, type?: 'success' | 'error') => void;
@@ -57,19 +57,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(INITIAL_SITE_SETTINGS);
   const [currency, setCurrency] = useState<Currency>('PKR');
   const [hotels, setHotels] = useState<Hotel[]>(INITIAL_HOTELS);
-  const [notifications, setNotifications] = useState<string[]>([
-    "Booking Open for Ramadan 1447, Good Luck",
-    "Good Morning • Make Bookings for Ramadan and Hajj 2026 • good luck",
-    "Special Partner Rates active for Clock Tower properties"
-  ]);
   
   const [bookings, setBookings] = useState<Booking[]>([]);
   
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   const [agencies, setAgencies] = useState<Agent[]>([
-    { id: '1234', agencyName: 'Haris T&Q', email: 'socialpalaces@gmail.com', status: 'Active', walletBalance: 2300800, iataCode: '24-58671', contactNumber: '+923001234567' },
-    { id: 'AG-002', agencyName: 'Universal Pilgrims Ltd', email: 'universal@travel.com', status: 'Active', walletBalance: 1250000, iataCode: '96-01234', contactNumber: '+442071234567' }
+    { id: '1234', agencyName: 'Haris T&Q', email: 'socialpalaces@gmail.com', password: 'password', status: 'Active', walletBalance: 2300800, iataCode: '24-58671', contactNumber: '+923001234567' },
+    { id: 'AG-002', agencyName: 'Universal Pilgrims Ltd', email: 'universal@travel.com', password: 'password', status: 'Active', walletBalance: 1250000, iataCode: '96-01234', contactNumber: '+442071234567' }
   ]);
 
   const [bulkOrders, setBulkOrders] = useState<BulkOrder[]>([]);
@@ -121,6 +116,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addBooking = (booking: Booking) => setBookings(prev => [booking, ...prev]);
   
+  const updateBooking = (bookingId: string, updatedDetails: Partial<Booking>) => {
+    setBookings(prev => prev.map(b => (b.id === bookingId ? { ...b, ...updatedDetails } : b)));
+  };
+
   const updateBookingStatus = (id: string, status: BookingStatus, details?: { requestedCheckIn?: string, requestedCheckOut?: string }) => {
     setBookings(prev => prev.map(b => {
       if (b.id === id) {
@@ -166,7 +165,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   const addBulkOrder = (order: BulkOrder) => setBulkOrders(prev => [order, ...prev]);
   const deleteBulkOrder = (id: string) => setBulkOrders(prev => prev.filter(o => o.id !== id));
-  const updateBulkOrderStatus = (id: string, status: BulkOrderStatus) => setBulkOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
+  
+  const updateBulkOrderStatus = (id: string, status: BulkOrderStatus) => {
+    const order = bulkOrders.find(o => o.id === id);
+    if (!order) {
+        addToast(`Order with ID ${id} not found.`, "error");
+        return;
+    }
+
+    // If admin confirms a pending order, process payment
+    if (status === BulkOrderStatus.CONFIRMED && order.status === BulkOrderStatus.PENDING) {
+        const agency = agencies.find(a => a.id === order.agencyId);
+        if (!agency) {
+            addToast(`Agency for order ${id} not found.`, "error");
+            return;
+        }
+        if (agency.walletBalance < order.totalCost) {
+            addToast(`Agency "${agency.agencyName}" has insufficient funds to confirm this order.`, "error");
+            return; // Abort status change
+        }
+        
+        // Process payment
+        updateAgentWallet(agency.id, order.totalCost, 'Debit', `Bulk Purchase Confirmed: ${order.id}`);
+        addToast(`Order ${id} confirmed and wallet debited.`, "success");
+    } else {
+        addToast(`Order ${id} status updated to ${status}.`);
+    }
+
+    // Update the order status in state
+    setBulkOrders(prev => prev.map(o => (o.id === id ? { ...o, status } : o)));
+};
+
 
   const assignBulkOrderItem = (orderId: string, itemId: string) => {
     setBulkOrders(prev => prev.map(order => {
@@ -192,10 +221,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     <AppContext.Provider value={{
       siteSettings, setSiteSettings, currency, setCurrency, formatPrice, hotels, setHotels, addHotel, updateHotel, deleteHotel,
       addRoomToHotel, updateRoomInHotel, deleteRoomFromHotel,
-      bookings, addBooking, updateBookingStatus, approveBookingRequest, rejectBookingRequest, deleteBookings, currentUser, setCurrentUser, logout,
+      bookings, addBooking, updateBooking, updateBookingStatus, approveBookingRequest, rejectBookingRequest, deleteBookings, currentUser, setCurrentUser, logout,
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 
       bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, assignBulkOrderItem, invoices, promoCodes, addPromoCode, deletePromoCode,
-      notifications,
       emailNotifications,
       toasts, addToast, removeToast
     }}>

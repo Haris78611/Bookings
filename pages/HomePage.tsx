@@ -98,7 +98,7 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="max-w-5xl mx-auto animate-fade-up stagger-1" style={{animationFillMode: 'forwards'}}>
-            <div className="bg-white p-4 md:p-6 rounded-none shadow-2xl border border-gray-100">
+            <div className="bg-white p-4 md:p-6 rounded-xl shadow-2xl border border-gray-100">
               <form onSubmit={handleSearch} className="flex flex-col">
                 <div className="flex justify-end mb-3 pr-1">
                   <Link to="/track" className="text-[12px] md:text-sm font-bold text-[#006D77] hover:underline flex items-center gap-1">
@@ -114,7 +114,7 @@ const HomePage: React.FC = () => {
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                       </div>
                       <select 
-                        className="w-full bg-white border border-gray-200 p-3 pl-10 pr-10 rounded-none text-gray-700 font-bold text-sm outline-none appearance-none cursor-pointer focus:border-[#006D77]/50 transition-all"
+                        className="w-full bg-white border border-gray-200 p-3 pl-10 pr-10 rounded-lg text-gray-700 font-bold text-sm outline-none appearance-none cursor-pointer focus:border-[#006D77]/50 transition-all"
                         value={filters.city}
                         onChange={(e) => handleFilterChange('city', e.target.value)}
                       >
@@ -130,7 +130,7 @@ const HomePage: React.FC = () => {
                     <div className="relative">
                       <input 
                         type="date" 
-                        className="w-full bg-white border border-gray-200 p-3 px-4 rounded-none text-gray-700 font-bold text-sm outline-none cursor-pointer focus:border-[#006D77]/50 transition-all" 
+                        className="w-full bg-white border border-gray-200 p-3 px-4 rounded-lg text-gray-700 font-bold text-sm outline-none cursor-pointer focus:border-[#006D77]/50 transition-all" 
                         value={filters.checkIn}
                         onChange={(e) => handleFilterChange('checkIn', e.target.value)}
                         required 
@@ -143,7 +143,7 @@ const HomePage: React.FC = () => {
                     <div className="relative">
                       <input 
                         type="date" 
-                        className="w-full bg-white border border-gray-200 p-3 px-4 rounded-none text-gray-700 font-bold text-sm outline-none cursor-pointer focus:border-[#006D77]/50 transition-all" 
+                        className="w-full bg-white border border-gray-200 p-3 px-4 rounded-lg text-gray-700 font-bold text-sm outline-none cursor-pointer focus:border-[#006D77]/50 transition-all" 
                         value={filters.checkOut}
                         onChange={(e) => handleFilterChange('checkOut', e.target.value)}
                         required 
@@ -154,7 +154,7 @@ const HomePage: React.FC = () => {
 
                 <button 
                   type="submit" 
-                  className="w-full bg-[#E29578] hover:bg-[#d88465] text-white p-3.5 rounded-none font-bold text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99]"
+                  className="w-full bg-[#E29578] hover:bg-[#d88465] text-white p-3.5 rounded-lg font-bold text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99]"
                   disabled={isSearching}
                 >
                   {isSearching ? (

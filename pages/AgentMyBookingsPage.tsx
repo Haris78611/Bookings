@@ -2,6 +2,8 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Card, Badge, TableWrapper, Button } from '../components/UI';
+import { Booking } from '../types';
+import AgentEditBookingModal from '../components/AgentEditBookingModal';
 
 const RefreshIcon: React.FC<{ isRefreshing: boolean }> = ({ isRefreshing }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 transition-transform duration-300 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -15,6 +17,9 @@ const AgentMyBookingsPage: React.FC = () => {
     
     const [selectedBookingIds, setSelectedBookingIds] = useState<string[]>([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    
+    const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
     const agentBookings = useMemo(() => 
         bookings.filter(b => b.agencyId === currentUser?.agencyId), 
@@ -70,6 +75,11 @@ const AgentMyBookingsPage: React.FC = () => {
             default: return 'info';
         }
     };
+    
+    const openEditModal = (booking: Booking) => {
+        setEditingBooking(booking);
+        setIsEditModalOpen(true);
+    };
 
     return (
         <div className="space-y-6">
@@ -114,8 +124,14 @@ const AgentMyBookingsPage: React.FC = () => {
                                 <td className="py-4 px-4">{b.hotelName}</td>
                                 <td className="py-4 px-4 font-bold text-primary">{formatPrice(b.totalPrice)}</td>
                                 <td className="py-4 px-4"><Badge variant={getStatusVariant(b.status)}>{b.status}</Badge></td>
-                                <td className="py-4 px-4 text-right">
-                                    <a href={`/#/confirmation/${b.id}`} target="_blank" rel="noopener noreferrer" className="text-primary font-bold hover:underline">Voucher</a>
+                                <td className="py-4 px-4 text-right font-bold text-xs uppercase tracking-widest space-x-4">
+                                    <button onClick={() => openEditModal(b)} className="text-secondary hover:underline">Edit</button>
+                                    <button 
+                                        onClick={() => window.open(`/#/agent/voucher/${b.id}`, '_blank')} 
+                                        className="text-primary hover:underline focus:outline-none"
+                                    >
+                                        Voucher
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -123,6 +139,12 @@ const AgentMyBookingsPage: React.FC = () => {
                   </table>
                </TableWrapper>
             </Card>
+
+            <AgentEditBookingModal 
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                booking={editingBooking}
+            />
         </div>
     );
 };

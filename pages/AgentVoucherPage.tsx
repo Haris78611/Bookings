@@ -1,10 +1,9 @@
 
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useAppContext } from '../../context/AppContext';
-import { PageHeader } from '../../components/AdminUI';
-import { Button, Card } from '../../components/UI';
-import { Booking, Agent } from '../../types';
+import { useAppContext } from '../context/AppContext';
+import { Button, Card } from '../components/UI';
+import { Booking, Agent } from '../types';
 
 const formatDateLabel = (dateStr: string) => {
     if (!dateStr) return '';
@@ -76,7 +75,6 @@ const VoucherTemplate: React.FC<{ booking: Booking, agent?: Agent | null }> = ({
                     </div>
                 )}
 
-
                 <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-16 rounded-xl">
                     <div className="text-center flex-1 border-r border-[#DCEEF0]"><p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Check-in Date</p><p className="text-lg font-black text-[#006D77]">{formatDateLabel(booking.checkIn)}</p></div>
                     <div className="text-center flex-1 border-r border-[#DCEEF0]"><p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Check-out Date</p><p className="text-lg font-black text-[#006D77]">{formatDateLabel(booking.checkOut)}</p></div>
@@ -111,7 +109,7 @@ const VoucherTemplate: React.FC<{ booking: Booking, agent?: Agent | null }> = ({
     );
 };
 
-const VoucherPage: React.FC = () => {
+const AgentVoucherPage: React.FC = () => {
     const { bookingId } = useParams<{ bookingId: string }>();
     const { bookings, agencies } = useAppContext();
     const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -122,10 +120,7 @@ const VoucherPage: React.FC = () => {
     const handleDownloadVoucher = async () => {
         if (!booking) return;
         const input = document.getElementById(`voucher-template-${booking.id}`);
-        if (!input) {
-            console.error("Voucher template element not found.");
-            return;
-        }
+        if (!input) return;
 
         setIsGeneratingPdf(true);
         await new Promise(resolve => setTimeout(resolve, 100));
@@ -149,63 +144,37 @@ const VoucherPage: React.FC = () => {
 
     if (!booking) {
         return (
-            <>
-                <PageHeader title="Voucher Not Found">
-                    <Link to="/admin/bookings" className="text-sm font-bold text-primary hover:underline">&larr; Back to Bookings</Link>
-                </PageHeader>
+            <div className="p-8">
                 <Card className="p-12 text-center">
-                    <p className="text-red-500 font-bold">The booking with ID "{bookingId}" could not be found in the registry.</p>
+                    <p className="text-red-500 font-bold">The booking with ID "{bookingId}" could not be found.</p>
                 </Card>
-            </>
+            </div>
         );
     }
 
     return (
-        <>
-            <PageHeader title={`Voucher: ${booking.id}`}>
-                <div className="print-hide">
-                    <div className="flex items-center gap-3">
-                        <Button onClick={() => window.print()} variant="primary" className="!rounded-lg">Print</Button>
-                        <Button onClick={handleDownloadVoucher} disabled={isGeneratingPdf} variant="secondary" className="!rounded-lg">
-                            {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
-                        </Button>
-                        <Link to="/admin/bookings" className="text-sm font-bold text-primary hover:underline">&larr; Back to Bookings</Link>
-                    </div>
-                </div>
-            </PageHeader>
+        <div className="space-y-6">
+            <div className="flex justify-end items-center gap-3 print-hide">
+                <Button onClick={() => window.print()} variant="primary" className="!rounded-lg">Print</Button>
+                <Button onClick={handleDownloadVoucher} disabled={isGeneratingPdf} variant="secondary" className="!rounded-lg">
+                    {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
+                </Button>
+                <Link to="/agent/bookings" className="text-sm font-bold text-primary hover:underline">&larr; Back to Bookings</Link>
+            </div>
             <div className="animate-in fade-in duration-500 voucher-container">
                 <VoucherTemplate booking={booking} agent={agent} />
             </div>
 
             <style>{`
                 @media print {
-                    body > #root > div, body > #root > div > main > div > div:first-child { 
-                        display: none !important;
-                    }
-                    .print-hide {
-                        display: none !important;
-                    }
-                    body > #root > div > main > div > .voucher-container {
-                        display: block !important;
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        width: 100%;
-                    }
-                    #root, main, .animate-in {
-                        padding: 0 !important;
-                        margin: 0 !important;
-                    }
-                    #voucher-template-${booking.id} {
-                        box-shadow: none !important;
-                        border: none !important;
-                        max-width: 100% !important;
-                        width: 100% !important;
-                    }
+                    .print-hide, .DashboardLayout_sidebar { display: none !important; }
+                    /* Adjust layout for printing */
+                    body > #root > div > div { padding: 0 !important; }
+                    body > #root > div > main { padding: 0 !important; }
                 }
             `}</style>
-        </>
+        </div>
     );
 };
 
-export default VoucherPage;
+export default AgentVoucherPage;

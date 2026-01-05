@@ -97,9 +97,9 @@ export const INITIAL_HOTELS: Hotel[] = [
 
 export const INITIAL_SITE_SETTINGS: SiteSettings = {
   name: 'UmrahStay',
-  logo: '🕋 UmrahStay',
+  logo: '🕋',
   bannerImage: 'https://images.unsplash.com/photo-1564769625905-50e93615e769?q=80&w=1920&auto=format&fit=crop',
-  announcement: 'Special Offer: Book early for Ramadan 2025 and get exclusive wholesale rates!',
+  announcement: 'Welcome to UmrahStay - Your Partner for Sacred Journeys',
   contactEmail: 'support@umrahstay.com',
   contactPhone: '+92 300 1234567',
   contactAddress: 'Authorized Logistics Desk, King Abdulaziz Road, Makkah, KSA',

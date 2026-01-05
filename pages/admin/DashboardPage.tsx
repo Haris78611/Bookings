@@ -1,5 +1,5 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { Button, Card, Badge } from '../../components/UI';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
@@ -40,23 +40,27 @@ const RevenueIcon = () => (
 // --- Main Dashboard Page Component ---
 
 const DashboardPage: React.FC = () => {
-  const { siteSettings, setSiteSettings, bookings, hotels, formatPrice, agencies } = useAppContext();
+  const { siteSettings, setSiteSettings, bookings, hotels, formatPrice, agencies, addToast } = useAppContext();
   const [announcementText, setAnnouncementText] = useState(siteSettings.announcement);
   const [isRefreshing, setIsRefreshing] = useState(false);
+
+  useEffect(() => {
+    setAnnouncementText(siteSettings.announcement);
+  }, [siteSettings.announcement]);
 
   const recentBookings = useMemo(() => bookings.slice(0, 5), [bookings]);
   const totalRevenue = useMemo(() => bookings.reduce((sum, booking) => sum + booking.totalPrice, 0), [bookings]);
 
   const handleUpdateAnnouncement = () => {
     setSiteSettings({ ...siteSettings, announcement: announcementText });
-    alert("Website announcement updated successfully.");
+    addToast("Website announcement updated successfully.");
   };
   
   const handleRefresh = () => {
     setIsRefreshing(true);
     setTimeout(() => {
         setIsRefreshing(false);
-        alert('Data successfully synchronized.');
+        addToast('Data successfully synchronized.');
     }, 800);
   };
 

@@ -30,7 +30,7 @@ const SupportPage: React.FC = () => {
           <Card className="p-6 text-center">
             <div className="text-3xl mb-4">📍</div>
             <h3 className="font-bold mb-2">Main Office</h3>
-            <p className="text-xs text-gray-400">Authorized Logistics Desk, KSA</p>
+            <p className="text-xs text-gray-400">{siteSettings.contactAddress}</p>
           </Card>
         </div>
 

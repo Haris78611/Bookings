@@ -1,14 +1,14 @@
 
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Button, Card, TableWrapper, Input, Select } from '../components/UI';
+import { Button, Card, TableWrapper, Input, Select, Badge } from '../components/UI';
 import { BulkOrderStatus, BulkOrder, BulkOrderItem } from '../types';
 import AgentBookingModal from '../components/AgentBookingModal';
 
 const AgentBulkBookingPage: React.FC = () => {
   const { 
     currentUser, agencies, formatPrice, hotels, bulkOrders, addBulkOrder, 
-    deleteBulkOrder, updateAgentWallet, addToast
+    deleteBulkOrder, addToast
   } = useAppContext();
   
   const agent = agencies.find(a => a.id === currentUser?.agencyId);
@@ -55,11 +55,10 @@ const AgentBulkBookingPage: React.FC = () => {
 
     const newOrder: BulkOrder = {
       id: `BO-${Date.now()}`, agencyId: agent.id, items: cart, totalCost: cartTotal,
-      status: BulkOrderStatus.CONFIRMED, createdAt: new Date().toISOString()
+      status: BulkOrderStatus.PENDING, createdAt: new Date().toISOString()
     };
     addBulkOrder(newOrder);
-    updateAgentWallet(agent.id, cartTotal, 'Debit', `Bulk Purchase: ${newOrder.id}`);
-    addToast(`Bulk purchase ${newOrder.id} confirmed.`);
+    addToast(`Bulk purchase request ${newOrder.id} submitted for approval.`);
     setCart([]);
   };
   
@@ -74,6 +73,16 @@ const AgentBulkBookingPage: React.FC = () => {
         addToast(`Bulk order ${orderId} deleted.`, 'error');
     }
   }
+  
+  const getStatusBadgeVariant = (status: BulkOrderStatus) => {
+      switch (status) {
+          case BulkOrderStatus.CONFIRMED: return 'success';
+          case BulkOrderStatus.PENDING: return 'warning';
+          case BulkOrderStatus.REJECTED: return 'danger';
+          default: return 'info';
+      }
+  };
+
 
   return (
     <div className="space-y-10">
@@ -109,7 +118,7 @@ const AgentBulkBookingPage: React.FC = () => {
             </div>
             <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 bg-primary/5 rounded-lg">
               <p className="font-bold">Cart Total: <span className="text-primary text-xl">{formatPrice(cartTotal)}</span></p>
-              <Button onClick={handleConfirmPurchase} variant="secondary" className="w-full sm:w-auto">Confirm & Finalize Purchase</Button>
+              <Button onClick={handleConfirmPurchase} variant="secondary" className="w-full sm:w-auto">Submit for Approval</Button>
             </div>
           </div>
         )}
@@ -123,7 +132,11 @@ const AgentBulkBookingPage: React.FC = () => {
             <div key={order.id} className="border rounded-lg overflow-hidden">
               <div className="p-4 bg-gray-50 flex justify-between items-center">
                 <div><p className="font-bold">{order.id}</p><p className="text-xs text-gray-500">{new Date(order.createdAt).toLocaleString()}</p></div>
-                <div className="flex items-center gap-4"><span className="font-bold text-primary">{formatPrice(order.totalCost)}</span><Button variant="danger" size="sm" onClick={() => handleDeleteOrder(order.id)} className="!rounded-lg">Delete</Button></div>
+                <div className="flex items-center gap-4">
+                  <Badge variant={getStatusBadgeVariant(order.status)}>{order.status}</Badge>
+                  <span className="font-bold text-primary">{formatPrice(order.totalCost)}</span>
+                  <Button variant="danger" size="sm" onClick={() => handleDeleteOrder(order.id)} className="!rounded-lg">Delete</Button>
+                </div>
               </div>
               <TableWrapper>
                 <table className="w-full text-left text-xs">
@@ -136,7 +149,7 @@ const AgentBulkBookingPage: React.FC = () => {
                         <td className="py-4 px-4 font-bold">{item.quantity}</td>
                         <td className="py-4 px-4 font-bold">{item.assignedCount}</td>
                         <td className="py-4 px-4 text-right">
-                           <Button size="sm" onClick={() => handleAssign(order.id, item)} disabled={item.assignedCount >= item.quantity}>Assign</Button>
+                           <Button size="sm" onClick={() => handleAssign(order.id, item)} disabled={order.status !== BulkOrderStatus.CONFIRMED || item.assignedCount >= item.quantity}>Assign</Button>
                         </td>
                       </tr>
                     ))}

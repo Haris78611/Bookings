@@ -8,16 +8,14 @@ import { Card, Button, Input } from '../components/UI';
 const AgentLoginPage: React.FC = () => {
     const { setCurrentUser, agencies, addToast } = useAppContext();
     const navigate = useNavigate();
-    const [credentials, setCredentials] = useState({ email: '', password: '' });
+    const [credentials, setCredentials] = useState({ agencyId: '', password: '' });
     const [error, setError] = useState('');
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        // For demo purposes, we check if the email exists for any agency.
-        // A real app would validate email and password against a backend.
-        const agency = agencies.find(a => a.email.toLowerCase() === credentials.email.toLowerCase().trim());
+        const agency = agencies.find(a => a.id === credentials.agencyId.trim() && a.password === credentials.password);
 
         if (agency) {
             setCurrentUser({
@@ -29,8 +27,9 @@ const AgentLoginPage: React.FC = () => {
             });
             navigate('/agent');
         } else {
-            addToast('Invalid agent credentials. Access denied.', 'error');
-            setError('Invalid agent credentials. Access denied.');
+            const errText = 'Invalid Agency ID or password. Access denied.';
+            addToast(errText, 'error');
+            setError(errText);
         }
     };
     
@@ -44,11 +43,10 @@ const AgentLoginPage: React.FC = () => {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5 text-left">
                     <Input 
-                        label="Agency Email" 
-                        placeholder="e.g. agent@travel.com"
-                        type="email"
-                        value={credentials.email} 
-                        onChange={e => setCredentials({...credentials, email: e.target.value})} 
+                        label="Agency ID" 
+                        placeholder="e.g. 1234"
+                        value={credentials.agencyId} 
+                        onChange={e => setCredentials({...credentials, agencyId: e.target.value})} 
                         required
                     />
                     <Input 

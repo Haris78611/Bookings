@@ -77,6 +77,7 @@ export interface Booking {
   requestedCheckIn?: string;
   requestedCheckOut?: string;
   showPriceOnVoucher?: boolean;
+  promoCode?: string;
 }
 
 export interface Agent {

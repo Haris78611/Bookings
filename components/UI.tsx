@@ -160,11 +160,11 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
   return (
     <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm p-0 md:p-4 animate-in fade-in duration-200">
       <div 
-        className={`bg-white shadow-[0_50px_100px_rgba(0,0,0,0.6)] w-full ${sizeClasses[size]} flex flex-col overflow-hidden relative h-[90vh] md:h-auto md:max-h-[85vh] rounded-none`}
+        className={`bg-white shadow-2xl w-full ${sizeClasses[size]} flex flex-col overflow-hidden relative max-h-[95vh] md:max-h-[85vh] rounded-t-2xl md:rounded-2xl`}
       >
-        <div className="px-6 py-4 md:px-8 md:py-6 border-b bg-white shrink-0 flex justify-between items-center z-50">
+        <div className="px-6 py-4 md:px-8 md:py-5 border-b bg-white shrink-0 flex justify-between items-center z-10">
           <div className="flex items-center gap-3 md:gap-4">
-             <div className="w-8 h-8 md:w-10 md:h-10 bg-[#005B5C] rounded-none flex items-center justify-center text-lg md:text-xl shadow-lg shadow-[#005B5C]/20">🕋</div>
+             <div className="w-8 h-8 md:w-10 md:h-10 bg-[#005B5C] rounded-lg flex items-center justify-center text-lg md:text-xl shadow-lg shadow-[#005B5C]/20">🕋</div>
              <div>
                 <h3 className="text-sm md:text-lg font-black text-[#005B5C] uppercase tracking-tight leading-none">{title}</h3>
                 <p className="text-[7px] md:text-[9px] text-gray-400 font-black uppercase tracking-[0.3em] mt-1 opacity-60">Verified Registry Inquiry</p>
@@ -172,7 +172,7 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
           </div>
           <button 
             onClick={onClose} 
-            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-red-500 transition-colors text-xl"
+            className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:text-red-500 hover:bg-red-100/50 transition-colors text-xl"
           >&times;</button>
         </div>
 
@@ -192,7 +192,7 @@ export const NotificationTicker: React.FC<{ notifications: string[] }> = ({ noti
   return (
     <div className="bg-[#FDE2D1] text-[#005B5C] py-1.5 md:py-2 relative overflow-hidden border-b border-black/5">
       <div className="flex animate-marquee hover:pause-marquee whitespace-nowrap">
-        {notifications.map((n, i) => (
+        {[...notifications, ...notifications].map((n, i) => (
           <span key={i} className="mx-4 md:mx-6 text-[8px] md:text-[10px] font-black uppercase tracking-widest flex items-center shrink-0">
             <span className="mx-2 md:mx-4 opacity-20">•</span>
             {n}

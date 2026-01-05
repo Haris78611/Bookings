@@ -6,21 +6,26 @@ import { UserRole, Currency } from '../types';
 import { NotificationTicker, Button } from './UI';
 
 export const Header: React.FC = () => {
-  const { siteSettings, currency, setCurrency, currentUser, logout, notifications } = useAppContext();
+  const { siteSettings, currency, setCurrency, currentUser, logout } = useAppContext();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const announcementMessages = siteSettings.announcement.split('|').map(msg => msg.trim()).filter(Boolean);
 
   return (
     <>
-      <NotificationTicker notifications={notifications} />
+      <NotificationTicker notifications={announcementMessages} />
       <header className="bg-[#005B5C] text-white sticky top-0 z-[100] shadow-lg">
         <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2 md:gap-3 shrink-0">
-            <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-lg flex items-center justify-center border border-white/10">
-              <span className="text-base md:text-xl">🕋</span>
-            </div>
-            <span className="text-base md:text-xl font-bold tracking-tight leading-none uppercase">UmrahStay</span>
+            {siteSettings.logo && siteSettings.logo.startsWith('data:image') ? (
+                <img src={siteSettings.logo} alt="Logo" className="h-8 md:h-10 object-contain rounded-lg" />
+            ) : (
+                <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-lg flex items-center justify-center border border-white/10">
+                    <span className="text-base md:text-xl">{siteSettings.logo}</span>
+                </div>
+            )}
+            <span className="text-base md:text-xl font-bold tracking-tight leading-none uppercase">{siteSettings.name}</span>
           </Link>
           
           {/* Desktop Navigation */}
@@ -29,6 +34,7 @@ export const Header: React.FC = () => {
             <Link to="/search" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Hotels</Link>
             <Link to="/my-bookings" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">My Bookings</Link>
             <Link to="/track" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Track Booking</Link>
+            <Link to="/support" className="hover:text-accent transition-colors font-bold text-[11px] uppercase tracking-widest">Support</Link>
           </nav>
 
           {/* Right-side Tools */}
@@ -118,7 +124,7 @@ export const Footer: React.FC = () => {
     <footer className="bg-neutralDark text-white pt-16 pb-8 border-t border-white/5">
       <div className="container mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
         <div>
-          <h3 className="text-2xl font-black italic mb-6 text-[#006D77] uppercase tracking-tighter">UmrahStay</h3>
+          <h3 className="text-2xl font-black italic mb-6 text-[#006D77] uppercase tracking-tighter">{siteSettings.name}</h3>
           <p className="text-gray-400 text-xs leading-relaxed font-medium">
             Authorized hospitality portal providing wholesale hotel rates in the Holy Cities for pilgrims worldwide since 2024.
           </p>
@@ -162,7 +168,7 @@ export const Footer: React.FC = () => {
       </div>
       <div className="container mx-auto px-6 pt-12 border-t border-white/5 text-center">
         <p className="text-gray-600 text-[8px] md:text-[10px] uppercase tracking-[0.4em] font-black">
-          &copy; {new Date().getFullYear()} UmrahStay Logistics Registry. All Rights Reserved.
+          &copy; {new Date().getFullYear()} {siteSettings.name} Logistics Registry. All Rights Reserved.
         </p>
       </div>
     </footer>
