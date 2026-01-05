@@ -1,24 +1,31 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { UserRole } from '../../types';
+import { UserRole, User } from '../../types';
 import { Card, Button, Input } from '../../components/UI';
 
 const AdminLoginPage: React.FC = () => {
-    const { adminLogin } = useAppContext();
+    const { setCurrentUser, addToast } = useAppContext();
     const navigate = useNavigate();
-    const [credentials, setCredentials] = useState({ email: 'admin@umrahstay.com', password: '' });
+    const [credentials, setCredentials] = useState({ id: '', password: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setIsLoading(true);
 
-        const success = await adminLogin(credentials.email, credentials.password);
-
-        if (success) {
+        // Reverted to hardcoded credentials as requested by the user
+        if (credentials.id === '990990' && credentials.password === 'Haris@1122@11') {
+            const adminUser: User = {
+                id: 'admin_user_01',
+                name: 'Administrator',
+                email: 'admin@umrahstay.com',
+                role: UserRole.ADMIN,
+            };
+            setCurrentUser(adminUser);
+            addToast('Administrative access granted.');
             navigate('/admin');
         } else {
             setError('Invalid administrative credentials. Access denied.');
@@ -36,11 +43,12 @@ const AdminLoginPage: React.FC = () => {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5 text-left">
                     <Input 
-                        label="Admin Email"
-                        type="email"
-                        placeholder="admin@umrahstay.com" 
-                        value={credentials.email} 
-                        onChange={e => setCredentials({...credentials, email: e.target.value})} 
+                        label="Admin ID"
+                        type="text"
+                        placeholder="e.g., 990990" 
+                        value={credentials.id} 
+                        onChange={e => setCredentials({...credentials, id: e.target.value})} 
+                        required
                     />
                     <Input 
                         label="Security Password" 
@@ -48,6 +56,7 @@ const AdminLoginPage: React.FC = () => {
                         placeholder="••••••••" 
                         value={credentials.password} 
                         onChange={e => setCredentials({...credentials, password: e.target.value})} 
+                        required
                     />
                     
                     {error && <p className="text-red-500 text-xs font-semibold text-center pt-2">{error}</p>}
