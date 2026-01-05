@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
@@ -6,7 +5,7 @@ import { Button, Card, Badge, Modal, Input, Select } from '../components/UI';
 import { BookingStatus, Booking } from '../types';
 
 const TrackBookingPage: React.FC = () => {
-  const { bookings, formatPrice, siteSettings, updateBookingStatus, addToast } = useAppContext();
+  const { bookings, formatPrice, siteSettings, updateBookingStatus, addToast, agencies } = useAppContext();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -35,6 +34,8 @@ const TrackBookingPage: React.FC = () => {
     }
   }, [location, bookings]);
 
+  const agent = result && result !== 'not_found' && result.agencyId ? agencies.find(a => a.id === result.agencyId) : null;
+
   const handleTrack = (e: React.FormEvent) => {
     e.preventDefault();
     if (!searchId.trim()) return;
@@ -47,6 +48,7 @@ const TrackBookingPage: React.FC = () => {
   const getStatusVariant = (status: BookingStatus) => {
     if (status === BookingStatus.CONFIRMED) return 'success';
     if (status === BookingStatus.CANCELLED) return 'danger';
+    if (status === BookingStatus.PENDING) return 'warning';
     return 'warning';
   };
 
@@ -166,9 +168,18 @@ const TrackBookingPage: React.FC = () => {
                     <h3 className="text-3xl font-black text-neutralDark mb-2 uppercase tracking-tight">{result.hotelName}</h3>
                     <p className="text-gray-400 font-bold text-sm uppercase tracking-widest">{result.roomType} • {result.status} STAY</p>
                   </div>
-                  <div className="flex flex-col md:items-end justify-center">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stay Valuation</p>
-                    <p className="text-3xl font-black text-primary">{formatPrice(result.totalPrice)}</p>
+                   <div className="flex flex-col md:items-end justify-center">
+                    {agent ? (
+                        <>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Managed By</p>
+                          <p className="text-lg font-bold text-primary text-right">{agent.agencyName}</p>
+                        </>
+                    ) : (
+                        <>
+                          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Stay Valuation</p>
+                          <p className="text-3xl font-black text-primary">{formatPrice(result.totalPrice)}</p>
+                        </>
+                    )}
                   </div>
                 </div>
 
@@ -206,30 +217,64 @@ const TrackBookingPage: React.FC = () => {
                     <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Authorized Channel Support</p>
                     <p className="text-sm font-bold text-[#006D77]">{siteSettings.contactEmail}</p>
                   </div>
-                  {result.status === BookingStatus.CANCELLED ? (
-                      <div className="w-full sm:w-auto bg-red-50 text-red-700 p-4 rounded-lg text-center font-bold text-xs border border-red-200">
-                          <p>This booking has been cancelled.</p>
-                          <p className="font-medium mt-1">Please contact support for assistance.</p>
-                      </div>
-                  ) : (
-                    <div className="flex gap-3 w-full sm:w-auto">
-                      <Button 
-                        variant="outline" 
-                        className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
-                        onClick={() => handleDownloadVoucher(result)}
-                        disabled={isGeneratingPdf}
-                      >
-                        {isGeneratingPdf ? 'Processing...' : 'Download PDF'}
-                      </Button>
-                      <Button 
-                        variant="secondary" 
-                        className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg"
-                        onClick={() => openModifyModal(result)}
-                      >
-                        Modify Stay
-                      </Button>
-                    </div>
-                  )}
+                   <div className="flex gap-3 w-full sm:w-auto">
+                    {(() => {
+                        if (result.status === BookingStatus.CANCELLED) {
+                            return (
+                                <div className="w-full sm:w-auto bg-red-50 text-red-700 p-4 rounded-lg text-center font-bold text-xs border border-red-200">
+                                    <p>This booking has been cancelled.</p>
+                                    <p className="font-medium mt-1">Please contact support for assistance.</p>
+                                </div>
+                            );
+                        }
+                        if (result.status === BookingStatus.PENDING) {
+                            return (
+                                 <div className="w-full sm:w-auto bg-yellow-50 text-yellow-700 p-4 rounded-lg text-center font-bold text-xs border border-yellow-200">
+                                    <p>This booking is pending confirmation.</p>
+                                    <p className="font-medium mt-1">Actions will be available once approved.</p>
+                                </div>
+                            );
+                        }
+                        if (agent) {
+                            return (
+                              <div className="flex flex-col sm:flex-row items-center gap-3">
+                                <Button 
+                                  variant="outline" 
+                                  className="w-full sm:w-auto sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
+                                  onClick={() => handleDownloadVoucher(result)}
+                                  disabled={isGeneratingPdf}
+                                >
+                                  {isGeneratingPdf ? 'Processing...' : 'Download PDF'}
+                                </Button>
+                                <div className="w-full sm:w-auto bg-blue-50 text-blue-700 p-3 rounded-lg text-center font-bold text-[10px] border border-blue-200">
+                                    <p className="uppercase tracking-widest">For modifications, please contact:</p>
+                                    <p className="font-medium mt-1">{agent.agencyName} ({agent.contactNumber})</p>
+                                </div>
+                              </div>
+                            );
+                        }
+                        // Default: Confirmed direct customer booking
+                        return (
+                            <>
+                              <Button 
+                                variant="outline" 
+                                className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
+                                onClick={() => handleDownloadVoucher(result)}
+                                disabled={isGeneratingPdf}
+                              >
+                                {isGeneratingPdf ? 'Processing...' : 'Download PDF'}
+                              </Button>
+                              <Button 
+                                variant="secondary" 
+                                className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg"
+                                onClick={() => openModifyModal(result)}
+                              >
+                                Modify Stay
+                              </Button>
+                            </>
+                        );
+                    })()}
+                  </div>
                 </div>
               </div>
 
