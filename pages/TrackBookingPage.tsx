@@ -113,7 +113,7 @@ const TrackBookingPage: React.FC = () => {
     <div className="bg-[#f1f5f9] min-h-screen py-16 px-4">
       <div className="container mx-auto">
         <div className="max-w-2xl mx-auto mb-12">
-          <Card className="p-10 md:p-14 text-center border-none shadow-xl !rounded-none">
+          <Card className="p-10 md:p-14 text-center border-none shadow-xl rounded-2xl">
             <h1 className="text-4xl font-black text-[#006D77] mb-3 uppercase tracking-tighter italic">Track Booking</h1>
             <p className="text-gray-500 mb-10 text-sm font-medium">Search for your reservation ID or scan your voucher QR code.</p>
             
@@ -123,13 +123,13 @@ const TrackBookingPage: React.FC = () => {
                 placeholder="Enter Booking ID (e.g., BK12345)" 
                 value={searchId} 
                 onChange={(e) => setSearchId(e.target.value)}
-                className="flex-1 bg-white border border-gray-200 px-5 py-3.5 outline-none focus:border-[#006D77] transition-all text-gray-700 font-bold !rounded-none"
+                className="flex-1 bg-white border border-gray-200 px-5 py-3.5 outline-none focus:border-[#006D77] transition-all text-gray-700 font-bold rounded-xl"
               />
               <Button 
                 type="submit" 
                 variant="secondary" 
                 size="lg"
-                className="!rounded-none px-10"
+                className="px-10"
               >
                 Track
               </Button>
@@ -138,7 +138,7 @@ const TrackBookingPage: React.FC = () => {
         </div>
 
         {result === 'not_found' && (
-          <div className="bg-red-50 border border-red-200 p-8 rounded-none text-center animate-in fade-in zoom-in duration-300 max-w-lg mx-auto">
+          <div className="bg-red-50 border border-red-200 p-8 rounded-xl text-center animate-in fade-in zoom-in duration-300 max-w-lg mx-auto">
             <h3 className="text-lg font-bold text-red-700 mb-1">Unverified ID</h3>
             <p className="text-red-600 text-sm">Registry ID <strong>{searchId}</strong> is not present in our authorized ledger.</p>
           </div>
@@ -146,7 +146,7 @@ const TrackBookingPage: React.FC = () => {
 
         {result && result !== 'not_found' && (
           <div className="animate-in slide-in-from-bottom-8 duration-700 max-w-3xl mx-auto">
-            <Card className="overflow-hidden border-none shadow-2xl !rounded-none">
+            <Card className="overflow-hidden border-none shadow-2xl rounded-2xl">
               <div className="bg-[#006D77] p-8 text-white flex justify-between items-center">
                 <div>
                   <h2 className="text-2xl font-black italic uppercase tracking-tighter">{siteSettings.name}</h2>
@@ -266,7 +266,7 @@ const TrackBookingPage: React.FC = () => {
                               <div className="flex flex-col sm:flex-row items-center gap-3">
                                 <Button 
                                   variant="outline" 
-                                  className="w-full sm:w-auto sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
+                                  className="w-full sm:w-auto sm:px-8 font-black text-[10px] uppercase tracking-widest"
                                   onClick={() => handleDownloadVoucher(result)}
                                   disabled={isGeneratingPdf}
                                 >
@@ -284,7 +284,7 @@ const TrackBookingPage: React.FC = () => {
                             <>
                               <Button 
                                 variant="outline" 
-                                className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest"
+                                className="flex-1 sm:px-8 font-black text-[10px] uppercase tracking-widest"
                                 onClick={() => handleDownloadVoucher(result)}
                                 disabled={isGeneratingPdf}
                               >
@@ -292,7 +292,7 @@ const TrackBookingPage: React.FC = () => {
                               </Button>
                               <Button 
                                 variant="secondary" 
-                                className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
+                                className="flex-1 sm:px-8 font-black text-[10px] uppercase tracking-widest shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
                                 onClick={() => openModifyModal(result)}
                                 disabled={isModificationPending}
                               >

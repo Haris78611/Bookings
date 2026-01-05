@@ -59,7 +59,7 @@ const SearchPage: React.FC = () => {
       <div className="container mx-auto px-4 flex flex-col lg:flex-row gap-8">
         {/* Refine Search Sidebar - All Functions Restored */}
         <div className="w-full lg:w-80 shrink-0">
-          <Card className="p-6 sticky top-28 bg-white border border-gray-100 shadow-sm !rounded-none">
+          <Card className="p-6 sticky top-28 bg-white border border-gray-100 shadow-sm rounded-2xl">
             <div className="flex justify-between items-center mb-8 border-b border-gray-50 pb-4">
                <h3 className="font-black text-xs text-[#006D77] uppercase tracking-widest">Refine Search</h3>
                <button 
@@ -75,7 +75,7 @@ const SearchPage: React.FC = () => {
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Location</label>
                 <select 
-                  className="w-full bg-gray-50 border border-gray-100 p-3 rounded-none text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50"
+                  className="w-full bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50"
                   value={filters.city}
                   onChange={(e) => setFilters({...filters, city: e.target.value})}
                 >
@@ -93,14 +93,14 @@ const SearchPage: React.FC = () => {
                      <button 
                         key={star}
                         onClick={() => setFilters({...filters, minStars: star})}
-                        className={`py-2 rounded-none text-[10px] font-black border transition-all ${filters.minStars === star ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100 hover:border-[#006D77]'}`}
+                        className={`py-2 rounded-lg text-[10px] font-black border transition-all ${filters.minStars === star ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100 hover:border-[#006D77]'}`}
                      >
                        {star}★
                      </button>
                    ))}
                    <button 
                       onClick={() => setFilters({...filters, minStars: 0})}
-                      className={`py-2 rounded-none text-[10px] font-black border transition-all ${filters.minStars === 0 ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100'}`}
+                      className={`py-2 rounded-lg text-[10px] font-black border transition-all ${filters.minStars === 0 ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100'}`}
                    >
                      ALL
                    </button>
@@ -117,7 +117,7 @@ const SearchPage: React.FC = () => {
                   type="range" min="100" max="3000" step="100"
                   value={filters.maxDistance}
                   onChange={(e) => setFilters({...filters, maxDistance: Number(e.target.value)})}
-                  className="w-full h-1 bg-gray-100 rounded-none appearance-none cursor-pointer accent-[#006D77]"
+                  className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#006D77]"
                 />
               </div>
 
@@ -131,7 +131,7 @@ const SearchPage: React.FC = () => {
                   type="range" min="10000" max="1000000" step="10000"
                   value={filters.maxPrice}
                   onChange={(e) => setFilters({...filters, maxPrice: Number(e.target.value)})}
-                  className="w-full h-1 bg-gray-100 rounded-none appearance-none cursor-pointer accent-[#006D77]"
+                  className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#006D77]"
                 />
               </div>
 
@@ -139,7 +139,7 @@ const SearchPage: React.FC = () => {
               <div>
                 <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Sort Results By</label>
                 <select 
-                  className="w-full bg-gray-50 border border-gray-100 p-3 rounded-none text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50"
+                  className="w-full bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50"
                   value={filters.sortBy}
                   onChange={(e) => setFilters({...filters, sortBy: e.target.value})}
                 >
@@ -164,7 +164,7 @@ const SearchPage: React.FC = () => {
               <HotelCard key={hotel.id} hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
             ))}
             {filteredHotels.length === 0 && (
-               <div className="col-span-full py-32 text-center bg-white !rounded-none border border-dashed border-gray-200">
+               <div className="col-span-full py-32 text-center bg-white rounded-2xl border border-dashed border-gray-200">
                   <div className="text-5xl mb-6 opacity-20">🏨</div>
                   <p className="text-gray-400 font-black uppercase tracking-[0.3em] text-xs italic">No matching sanctuary inventory found.</p>
                   <button onClick={handleReset} className="mt-6 text-[10px] font-black text-[#006D77] uppercase tracking-widest underline decoration-2 underline-offset-4">Clear All Filters</button>

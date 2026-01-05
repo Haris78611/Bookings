@@ -105,7 +105,7 @@ export const Input: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { lab
     {label && <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">{label}</label>}
     <div className="relative">
       <input 
-        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-none focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none transition-all font-bold text-xs md:text-sm ${className}`}
+        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-xl focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none transition-all font-bold text-xs md:text-sm ${className}`}
         {...props}
       />
       {props.type === 'date' && (
@@ -125,7 +125,7 @@ export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & {
     {label && <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">{label}</label>}
     <div className="relative">
       <select 
-        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-none focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none appearance-none transition-all font-bold text-xs md:text-sm ${className}`}
+        className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-xl focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none appearance-none transition-all font-bold text-xs md:text-sm ${className}`}
         {...props}
       >
         {options.map((opt, i) => (
@@ -209,21 +209,21 @@ export const NotificationTicker: React.FC<{ notifications: string[] }> = ({ noti
 
 export const HotelCard: React.FC<{ hotel: Hotel; formatPrice: (price: number) => string; navigate: (path: string) => void; }> = ({ hotel, formatPrice, navigate }) => (
   <Card 
-    className="bg-white overflow-hidden border border-gray-100 flex flex-col h-full transition-shadow duration-300 group cursor-pointer shadow-md !rounded-none hover:shadow-2xl" 
+    className="bg-white overflow-hidden border border-gray-100 flex flex-col h-full transition-shadow duration-300 group cursor-pointer shadow-md rounded-2xl hover:shadow-2xl" 
     onClick={() => navigate(`/hotel/${hotel.id}`)}
   >
-    <div className="relative h-56 overflow-hidden shrink-0 !rounded-none">
+    <div className="relative h-56 overflow-hidden shrink-0 rounded-t-2xl">
       <img 
         src={hotel.images[0]} 
         alt={hotel.name} 
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 !rounded-none" 
+        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
       />
-      <div className="absolute top-0 right-0 bg-[#E29578] text-white px-3 py-1 text-[11px] font-bold !rounded-none">
+      <div className="absolute top-4 right-4 bg-[#E29578] text-white px-3 py-1 text-[11px] font-bold rounded-lg">
         {hotel.stars}-Star
       </div>
     </div>
 
-    <div className="p-6 flex-1 flex flex-col !rounded-none">
+    <div className="p-6 flex-1 flex flex-col">
       <div className="flex justify-between items-start mb-2">
         <h3 className="text-[17px] font-bold text-[#006D77] tracking-tight leading-tight flex-1">
           {hotel.name}
@@ -244,7 +244,7 @@ export const HotelCard: React.FC<{ hotel: Hotel; formatPrice: (price: number) =>
         {hotel.description}
       </p>
       
-      <div className="pt-5 border-t border-gray-50 flex justify-between items-end !rounded-none">
+      <div className="pt-5 border-t border-gray-50 flex justify-between items-end">
         <div>
           <span className="text-[11px] text-gray-400 block font-medium mb-1">Starts from</span>
           <div className="text-[#006D77] font-bold whitespace-nowrap">
@@ -253,7 +253,7 @@ export const HotelCard: React.FC<{ hotel: Hotel; formatPrice: (price: number) =>
           </div>
         </div>
         <button 
-          className="bg-[#006D77] hover:bg-[#005c65] text-white px-6 py-2.5 !rounded-none font-bold text-[13px] transition-all shadow-sm active:scale-95"
+          className="bg-[#006D77] hover:bg-[#005c65] text-white px-6 py-2.5 rounded-xl font-bold text-[13px] transition-all shadow-sm active:scale-95"
           onClick={(e) => {
             e.stopPropagation();
             navigate(`/hotel/${hotel.id}`);

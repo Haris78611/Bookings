@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Card, Button, Input } from '../components/UI';
@@ -15,22 +14,26 @@ const SupportPage: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-          <Card className="p-6 text-center">
-            <div className="text-3xl mb-4">📞</div>
-            <h3 className="font-bold mb-2">Call Us</h3>
-            <p className="text-xs text-gray-500 mb-4">Available 24/7 for pilgrims</p>
-            <p className="font-bold text-primary">{siteSettings.contactPhone}</p>
+          <Card className="p-6 flex items-center gap-4">
+            <div className="text-3xl bg-gray-200 p-3 rounded-full">📞</div>
+            <div>
+              <h3 className="font-bold">Call Us</h3>
+              <p className="font-bold text-primary text-sm">{siteSettings.contactPhone}</p>
+            </div>
           </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl mb-4">✉️</div>
-            <h3 className="font-bold mb-2">Email Support</h3>
-            <p className="text-xs text-gray-500 mb-4">Response within 2 hours</p>
-            <p className="font-bold text-primary">{siteSettings.contactEmail}</p>
+          <Card className="p-6 flex items-center gap-4">
+            <div className="text-3xl bg-gray-200 p-3 rounded-full">✉️</div>
+            <div>
+              <h3 className="font-bold">Email Support</h3>
+              <p className="font-bold text-primary text-sm">{siteSettings.contactEmail}</p>
+            </div>
           </Card>
-          <Card className="p-6 text-center">
-            <div className="text-3xl mb-4">📍</div>
-            <h3 className="font-bold mb-2">Main Office</h3>
-            <p className="text-xs text-gray-400">{siteSettings.contactAddress}</p>
+          <Card className="p-6 flex items-center gap-4">
+            <div className="text-3xl bg-gray-200 p-3 rounded-full">📍</div>
+            <div>
+              <h3 className="font-bold">Main Office</h3>
+              <p className="text-xs text-gray-500">{siteSettings.contactAddress}</p>
+            </div>
           </Card>
         </div>
 

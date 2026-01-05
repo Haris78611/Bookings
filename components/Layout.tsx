@@ -10,6 +10,12 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const announcementMessages = siteSettings.announcement.split('|').map(msg => msg.trim()).filter(Boolean);
 
+  const isLogoImage = siteSettings.logo && (
+    siteSettings.logo.startsWith('data:image') || 
+    siteSettings.logo.startsWith('http') ||
+    siteSettings.logo.includes('.')
+  );
+
   return (
     <>
       <NotificationTicker notifications={announcementMessages} />
@@ -17,8 +23,8 @@ export const Header: React.FC = () => {
         <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
           {/* Logo Section */}
           <Link to="/" className="flex items-center gap-2 md:gap-3 shrink-0">
-            {siteSettings.logo && (siteSettings.logo.startsWith('data:image') || siteSettings.logo.startsWith('http')) ? (
-                <img src={siteSettings.logo} alt="Logo" className="h-8 md:h-10 object-contain rounded-lg" />
+            {isLogoImage ? (
+                <img src={siteSettings.logo} alt="Logo" className="h-8 md:h-10 object-contain" />
             ) : (
                 <div className="w-8 h-8 md:w-10 md:h-10 bg-white/10 rounded-lg flex items-center justify-center border border-white/10">
                     <span className="text-base md:text-xl">{siteSettings.logo}</span>

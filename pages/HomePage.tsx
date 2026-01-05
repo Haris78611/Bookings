@@ -180,7 +180,7 @@ const HomePage: React.FC = () => {
             <div className="flex flex-col lg:flex-row gap-8">
               {/* Full Refine Search Sidebar */}
               <aside className="w-full lg:w-80 shrink-0">
-                <Card className="p-6 sticky top-28 bg-white border border-gray-100 shadow-sm !rounded-none">
+                <Card className="p-6 sticky top-28 bg-white border border-gray-100 shadow-sm rounded-2xl">
                   <div className="flex justify-between items-center mb-8 border-b border-gray-50 pb-4">
                      <h3 className="font-black text-xs text-[#006D77] uppercase tracking-widest">Refine Search</h3>
                      <button className="text-[10px] font-black text-secondary uppercase hover:underline tracking-widest" onClick={handleReset}>Reset All</button>
@@ -189,7 +189,7 @@ const HomePage: React.FC = () => {
                   <div className="space-y-8">
                     <div>
                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Location</label>
-                      <select className="w-full bg-gray-50 border border-gray-100 p-3 rounded-none text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)}>
+                      <select className="w-full bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50" value={filters.city} onChange={(e) => handleFilterChange('city', e.target.value)}>
                         <option value="All">All Holy Cities</option>
                         <option value="Makkah">Makkah Al-Mukarramah</option>
                         <option value="Madina">Al-Madinah Al-Munawwarah</option>
@@ -200,11 +200,11 @@ const HomePage: React.FC = () => {
                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Star Rating</label>
                       <div className="grid grid-cols-4 gap-2">
                          {[5, 4, 3].map(star => (
-                           <button key={star} onClick={() => handleFilterChange('minStars', star)} className={`py-2 rounded-none text-[10px] font-black border transition-all ${filters.minStars === star ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100 hover:border-[#006D77]'}`}>
+                           <button key={star} onClick={() => handleFilterChange('minStars', star)} className={`py-2 rounded-lg text-[10px] font-black border transition-all ${filters.minStars === star ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100 hover:border-[#006D77]'}`}>
                              {star}★+
                            </button>
                          ))}
-                         <button onClick={() => handleFilterChange('minStars', 0)} className={`py-2 rounded-none text-[10px] font-black border transition-all ${filters.minStars === 0 ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100'}`}>
+                         <button onClick={() => handleFilterChange('minStars', 0)} className={`py-2 rounded-lg text-[10px] font-black border transition-all ${filters.minStars === 0 ? 'bg-[#006D77] text-white border-[#006D77]' : 'bg-white text-gray-400 border-gray-100'}`}>
                            ALL
                          </button>
                       </div>
@@ -215,7 +215,7 @@ const HomePage: React.FC = () => {
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Distance</label>
                         <span className="text-[10px] font-black text-primary uppercase">{filters.maxDistance}m</span>
                       </div>
-                      <input type="range" min="100" max="3000" step="100" value={filters.maxDistance} onChange={(e) => handleFilterChange('maxDistance', Number(e.target.value))} className="w-full h-1 bg-gray-100 rounded-none appearance-none cursor-pointer accent-[#006D77]" />
+                      <input type="range" min="100" max="3000" step="100" value={filters.maxDistance} onChange={(e) => handleFilterChange('maxDistance', Number(e.target.value))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#006D77]" />
                     </div>
 
                     <div>
@@ -223,12 +223,12 @@ const HomePage: React.FC = () => {
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Max Price</label>
                         <span className="text-[10px] font-black text-primary uppercase">{formatPrice(filters.maxPrice)}</span>
                       </div>
-                      <input type="range" min="10000" max="1000000" step="10000" value={filters.maxPrice} onChange={(e) => handleFilterChange('maxPrice', Number(e.target.value))} className="w-full h-1 bg-gray-100 rounded-none appearance-none cursor-pointer accent-[#006D77]" />
+                      <input type="range" min="10000" max="1000000" step="10000" value={filters.maxPrice} onChange={(e) => handleFilterChange('maxPrice', Number(e.target.value))} className="w-full h-1 bg-gray-100 rounded-lg appearance-none cursor-pointer accent-[#006D77]" />
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Sort By</label>
-                      <select className="w-full bg-gray-50 border border-gray-100 p-3 rounded-none text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50" value={filters.sortBy} onChange={(e) => handleFilterChange('sortBy', e.target.value)}>
+                      <select className="w-full bg-gray-50 border border-gray-100 p-3 rounded-lg text-xs font-bold text-neutralDark outline-none focus:border-[#006D77]/50" value={filters.sortBy} onChange={(e) => handleFilterChange('sortBy', e.target.value)}>
                         <option value="price-asc">Price: Low to High</option>
                         <option value="price-desc">Price: High to Low</option>
                         <option value="distance-asc">Proximity to Haram</option>
@@ -249,7 +249,7 @@ const HomePage: React.FC = () => {
                   ))}
                 </div>
                 {filteredHotels.length === 0 && (
-                  <div className="py-20 text-center bg-white border border-gray-100 shadow-sm !rounded-none">
+                  <div className="py-20 text-center bg-white border border-gray-100 shadow-sm rounded-2xl">
                     <p className="text-gray-400 font-bold uppercase tracking-widest text-sm italic">No hotels found for this criteria.</p>
                   </div>
                 )}
@@ -273,7 +273,7 @@ const HomePage: React.FC = () => {
                       variant="secondary" 
                       size="lg"
                       onClick={() => navigate('/search')}
-                      className="!rounded-none shadow-xl px-12"
+                      className="shadow-xl px-12"
                   >
                       View More Hotels
                   </Button>
