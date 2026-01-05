@@ -1,4 +1,3 @@
-
 export type Currency = 'PKR' | 'SAR' | 'USD';
 
 export enum BookingStatus {
@@ -78,6 +77,8 @@ export interface Booking {
   requestedCheckOut?: string;
   showPriceOnVoucher?: boolean;
   promoCode?: string;
+  activationKey?: string;
+  roomNumber?: string;
 }
 
 export interface Agent {
@@ -91,6 +92,13 @@ export interface Agent {
   contactNumber?: string;
 }
 
+export interface Assignment {
+  bookingId: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+}
+
 export interface BulkOrderItem {
   id: string; 
   hotelId: string;
@@ -100,7 +108,7 @@ export interface BulkOrderItem {
   checkIn: string;
   checkOut: string;
   quantity: number;
-  assignedCount: number;
+  assignments: Assignment[];
   pricePerNight: number;
   subtotal: number;
 }

@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useMemo } from 'react';
-import { BulkOrderItem, BookingStatus } from '../types';
+import { BulkOrderItem, BookingStatus, Booking } from '../types';
 import { useAppContext } from '../context/AppContext';
 import { Button, Input, Modal } from './UI';
 
@@ -54,7 +53,7 @@ const AgentBookingModal: React.FC<AgentBookingModalProps> = ({ isOpen, onClose, 
             return;
         }
 
-        addBooking({
+        const newBooking: Booking = {
             id: `VCH-${Date.now()}`,
             hotelId: item.hotelId,
             hotelName: item.hotelName,
@@ -70,9 +69,11 @@ const AgentBookingModal: React.FC<AgentBookingModalProps> = ({ isOpen, onClose, 
             agencyId: currentUser.agencyId,
             createdAt: new Date().toISOString(),
             showPriceOnVoucher: showPriceOnVoucher,
-        });
+        };
 
-        assignBulkOrderItem(orderId, item.id);
+        addBooking(newBooking);
+
+        assignBulkOrderItem(orderId, item.id, newBooking);
         
         addToast(`Voucher issued for ${guestName}.`);
         onClose();

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
@@ -77,11 +76,24 @@ const VoucherTemplate: React.FC<{ booking: Booking, agent?: Agent | null }> = ({
                 )}
 
 
-                <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-16 rounded-xl">
+                <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-12 rounded-xl">
                     <div className="text-center flex-1 border-r border-[#DCEEF0]"><p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Check-in Date</p><p className="text-lg font-black text-[#006D77]">{formatDateLabel(booking.checkIn)}</p></div>
                     <div className="text-center flex-1 border-r border-[#DCEEF0]"><p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Check-out Date</p><p className="text-lg font-black text-[#006D77]">{formatDateLabel(booking.checkOut)}</p></div>
                     <div className="text-center flex-1"><p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Room Type</p><p className="text-lg font-black text-[#006D77] uppercase">{booking.roomType.split(' ')[0]}</p></div>
                 </div>
+
+                {booking.activationKey && booking.roomNumber && (
+                    <div className="bg-teal-50/50 p-8 flex justify-between items-center mb-16 rounded-xl border border-teal-200">
+                        <div className="text-center flex-1">
+                            <p className="text-[10px] font-black text-teal-800 uppercase tracking-widest mb-2">Activation Key</p>
+                            <p className="text-xl font-black text-teal-800 font-mono tracking-widest">{booking.activationKey}</p>
+                        </div>
+                        <div className="text-center flex-1 border-l border-teal-200">
+                            <p className="text-[10px] font-black text-teal-800 uppercase tracking-widest mb-2">Room Number</p>
+                            <p className="text-xl font-black text-teal-800 font-mono tracking-widest">{booking.roomNumber}</p>
+                        </div>
+                    </div>
+                )}
 
                 <div className="flex justify-between items-end mb-16">
                     {booking.showPriceOnVoucher !== false ? (

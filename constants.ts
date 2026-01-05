@@ -1,4 +1,3 @@
-
 import { Hotel, SiteSettings } from './types';
 
 export const CURRENCY_RATES = {
@@ -97,7 +96,7 @@ export const INITIAL_HOTELS: Hotel[] = [
 
 export const INITIAL_SITE_SETTINGS: SiteSettings = {
   name: 'UmrahStay',
-  logo: '🕋',
+  logo: `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200' width='200' height='200'><rect width='200' height='200' rx='30' fill='%23005B5C'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' font-size='90' font-family='Poppins, sans-serif' font-weight='900' fill='%23ffffff'>US</text></svg>`,
   bannerImage: 'https://images.unsplash.com/photo-1564769625905-50e93615e769?q=80&w=1920&auto=format&fit=crop',
   announcement: 'Welcome to UmrahStay - Your Partner for Sacred Journeys',
   contactEmail: 'support@umrahstay.com',

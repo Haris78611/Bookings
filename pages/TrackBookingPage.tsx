@@ -211,6 +211,34 @@ const TrackBookingPage: React.FC = () => {
                     </div>
                   </div>
                 </div>
+                
+                {(() => {
+                  const isCheckInNear = new Date(result.checkIn).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000;
+                  return (
+                    <div>
+                      {result.activationKey && result.roomNumber ? (
+                          <div className="bg-teal-50 border border-teal-200 p-6 rounded-lg grid grid-cols-2 gap-4 text-center">
+                              <div>
+                                  <p className="text-[10px] font-black text-teal-700 uppercase tracking-widest mb-1">Activation Key</p>
+                                  <p className="text-2xl font-black text-teal-800 font-mono tracking-widest">{result.activationKey}</p>
+                              </div>
+                              <div>
+                                  <p className="text-[10px] font-black text-teal-700 uppercase tracking-widest mb-1">Assigned Room</p>
+                                  <p className="text-2xl font-black text-teal-800 font-mono tracking-widest">{result.roomNumber}</p>
+                              </div>
+                          </div>
+                      ) : isCheckInNear && result.status === BookingStatus.CONFIRMED ? (
+                          <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg text-center">
+                              <p className="text-sm font-bold text-yellow-700">Awaiting final check-in details from hotel. Please check again shortly.</p>
+                          </div>
+                      ) : result.status === BookingStatus.CONFIRMED ? (
+                          <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg text-center">
+                              <p className="text-sm font-bold text-gray-500">Key & Room # will be available 24 hours before check-in.</p>
+                          </div>
+                      ) : null}
+                    </div>
+                  );
+                })()}
 
                 <div className="flex flex-col sm:flex-row justify-between items-center gap-6 pt-4">
                   <div className="space-y-1 text-center sm:text-left">
@@ -285,14 +313,16 @@ const TrackBookingPage: React.FC = () => {
                   <div className="p-12">
                     <header className="flex justify-between items-start mb-12">
                       <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 bg-[#006D77] flex items-center justify-center rounded-lg shadow-lg">
-                           <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                           </svg>
-                        </div>
+                          {siteSettings.logo && siteSettings.logo.startsWith('data:image') ? (
+                              <img src={siteSettings.logo} alt="Logo" className="h-12 w-12 object-contain bg-gray-100 p-1 rounded-lg shadow-lg" />
+                          ) : (
+                              <div className="w-12 h-12 bg-[#006D77] flex items-center justify-center rounded-lg shadow-lg">
+                                  <span className="text-2xl text-white">{siteSettings.logo || '🕋'}</span>
+                              </div>
+                          )}
                         <div>
                           <h1 className="text-3xl font-black text-[#006D77] tracking-tighter uppercase italic">{siteSettings.name}</h1>
-                          <p className="text-[10px] font-black text-[#006D77]/60 tracking-widest uppercase">www.umrahstay.com</p>
+                          <p className="text-[10px] font-black text-[#006D77]/60 tracking-widest uppercase">{siteSettings.contactEmail}</p>
                         </div>
                       </div>
                       <div className="text-right">
@@ -318,11 +348,28 @@ const TrackBookingPage: React.FC = () => {
                         <h3 className="text-sm font-black text-[#006D77] uppercase tracking-widest mb-2">Hotel Details</h3>
                         <div className="h-0.5 w-full bg-[#006D77] mb-4 opacity-30"></div>
                         <p className="text-2xl font-black text-gray-800 mb-1">{result.hotelName}</p>
-                        <p className="text-sm font-bold text-gray-400">Authorized Logistics Region, Makkah KSA</p>
+                        <p className="text-sm font-bold text-gray-400">{siteSettings.contactAddress}</p>
                       </div>
                     </div>
 
-                    <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-16 rounded-xl">
+                    {agent && (
+                      <div className="mb-12">
+                        <h3 className="text-sm font-black text-[#006D77] uppercase tracking-widest mb-2">Booked By</h3>
+                        <div className="h-0.5 w-full bg-[#006D77] mb-4 opacity-30"></div>
+                        <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                            <div>
+                                <p className="font-bold text-lg text-gray-800 leading-tight">{agent.agencyName}</p>
+                                <p className="text-xs text-gray-400 font-mono">ID: {agent.id}</p>
+                            </div>
+                            <div className="text-right">
+                                {agent.iataCode && <p className="font-semibold text-gray-600">IATA: <span className="font-bold">{agent.iataCode}</span></p>}
+                                {agent.contactNumber && <p className="font-semibold text-gray-600">Contact: <span className="font-bold">{agent.contactNumber}</span></p>}
+                            </div>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-12 rounded-xl">
                       <div className="text-center flex-1 border-r border-[#DCEEF0]">
                         <p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Check-in Date</p>
                         <p className="text-lg font-black text-[#006D77]">{formatDateLabel(result.checkIn)}</p>
@@ -336,6 +383,19 @@ const TrackBookingPage: React.FC = () => {
                         <p className="text-lg font-black text-[#006D77] uppercase">{result.roomType.split(' ')[0]}</p>
                       </div>
                     </div>
+                    
+                    {result.activationKey && result.roomNumber && (
+                        <div className="bg-teal-50/50 p-8 flex justify-between items-center mb-16 rounded-xl border border-teal-200">
+                            <div className="text-center flex-1">
+                                <p className="text-[10px] font-black text-teal-800 uppercase tracking-widest mb-2">Activation Key</p>
+                                <p className="text-xl font-black text-teal-800 font-mono tracking-widest">{result.activationKey}</p>
+                            </div>
+                            <div className="text-center flex-1 border-l border-teal-200">
+                                <p className="text-[10px] font-black text-teal-800 uppercase tracking-widest mb-2">Room Number</p>
+                                <p className="text-xl font-black text-teal-800 font-mono tracking-widest">{result.roomNumber}</p>
+                            </div>
+                        </div>
+                    )}
 
                     <div className="flex justify-between items-end mb-16">
                        {result.showPriceOnVoucher !== false ? (

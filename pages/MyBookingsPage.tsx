@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Button, Card, Badge, Modal, Input, Select } from '../components/UI';
@@ -6,7 +5,7 @@ import { BookingStatus, Booking } from '../types';
 import { useNavigate } from 'react-router-dom';
 
 const MyBookingsPage: React.FC = () => {
-  const { currentUser, bookings, formatPrice, updateBookingStatus, siteSettings, addToast } = useAppContext();
+  const { currentUser, bookings, agencies, formatPrice, updateBookingStatus, siteSettings, addToast } = useAppContext();
   const navigate = useNavigate();
 
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
@@ -117,7 +116,11 @@ const MyBookingsPage: React.FC = () => {
         
         {myBookings.length > 0 ? (
           <div className="grid grid-cols-1 gap-8 animate-in fade-in duration-1000">
-            {myBookings.map(booking => (
+            {myBookings.map(booking => {
+              const agent = booking.agencyId ? agencies.find(a => a.id === booking.agencyId) : null;
+              const isCheckInNear = new Date(booking.checkIn).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000;
+
+              return (
               <Card key={booking.id} className="p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100 shadow-sm !rounded-none">
                 <div className="flex flex-col md:flex-row">
                   <div className={`w-full md:w-3 ${booking.status === BookingStatus.CONFIRMED ? 'bg-green-500' : 'bg-[#E29578]'}`}></div>
@@ -160,8 +163,31 @@ const MyBookingsPage: React.FC = () => {
                         <p className="text-lg font-black text-neutralDark">Holy Region</p>
                       </div>
                     </div>
+
+                    <div className="mt-8">
+                        {booking.activationKey && booking.roomNumber ? (
+                            <div className="bg-teal-50 border border-teal-200 p-4 rounded-lg grid grid-cols-2 gap-4 mb-8">
+                                <div>
+                                    <p className="text-[10px] font-black text-teal-700 uppercase tracking-widest mb-1">Activation Key</p>
+                                    <p className="text-lg font-black text-teal-800 font-mono">{booking.activationKey}</p>
+                                </div>
+                                <div>
+                                    <p className="text-[10px] font-black text-teal-700 uppercase tracking-widest mb-1">Room Number</p>
+                                    <p className="text-lg font-black text-teal-800 font-mono">{booking.roomNumber}</p>
+                                </div>
+                            </div>
+                        ) : isCheckInNear && booking.status === BookingStatus.CONFIRMED ? (
+                            <div className="bg-yellow-50 border border-yellow-200 p-4 rounded-lg text-center mb-8">
+                                <p className="text-xs font-bold text-yellow-700">Awaiting final check-in details from the hotel. Please check back shortly.</p>
+                            </div>
+                        ) : booking.status === BookingStatus.CONFIRMED ? (
+                            <div className="bg-gray-50 border border-gray-200 p-4 rounded-lg text-center mb-8">
+                                <p className="text-xs font-bold text-gray-500">Activation Key & Room Number will be available 24 hours before check-in.</p>
+                            </div>
+                        ) : null}
+                    </div>
                     
-                    <div className="mt-8 flex flex-col sm:flex-row gap-6 justify-between items-center">
+                    <div className="flex flex-col sm:flex-row gap-6 justify-between items-center">
                       <div className="flex items-center gap-3 text-[11px] text-primary/60 font-black uppercase tracking-widest">
                         <span className="w-2.5 h-2.5 bg-primary/30 rounded-full"></span>
                         Wholesale Rate Guaranteed
@@ -243,7 +269,24 @@ const MyBookingsPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-16 rounded-xl">
+                      {agent && (
+                        <div className="mb-12">
+                          <h3 className="text-sm font-black text-[#006D77] uppercase tracking-widest mb-2">Booked By</h3>
+                          <div className="h-0.5 w-full bg-[#006D77] mb-4 opacity-30"></div>
+                          <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
+                              <div>
+                                  <p className="font-bold text-lg text-gray-800 leading-tight">{agent.agencyName}</p>
+                                  <p className="text-xs text-gray-400 font-mono">ID: {agent.id}</p>
+                              </div>
+                              <div className="text-right">
+                                  {agent.iataCode && <p className="font-semibold text-gray-600">IATA: <span className="font-bold">{agent.iataCode}</span></p>}
+                                  {agent.contactNumber && <p className="font-semibold text-gray-600">Contact: <span className="font-bold">{agent.contactNumber}</span></p>}
+                              </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="bg-[#F0F7F8] p-8 flex justify-between items-center mb-12 rounded-xl">
                         <div className="text-center flex-1 border-r border-[#DCEEF0]">
                           <p className="text-[10px] font-black text-[#006D77] uppercase tracking-widest mb-2">Check-in Date</p>
                           <p className="text-lg font-black text-[#006D77]">{formatDateLabel(booking.checkIn)}</p>
@@ -257,6 +300,19 @@ const MyBookingsPage: React.FC = () => {
                           <p className="text-lg font-black text-[#006D77] uppercase">{booking.roomType.split(' ')[0]}</p>
                         </div>
                       </div>
+                      
+                      {booking.activationKey && booking.roomNumber && (
+                        <div className="bg-teal-50/50 p-8 flex justify-between items-center mb-16 rounded-xl border border-teal-200">
+                            <div className="text-center flex-1">
+                                <p className="text-[10px] font-black text-teal-800 uppercase tracking-widest mb-2">Activation Key</p>
+                                <p className="text-xl font-black text-teal-800 font-mono tracking-widest">{booking.activationKey}</p>
+                            </div>
+                            <div className="text-center flex-1 border-l border-teal-200">
+                                <p className="text-[10px] font-black text-teal-800 uppercase tracking-widest mb-2">Room Number</p>
+                                <p className="text-xl font-black text-teal-800 font-mono tracking-widest">{booking.roomNumber}</p>
+                            </div>
+                        </div>
+                      )}
 
                       <div className="flex justify-between items-end mb-16">
                         {booking.showPriceOnVoucher !== false ? (
@@ -309,7 +365,8 @@ const MyBookingsPage: React.FC = () => {
                   </div>
                 </div>
               </Card>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <Card className="py-24 text-center !rounded-none border-none shadow-xl">

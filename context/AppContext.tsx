@@ -1,9 +1,8 @@
-
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   Hotel, Booking, User, Currency, Agent, BulkOrder, Invoice, SiteSettings, 
   UserRole, BookingStatus, BulkOrderStatus, PromoCode, Room, Notification,
-  Toast
+  Toast, Assignment
 } from '../types';
 import { INITIAL_HOTELS, INITIAL_SITE_SETTINGS, CURRENCY_RATES } from '../constants';
 
@@ -25,6 +24,7 @@ interface AppContextType {
   addBooking: (booking: Booking) => void;
   updateBooking: (bookingId: string, updatedDetails: Partial<Booking>) => void;
   updateBookingStatus: (id: string, status: BookingStatus, details?: { requestedCheckIn?: string, requestedCheckOut?: string }) => void;
+  assignBookingDetails: (bookingId: string, details: { activationKey: string; roomNumber: string }) => void;
   approveBookingRequest: (id: string) => void;
   rejectBookingRequest: (id: string) => void;
   deleteBookings: (ids: string[]) => void;
@@ -40,7 +40,7 @@ interface AppContextType {
   addBulkOrder: (order: BulkOrder) => void;
   deleteBulkOrder: (id: string) => void;
   updateBulkOrderStatus: (id: string, status: BulkOrderStatus) => void;
-  assignBulkOrderItem: (orderId: string, itemId: string) => void;
+  assignBulkOrderItem: (orderId: string, itemId: string, booking: Booking) => void;
   invoices: Invoice[];
   promoCodes: PromoCode[];
   addPromoCode: (promo: PromoCode) => void;
@@ -118,6 +118,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   
   const updateBooking = (bookingId: string, updatedDetails: Partial<Booking>) => {
     setBookings(prev => prev.map(b => (b.id === bookingId ? { ...b, ...updatedDetails } : b)));
+  };
+  
+  const assignBookingDetails = (bookingId: string, details: { activationKey: string; roomNumber: string }) => {
+    setBookings(prev => prev.map(b => 
+        b.id === bookingId ? { ...b, ...details } : b
+    ));
   };
 
   const updateBookingStatus = (id: string, status: BookingStatus, details?: { requestedCheckIn?: string, requestedCheckOut?: string }) => {
@@ -197,12 +203,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 };
 
 
-  const assignBulkOrderItem = (orderId: string, itemId: string) => {
+  const assignBulkOrderItem = (orderId: string, itemId: string, booking: Booking) => {
+    const calculateNights = (checkInStr: string, checkOutStr: string) => {
+        return Math.max(0, (new Date(checkOutStr).getTime() - new Date(checkInStr).getTime()) / (1000 * 3600 * 24));
+    };
+
     setBulkOrders(prev => prev.map(order => {
       if (order.id === orderId) {
         const updatedItems = order.items.map(item => {
-          if (item.id === itemId && item.assignedCount < item.quantity) {
-            return { ...item, assignedCount: item.assignedCount + 1 };
+          if (item.id === itemId) {
+            const newAssignment: Assignment = {
+              bookingId: booking.id,
+              checkIn: booking.checkIn,
+              checkOut: booking.checkOut,
+              nights: calculateNights(booking.checkIn, booking.checkOut),
+            };
+            const existingAssignments = item.assignments || [];
+            return { 
+                ...item, 
+                assignments: [...existingAssignments, newAssignment] 
+            };
           }
           return item;
         });
@@ -221,7 +241,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     <AppContext.Provider value={{
       siteSettings, setSiteSettings, currency, setCurrency, formatPrice, hotels, setHotels, addHotel, updateHotel, deleteHotel,
       addRoomToHotel, updateRoomInHotel, deleteRoomFromHotel,
-      bookings, addBooking, updateBooking, updateBookingStatus, approveBookingRequest, rejectBookingRequest, deleteBookings, currentUser, setCurrentUser, logout,
+      bookings, addBooking, updateBooking, updateBookingStatus, assignBookingDetails, approveBookingRequest, rejectBookingRequest, deleteBookings, currentUser, setCurrentUser, logout,
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 
       bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, assignBulkOrderItem, invoices, promoCodes, addPromoCode, deletePromoCode,
       emailNotifications,

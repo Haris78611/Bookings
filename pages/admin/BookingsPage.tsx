@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
@@ -8,6 +7,7 @@ import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../compo
 import AdminEditBookingModal from '../../components/AdminEditBookingModal';
 import BookingDetailsModal from '../../components/BookingDetailsModal';
 import { Booking } from '../../types';
+import AssignDetailsModal from '../../components/AssignDetailsModal';
 
 const BookingsPage: React.FC = () => {
   const { bookings, updateBookingStatus, deleteBookings, agencies, addToast } = useAppContext();
@@ -19,6 +19,9 @@ const BookingsPage: React.FC = () => {
   
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
+
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [assigningBooking, setAssigningBooking] = useState<Booking | null>(null);
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -55,6 +58,11 @@ const BookingsPage: React.FC = () => {
   const openViewModal = (booking: Booking) => {
     setViewingBooking(booking);
     setIsViewModalOpen(true);
+  };
+
+  const openAssignModal = (booking: Booking) => {
+    setAssigningBooking(booking);
+    setIsAssignModalOpen(true);
   };
   
   const handleStatusChange = (bookingId: string, newStatus: BookingStatus) => {
@@ -109,6 +117,7 @@ const BookingsPage: React.FC = () => {
                     <td className="py-4 px-4 text-right font-bold text-xs space-x-2">
                       <Button size="sm" variant="ghost" className="!rounded-md" onClick={() => openViewModal(b)}>View</Button>
                       <Button size="sm" variant="outline" className="!rounded-md" onClick={() => openEditModal(b)}>Edit</Button>
+                      <Button size="sm" variant="teal" className="!rounded-md" onClick={() => openAssignModal(b)} disabled={b.status !== BookingStatus.CONFIRMED}>Assign</Button>
                       <Link to={`/admin/voucher/${b.id}`}><Button size="sm" variant="secondary" className="!rounded-md">Voucher</Button></Link>
                     </td>
                   </tr>
@@ -128,6 +137,11 @@ const BookingsPage: React.FC = () => {
         isOpen={isViewModalOpen}
         onClose={() => setIsViewModalOpen(false)}
         booking={viewingBooking}
+      />
+      <AssignDetailsModal
+        isOpen={isAssignModalOpen}
+        onClose={() => setIsAssignModalOpen(false)}
+        booking={assigningBooking}
       />
     </>
   );

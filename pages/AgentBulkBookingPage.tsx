@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { Button, Card, TableWrapper, Input, Select, Badge } from '../components/UI';
@@ -27,12 +26,14 @@ const AgentBulkBookingPage: React.FC = () => {
   if (!agent) return null;
   const agentBulkOrders = bulkOrders.filter(o => o.agencyId === agent.id);
 
+  const calculateNights = (checkIn: string, checkOut: string) => Math.max(0, (new Date(checkOut).getTime() - new Date(checkIn).getTime()) / 86400000);
+
   const handleAddToCart = (e: React.FormEvent) => {
     e.preventDefault();
     if (!purchaseForm.hotelId || !purchaseForm.roomId || !selectedRoom || !selectedHotel) {
       addToast("Please select a valid hotel and room.", "error"); return;
     }
-    const nights = (new Date(purchaseForm.checkOut).getTime() - new Date(purchaseForm.checkIn).getTime()) / 86400000;
+    const nights = calculateNights(purchaseForm.checkIn, purchaseForm.checkOut);
     if (nights <= 0) { addToast("Check-out must be after check-in.", "error"); return; }
     
     const subtotal = selectedRoom.agentPricePerNight * purchaseForm.quantity * nights;
@@ -41,7 +42,7 @@ const AgentBulkBookingPage: React.FC = () => {
       id: `ITEM-${Date.now()}`,
       hotelId: selectedHotel.id, hotelName: selectedHotel.name, roomId: selectedRoom.id, roomType: selectedRoom.type,
       checkIn: purchaseForm.checkIn, checkOut: purchaseForm.checkOut, quantity: purchaseForm.quantity,
-      assignedCount: 0, pricePerNight: selectedRoom.agentPricePerNight, subtotal,
+      assignments: [], pricePerNight: selectedRoom.agentPricePerNight, subtotal,
     };
     setCart(prev => [...prev, newItem]);
     addToast(`${newItem.quantity} x ${newItem.roomType} added to purchase.`);
@@ -140,19 +141,25 @@ const AgentBulkBookingPage: React.FC = () => {
               </div>
               <TableWrapper>
                 <table className="w-full text-left text-xs">
-                  <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-3 px-4">Details</th><th className="py-3 px-4">Dates</th><th className="py-3 px-4">Qty</th><th className="py-3 px-4">Assigned</th><th className="py-3 px-4 text-right">Actions</th></tr></thead>
+                  <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-3 px-4">Details</th><th className="py-3 px-4">Dates</th><th className="py-3 px-4">Qty</th><th className="py-3 px-4">Utilization</th><th className="py-3 px-4 text-right">Actions</th></tr></thead>
                   <tbody>
-                    {order.items.map(item => (
-                      <tr key={item.id}>
-                        <td className="py-4 px-4"><div><p className="font-bold text-gray-800">{item.hotelName}</p><p className="text-[10px] text-gray-400">{item.roomType}</p></div></td>
-                        <td className="py-4 px-4">{item.checkIn} to {item.checkOut}</td>
-                        <td className="py-4 px-4 font-bold">{item.quantity}</td>
-                        <td className="py-4 px-4 font-bold">{item.assignedCount}</td>
-                        <td className="py-4 px-4 text-right">
-                           <Button size="sm" onClick={() => handleAssign(order.id, item)} disabled={order.status !== BulkOrderStatus.CONFIRMED || item.assignedCount >= item.quantity}>Assign</Button>
-                        </td>
-                      </tr>
-                    ))}
+                    {order.items.map(item => {
+                      const totalNightsAvailable = calculateNights(item.checkIn, item.checkOut) * item.quantity;
+                      const totalNightsAssigned = (item.assignments || []).reduce((sum, ass) => sum + ass.nights, 0);
+                      const nightsRemaining = totalNightsAvailable - totalNightsAssigned;
+                      
+                      return (
+                        <tr key={item.id}>
+                          <td className="py-4 px-4"><div><p className="font-bold text-gray-800">{item.hotelName}</p><p className="text-[10px] text-gray-400">{item.roomType}</p></div></td>
+                          <td className="py-4 px-4">{item.checkIn} to {item.checkOut}</td>
+                          <td className="py-4 px-4 font-bold">{item.quantity}</td>
+                          <td className="py-4 px-4 font-bold">{totalNightsAssigned} / {totalNightsAvailable} nights</td>
+                          <td className="py-4 px-4 text-right">
+                            <Button size="sm" onClick={() => handleAssign(order.id, item)} disabled={order.status !== BulkOrderStatus.CONFIRMED || nightsRemaining <= 0}>Assign</Button>
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </TableWrapper>
