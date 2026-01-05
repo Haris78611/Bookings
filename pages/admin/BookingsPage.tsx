@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { Button, Card, Select } from '../../components/UI';
+import { Button, Card, Select, Input } from '../../components/UI';
 import { BookingStatus } from '../../types';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
 import AdminEditBookingModal from '../../components/AdminEditBookingModal';
@@ -13,6 +13,7 @@ const BookingsPage: React.FC = () => {
   const { bookings, updateBookingStatus, deleteBookings, agencies, addToast } = useAppContext();
   const [selected, setSelected] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
@@ -28,13 +29,21 @@ const BookingsPage: React.FC = () => {
   const agencyIdFilter = searchParams.get('agencyId');
 
   const filteredBookings = useMemo(() => {
+    let baseBookings;
     if (agencyIdFilter) {
-      // When filtering for a specific agency, show their bookings
-      return bookings.filter(b => b.agencyId === agencyIdFilter);
+      baseBookings = bookings.filter(b => b.agencyId === agencyIdFilter);
+    } else {
+      baseBookings = bookings.filter(b => !b.agencyId);
     }
-    // By default, show only direct bookings (no agencyId)
-    return bookings.filter(b => !b.agencyId);
-  }, [bookings, agencyIdFilter]);
+    
+    if (!searchQuery) return baseBookings;
+
+    return baseBookings.filter(b => 
+        b.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.hotelName.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [bookings, agencyIdFilter, searchQuery]);
   
   const filteringAgency = agencyIdFilter ? agencies.find(a => a.id === agencyIdFilter) : null;
 
@@ -86,6 +95,14 @@ const BookingsPage: React.FC = () => {
         )}
         <RefreshButton isRefreshing={isRefreshing} onClick={handleRefresh} />
       </PageHeader>
+      <Card className="p-6 mb-8 border-none shadow-sm rounded-xl bg-white">
+        <Input 
+          placeholder="Search by Guest Name, Booking ID, or Hotel..."
+          value={searchQuery}
+          onChange={e => setSearchQuery(e.target.value)}
+          className="!rounded-lg"
+        />
+      </Card>
       <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
         {selected.length > 0 && 
           <div className="p-4 bg-primary/5 border-b border-primary/10 text-primary flex items-center justify-between">
@@ -123,7 +140,7 @@ const BookingsPage: React.FC = () => {
                   </tr>
                 )
               })}
-              {filteredBookings.length === 0 && <EmptyState message={filteringAgency ? `No bookings found for ${filteringAgency.agencyName}.` : "No direct customer bookings found."} />}
+              {filteredBookings.length === 0 && <EmptyState message={searchQuery ? 'No bookings match your search.' : (filteringAgency ? `No bookings found for ${filteringAgency.agencyName}.` : "No direct customer bookings found.")} />}
             </tbody>
           </table>
         </TableWrapper>

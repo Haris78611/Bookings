@@ -1,9 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Card, Badge, TableWrapper, Button } from '../components/UI';
-import { Booking } from '../types';
+import { Card, Badge, TableWrapper, Button, Input } from '../components/UI';
+import { Booking, BookingStatus } from '../types';
 import AgentEditBookingModal from '../components/AgentEditBookingModal';
+import AssignDetailsModal from '../components/AssignDetailsModal';
 
 const RefreshIcon: React.FC<{ isRefreshing: boolean }> = ({ isRefreshing }) => (
     <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 mr-2 transition-transform duration-300 ${isRefreshing ? 'animate-spin' : 'group-hover:rotate-180'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -17,14 +17,24 @@ const AgentMyBookingsPage: React.FC = () => {
     
     const [selectedBookingIds, setSelectedBookingIds] = useState<string[]>([]);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
     
     const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
-    const agentBookings = useMemo(() => 
-        bookings.filter(b => b.agencyId === currentUser?.agencyId), 
-        [bookings, currentUser]
-    );
+    const [assigningBooking, setAssigningBooking] = useState<Booking | null>(null);
+    const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+    
+    const agentBookings = useMemo(() => {
+        const baseBookings = bookings.filter(b => b.agencyId === currentUser?.agencyId);
+        if (!searchQuery) return baseBookings;
+
+        return baseBookings.filter(b => 
+            b.guestName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            b.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            b.hotelName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [bookings, currentUser, searchQuery]);
 
     if (agent && agent.status === 'Inactive') {
         return (
@@ -80,11 +90,16 @@ const AgentMyBookingsPage: React.FC = () => {
         setEditingBooking(booking);
         setIsEditModalOpen(true);
     };
+    
+    const openAssignModal = (booking: Booking) => {
+        setAssigningBooking(booking);
+        setIsAssignModalOpen(true);
+    };
 
     return (
         <div className="space-y-6">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 w-full sm:w-auto">
                     {selectedBookingIds.length > 0 && (
                         <Button onClick={handleDeleteSelected} variant="danger" size="sm" className="!rounded-lg">
                             Delete Selected ({selectedBookingIds.length})
@@ -96,6 +111,15 @@ const AgentMyBookingsPage: React.FC = () => {
                     {isRefreshing ? 'Refreshing...' : 'Refresh'}
                 </button>
             </div>
+            
+            <Card className="p-6 border-none shadow-sm rounded-xl bg-white">
+              <Input 
+                placeholder="Search by Guest Name, Booking ID, or Hotel..."
+                value={searchQuery}
+                onChange={e => setSearchQuery(e.target.value)}
+                className="!rounded-lg"
+              />
+            </Card>
 
             <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
                <TableWrapper>
@@ -112,7 +136,7 @@ const AgentMyBookingsPage: React.FC = () => {
                      </thead>
                      <tbody>
                         {agentBookings.length === 0 ? (
-                           <tr><td colSpan={6} className="py-20 text-center text-gray-400 italic">No bookings found for your agency.</td></tr>
+                           <tr><td colSpan={6} className="py-20 text-center text-gray-400 italic">{searchQuery ? 'No bookings match your search.' : 'No bookings found for your agency.'}</td></tr>
                         ) : 
                         agentBookings.map(b => (
                             <tr key={b.id} className={`${selectedBookingIds.includes(b.id) ? 'bg-primary/5' : ''}`}>
@@ -124,11 +148,12 @@ const AgentMyBookingsPage: React.FC = () => {
                                 <td className="py-4 px-4">{b.hotelName}</td>
                                 <td className="py-4 px-4 font-bold text-primary">{formatPrice(b.totalPrice)}</td>
                                 <td className="py-4 px-4"><Badge variant={getStatusVariant(b.status)}>{b.status}</Badge></td>
-                                <td className="py-4 px-4 text-right font-bold text-xs uppercase tracking-widest space-x-4">
-                                    <button onClick={() => openEditModal(b)} className="text-secondary hover:underline">Edit</button>
+                                <td className="py-4 px-4 text-right font-bold text-xs uppercase tracking-widest space-x-2">
+                                    <Button size="sm" variant="outline" onClick={() => openEditModal(b)} className="!rounded-md">Edit</Button>
+                                    <Button size="sm" variant="teal" onClick={() => openAssignModal(b)} disabled={b.status !== BookingStatus.CONFIRMED} className="!rounded-md">Assign Details</Button>
                                     <button 
                                         onClick={() => window.open(`/#/agent/voucher/${b.id}`, '_blank')} 
-                                        className="text-primary hover:underline focus:outline-none"
+                                        className="text-primary hover:underline focus:outline-none px-3 py-1.5 font-black"
                                     >
                                         Voucher
                                     </button>
@@ -144,6 +169,12 @@ const AgentMyBookingsPage: React.FC = () => {
                 isOpen={isEditModalOpen}
                 onClose={() => setIsEditModalOpen(false)}
                 booking={editingBooking}
+            />
+            
+            <AssignDetailsModal
+                isOpen={isAssignModalOpen}
+                onClose={() => setIsAssignModalOpen(false)}
+                booking={assigningBooking}
             />
         </div>
     );

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAppContext } from '../context/AppContext';
-import { Button, Card, TableWrapper, Input, Select, Badge } from '../components/UI';
+import { Button, Card, TableWrapper, Input, Select, Badge, SearchableSelect } from '../components/UI';
 import { BulkOrderStatus, BulkOrder, BulkOrderItem } from '../types';
 import AgentBookingModal from '../components/AgentBookingModal';
 
@@ -19,6 +19,8 @@ const AgentBulkBookingPage: React.FC = () => {
   
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [assignTarget, setAssignTarget] = useState<{ orderId: string, item: BulkOrderItem } | null>(null);
+
+  const hotelOptions = hotels.map(h => ({label: h.name, value: h.id}));
 
   const selectedHotel = hotels.find(h => h.id === purchaseForm.hotelId);
   const selectedRoom = selectedHotel?.rooms.find(r => r.id === purchaseForm.roomId);
@@ -90,12 +92,29 @@ const AgentBulkBookingPage: React.FC = () => {
       <Card className="p-8 border-none shadow-sm rounded-xl bg-white">
         <h3 className="text-[#005B5C] text-xl font-bold mb-8">1. Create New Bulk Purchase</h3>
         <form onSubmit={handleAddToCart} className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            <Select label="Hotel" value={purchaseForm.hotelId} onChange={e => setPurchaseForm({...purchaseForm, hotelId: e.target.value, roomId: ''})} options={[{label:'Select Hotel', value:''}, ...hotels.map(h => ({label: h.name, value: h.id}))]} className="!rounded-md"/>
-            <Select label="Room" value={purchaseForm.roomId} disabled={!purchaseForm.hotelId} onChange={e => setPurchaseForm({...purchaseForm, roomId: e.target.value})} options={[{label:'Select Type', value:''}, ...(selectedHotel?.rooms || []).map(r => ({label: r.type, value: r.id}))]} className="!rounded-md"/>
-            <Input label="Check-in" type="date" value={purchaseForm.checkIn} onChange={e => setPurchaseForm({...purchaseForm, checkIn: e.target.value})} className="!rounded-md" />
-            <Input label="Check-out" type="date" value={purchaseForm.checkOut} onChange={e => setPurchaseForm({...purchaseForm, checkOut: e.target.value})} className="!rounded-md" />
-            <Input label="# Rooms" type="number" min="1" value={purchaseForm.quantity} onChange={e => setPurchaseForm({...purchaseForm, quantity: Number(e.target.value)})} className="!rounded-md" />
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
+            <div className="md:col-span-3">
+              <SearchableSelect
+                  label="Hotel"
+                  value={purchaseForm.hotelId}
+                  onChange={hotelId => setPurchaseForm({...purchaseForm, hotelId, roomId: ''})}
+                  options={hotelOptions}
+                  placeholder="Search and select a hotel"
+                  className="!rounded-md"
+              />
+            </div>
+            <div className="md:col-span-3">
+              <Select label="Room" value={purchaseForm.roomId} disabled={!purchaseForm.hotelId} onChange={e => setPurchaseForm({...purchaseForm, roomId: e.target.value})} options={[{label:'Select Type', value:''}, ...(selectedHotel?.rooms || []).map(r => ({label: r.type, value: r.id}))]} className="!rounded-md"/>
+            </div>
+            <div className="md:col-span-2">
+              <Input label="Check-in" type="date" value={purchaseForm.checkIn} onChange={e => setPurchaseForm({...purchaseForm, checkIn: e.target.value})} className="!rounded-md" />
+            </div>
+            <div className="md:col-span-2">
+              <Input label="Check-out" type="date" value={purchaseForm.checkOut} onChange={e => setPurchaseForm({...purchaseForm, checkOut: e.target.value})} className="!rounded-md" />
+            </div>
+            <div className="md:col-span-2">
+              <Input label="# Rooms" type="number" min="1" value={purchaseForm.quantity} onChange={e => setPurchaseForm({...purchaseForm, quantity: Number(e.target.value)})} className="!rounded-md" />
+            </div>
           </div>
           <Button type="submit">+ Add to Purchase Cart</Button>
         </form>

@@ -1,8 +1,7 @@
-
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
-import { Button, Card, Badge } from '../../components/UI';
+import { Button, Card, Badge, Input } from '../../components/UI';
 import { Agent } from '../../types';
 import AgencyFormModal from '../../components/AgencyFormModal';
 import WalletModal from '../../components/WalletModal';
@@ -14,6 +13,15 @@ const AgenciesPage: React.FC = () => {
     const [isWalletModalOpen, setWalletModalOpen] = useState(false);
     const [selectedAgency, setSelectedAgency] = useState<Agent | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const filteredAgencies = useMemo(() => {
+        if (!searchQuery) return agencies;
+        return agencies.filter(a =>
+            a.agencyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            a.id.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [agencies, searchQuery]);
 
     const handleOpenForm = (agency: Agent | null = null) => { setSelectedAgency(agency); setFormModalOpen(true); };
     const handleOpenWallet = (agency: Agent) => { setSelectedAgency(agency); setWalletModalOpen(true); };
@@ -50,12 +58,20 @@ const AgenciesPage: React.FC = () => {
                 <Button onClick={() => handleOpenForm()} variant="primary" className="!rounded-lg">+ Add New Agency</Button>
                 <RefreshButton isRefreshing={isRefreshing} onClick={handleRefresh} />
             </PageHeader>
+            <Card className="p-6 mb-8 border-none shadow-sm rounded-xl bg-white">
+                <Input 
+                  placeholder="Search by Agency Name or ID..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="!rounded-lg"
+                />
+            </Card>
             <Card className="p-0 border-none shadow-sm rounded-xl bg-white overflow-hidden">
                 <TableWrapper>
                     <table className="w-full text-left text-xs">
                         <thead><tr className="bg-gray-50/80 text-gray-400 font-bold uppercase tracking-widest text-[9px] border-b"><th className="py-4 px-6">Agency</th><th className="py-4 px-4">Wallet Balance</th><th className="py-4 px-4">Status</th><th className="py-4 px-4 text-right">Actions</th></tr></thead>
                         <tbody>
-                            {agencies.map(a => (
+                            {filteredAgencies.map(a => (
                                 <tr key={a.id} className="border-b last:border-0 hover:bg-gray-50/50">
                                     <td className="py-4 px-6"><p className="font-bold text-gray-800">{a.agencyName}</p><p className="text-[10px] text-gray-400 font-mono">{a.id}</p></td>
                                     <td className="py-4 px-4 font-bold text-primary">{formatPrice(a.walletBalance)}</td>
@@ -68,7 +84,7 @@ const AgenciesPage: React.FC = () => {
                                     </td>
                                 </tr>
                             ))}
-                             {agencies.length === 0 && <EmptyState message="No agencies found." />}
+                             {filteredAgencies.length === 0 && <EmptyState message={searchQuery ? 'No agencies match your search.' : "No agencies found."} />}
                         </tbody>
                     </table>
                 </TableWrapper>

@@ -108,6 +108,9 @@ const VoucherTemplate: React.FC<{ booking: Booking, agent?: Agent | null }> = ({
                     <div className="text-right">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Scan to Verify Registry</p>
                         <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + '/#/track?id=' + booking.id)}`} alt="Verification QR" className="w-24 h-24 border-2 border-[#006D77]/10 p-1 bg-white" />
+                        <p className="text-[8px] font-bold text-gray-400 mt-2 max-w-[120px] mx-auto leading-tight">
+                            Scan within 24 hours of check-in for activation key & room no.
+                       </p>
                     </div>
                 </div>
 

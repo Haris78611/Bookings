@@ -1,5 +1,4 @@
-
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Hotel } from '../types';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
@@ -266,3 +265,97 @@ export const HotelCard: React.FC<{ hotel: Hotel; formatPrice: (price: number) =>
     </div>
   </Card>
 );
+
+export const SearchableSelect: React.FC<{
+  label: string;
+  options: { label: string; value: string }[];
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  className?: string;
+}> = ({
+  label,
+  options,
+  value,
+  onChange,
+  placeholder = 'Select an option',
+  className = '',
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  const selectedOption = options.find(opt => opt.value === value);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+        setSearchTerm('');
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [wrapperRef]);
+  
+  const filteredOptions = options.filter(option =>
+    option.label.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const handleSelect = (optionValue: string) => {
+    onChange(optionValue);
+    setIsOpen(false);
+    setSearchTerm('');
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    if (!isOpen) setIsOpen(true);
+  };
+
+  const handleInputClick = () => {
+    if (!isOpen) {
+        setIsOpen(true);
+    }
+  };
+
+  return (
+    <div className="w-full" ref={wrapperRef}>
+      {label && <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">{label}</label>}
+      <div className="relative">
+        <input
+          type="text"
+          value={isOpen ? searchTerm : selectedOption?.label || ''}
+          onChange={handleInputChange}
+          onFocus={handleInputClick}
+          onClick={handleInputClick}
+          placeholder={placeholder}
+          className={`block w-full p-3 md:p-4 bg-white border border-gray-200 text-gray-900 rounded-md focus:ring-0 focus:border-[#005B5C] outline-none transition-all font-bold text-xs md:text-sm ${className}`}
+        />
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-[#005B5C] opacity-30 font-bold text-[8px] md:text-[10px]">
+          ▼
+        </div>
+
+        {isOpen && (
+          <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto custom-scrollbar">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map(option => (
+                <li
+                  key={option.value}
+                  onClick={() => handleSelect(option.value)}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-100"
+                >
+                  {option.label}
+                </li>
+              ))
+            ) : (
+              <li className="px-4 py-2 text-sm text-gray-500 italic">No results found</li>
+            )}
+          </ul>
+        )}
+      </div>
+    </div>
+  );
+};

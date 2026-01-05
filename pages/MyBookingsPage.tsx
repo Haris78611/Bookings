@@ -335,6 +335,9 @@ const MyBookingsPage: React.FC = () => {
                               alt="Verification QR"
                               className="w-24 h-24 border-2 border-[#006D77]/10 p-1 bg-white"
                            />
+                           <p className="text-[8px] font-bold text-gray-400 mt-2 max-w-[120px] mx-auto leading-tight">
+                                Scan within 24 hours of check-in for activation key & room no.
+                           </p>
                         </div>
                       </div>
 
