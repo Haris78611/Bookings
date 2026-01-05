@@ -72,7 +72,7 @@ const DashboardLayout: React.FC<{ children: ReactNode }> = ({ children }) => {
                             onClick={() => setSidebarOpen(false)}
                             className={`flex items-center gap-4 px-4 py-3 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all ${
                                 isActive 
-                                ? 'bg-primary text-white shadow-lg shadow-primary/20' 
+                                ? 'bg-[#006D77] text-white shadow-lg shadow-[#006D77]/20' 
                                 : 'text-gray-500 hover:bg-gray-50'
                             }`}
                         >
