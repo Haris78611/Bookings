@@ -133,7 +133,7 @@ const HotelDetailsPage: React.FC = () => {
           </div>
           {/* Right Column */}
           <aside className="lg:sticky top-24 self-start">
-            <Card className="p-6 !rounded-xl shadow-lg border-gray-100 space-y-6">
+            <Card className="p-6 rounded-xl shadow-lg border-gray-100 space-y-6">
               <div className="flex justify-between items-center"><span className="font-semibold text-gray-500">City:</span><span className="font-bold text-gray-800">{hotel.city}</span></div>
               <div className="flex justify-between items-center"><span className="font-semibold text-gray-500">Distance:</span><span className="font-bold text-gray-800">{hotel.distanceToHaram}m</span></div>
               <Button onClick={() => document.getElementById('rooms-section')?.scrollIntoView({ behavior: 'smooth' })} fullWidth size="lg">Select Room</Button>
@@ -148,7 +148,7 @@ const HotelDetailsPage: React.FC = () => {
           <h2 className="text-4xl font-black text-primary text-center mb-12">Select Your Sanctuary</h2>
           <div className="max-w-4xl mx-auto space-y-6">
             {hotel.rooms.map(room => (
-              <Card key={room.id} className="flex flex-col md:flex-row overflow-hidden !rounded-xl shadow-md">
+              <Card key={room.id} className="flex flex-col md:flex-row overflow-hidden rounded-xl shadow-md">
                 <div className="md:w-64 h-48 md:h-auto shrink-0"><RoomGallery images={room.images} /></div>
                 <div className="p-6 flex flex-col flex-1">
                   <h3 className="text-2xl font-bold">{room.type}</h3>

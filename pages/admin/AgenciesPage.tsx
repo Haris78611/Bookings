@@ -31,7 +31,7 @@ const AgenciesPage: React.FC = () => {
         updateAgency({ ...selectedAgency, ...agencyData } as Agent);
         addToast('Agency updated successfully.');
       } else {
-        addAgency({ id: `AG-${Date.now()}`, walletBalance: 0, status: 'Active', ...agencyData } as Agent);
+        addAgency(agencyData as Omit<Agent, 'id' | 'walletBalance'>);
         addToast('New agency added successfully.');
       }
       setFormModalOpen(false);

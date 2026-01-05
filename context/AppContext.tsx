@@ -279,8 +279,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // Promo Codes
     const addPromoCode = async (promoCode: Omit<PromoCode, 'id'>) => {
-        const newCode = { id: `PC-${Date.now()}`, ...promoCode };
-        await apiCall('createPromoCode', newCode); 
+        await apiCall('createPromoCode', promoCode); 
         await fetchData(); 
     };
     const deletePromoCode = async (id: string) => { await apiCall('deletePromoCode', { id }); await fetchData(); };

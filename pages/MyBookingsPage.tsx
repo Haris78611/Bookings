@@ -22,11 +22,11 @@ const MyBookingsPage: React.FC = () => {
   if (!currentUser) {
      return (
         <div className="min-h-screen flex items-center justify-center bg-neutralLight p-4">
-          <Card className="max-w-md text-center p-12 shadow-2xl border-none !rounded-none">
+          <Card className="max-w-md text-center p-12 shadow-2xl border-none rounded-2xl">
             <div className="text-5xl mb-6">🔐</div>
             <h2 className="text-2xl font-black uppercase tracking-tighter mb-4">Secure Access</h2>
             <p className="text-gray-500 mb-8 font-medium">Please login to access your personal booking history and digital travel documents.</p>
-            <Button onClick={() => navigate('/login')} fullWidth size="lg" className="!rounded-none">Portal Login</Button>
+            <Button onClick={() => navigate('/login')} fullWidth size="lg">Portal Login</Button>
           </Card>
         </div>
       );
@@ -101,7 +101,7 @@ const MyBookingsPage: React.FC = () => {
   };
 
   return (
-    <div className="bg-[#f8fafa] min-h-screen py-20">
+    <div className="bg-gray-50 min-h-screen py-20">
       <div className="container mx-auto px-4 max-w-5xl">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-16 gap-6">
             <h1 className="text-5xl font-black text-primary tracking-tighter uppercase">My Bookings</h1>
@@ -114,9 +114,9 @@ const MyBookingsPage: React.FC = () => {
               const isModificationPending = booking.status === BookingStatus.CANCEL_REQUESTED || booking.status === BookingStatus.DATE_CHANGE_REQUESTED;
 
               return (
-              <Card key={booking.id} className="p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100 shadow-sm !rounded-none">
+              <Card key={booking.id} className="p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100 shadow-sm rounded-2xl">
                 <div className="flex flex-col md:flex-row">
-                  <div className={`w-full md:w-3 ${booking.status === BookingStatus.CONFIRMED ? 'bg-green-500' : 'bg-[#E29578]'}`}></div>
+                  <div className={`w-full md:w-3 ${booking.status === BookingStatus.CONFIRMED ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
                   <div className="flex-1 p-8 md:p-10">
                     <div className="flex justify-between items-start mb-4">
                         <Badge variant={getStatusVariant(booking.status)}>{booking.status}</Badge>
@@ -136,16 +136,16 @@ const MyBookingsPage: React.FC = () => {
                          <p className="text-3xl font-black text-primary">{formatPrice(booking.totalPrice)}</p>
                        </div>
                       <div className="flex w-full sm:w-auto gap-4">
-                        <Button variant="outline" onClick={() => openModifyModal(booking)} disabled={isModificationPending} className="flex-1 !rounded-none">
+                        <Button variant="outline" onClick={() => openModifyModal(booking)} disabled={isModificationPending} className="flex-1">
                           {isModificationPending ? 'Request Pending' : 'Modify'}
                         </Button>
                         
                         {booking.status === BookingStatus.CONFIRMED ? (
-                          <Button variant="teal" onClick={() => handleDownloadVoucher(booking)} disabled={isGeneratingPdf} className="flex-1 !rounded-none">
+                          <Button variant="teal" onClick={() => handleDownloadVoucher(booking)} disabled={isGeneratingPdf} className="flex-1">
                             {isGeneratingPdf ? '...' : 'Voucher'}
                           </Button>
                         ) : (
-                           <div className="flex items-center px-4 py-2 border border-dashed"><span className="text-[10px] font-black text-gray-400 uppercase">Pending</span></div>
+                           <div className="flex items-center px-4 py-2 border border-dashed rounded-xl"><span className="text-[10px] font-black text-gray-400 uppercase">Pending</span></div>
                         )}
                       </div>
                     </div>
@@ -160,7 +160,7 @@ const MyBookingsPage: React.FC = () => {
             })}
           </div>
         ) : (
-          <Card className="py-24 text-center !rounded-none border-none shadow-xl">
+          <Card className="py-24 text-center rounded-2xl border-none shadow-xl">
             <h2 className="text-2xl font-bold">No bookings found.</h2>
           </Card>
         )}
