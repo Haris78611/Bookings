@@ -119,6 +119,7 @@ const MyBookingsPage: React.FC = () => {
             {myBookings.map(booking => {
               const agent = booking.agencyId ? agencies.find(a => a.id === booking.agencyId) : null;
               const isCheckInNear = new Date(booking.checkIn).getTime() - new Date().getTime() <= 24 * 60 * 60 * 1000;
+              const isModificationPending = booking.status === BookingStatus.CANCEL_REQUESTED || booking.status === BookingStatus.DATE_CHANGE_REQUESTED;
 
               return (
               <Card key={booking.id} className="p-0 overflow-hidden group hover:shadow-2xl transition-all duration-500 border border-gray-100 shadow-sm !rounded-none">
@@ -195,10 +196,11 @@ const MyBookingsPage: React.FC = () => {
                       <div className="flex w-full sm:w-auto gap-4">
                         <Button 
                           variant="outline" 
-                          className="flex-1 sm:px-10 !rounded-none border-gray-200 font-black text-[10px] uppercase tracking-widest"
+                          className="flex-1 sm:px-10 !rounded-none border-gray-200 font-black text-[10px] uppercase tracking-widest disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed"
                           onClick={() => openModifyModal(booking)}
+                          disabled={isModificationPending}
                         >
-                          Modify / Support
+                          {isModificationPending ? 'Request Pending' : 'Modify / Support'}
                         </Button>
                         
                         {booking.status === BookingStatus.CONFIRMED ? (

@@ -247,6 +247,8 @@ const TrackBookingPage: React.FC = () => {
                   </div>
                    <div className="flex gap-3 w-full sm:w-auto">
                     {(() => {
+                        const isModificationPending = result.status === BookingStatus.CANCEL_REQUESTED || result.status === BookingStatus.DATE_CHANGE_REQUESTED;
+
                         if (result.status === BookingStatus.CANCELLED) {
                             return (
                                 <div className="w-full sm:w-auto bg-red-50 text-red-700 p-4 rounded-lg text-center font-bold text-xs border border-red-200">
@@ -294,10 +296,11 @@ const TrackBookingPage: React.FC = () => {
                               </Button>
                               <Button 
                                 variant="secondary" 
-                                className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg"
+                                className="flex-1 sm:px-8 !rounded-none font-black text-[10px] uppercase tracking-widest shadow-lg disabled:bg-gray-300 disabled:cursor-not-allowed"
                                 onClick={() => openModifyModal(result)}
+                                disabled={isModificationPending}
                               >
-                                Modify Stay
+                                {isModificationPending ? 'Request Pending' : 'Modify Stay'}
                               </Button>
                             </>
                         );

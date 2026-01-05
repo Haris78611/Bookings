@@ -4,15 +4,18 @@ import {
   UserRole, BookingStatus, BulkOrderStatus, PromoCode, Room, Notification,
   Toast, Assignment
 } from '../types';
-import { INITIAL_HOTELS, INITIAL_SITE_SETTINGS, CURRENCY_RATES } from '../constants';
+import { INITIAL_HOTELS, INITIAL_SITE_SETTINGS } from '../constants';
 
 type AuthMode = 'customer-login' | 'customer-signup' | 'agent-login';
+type CurrencyRates = { SAR: number; USD: number };
 
 interface AppContextType {
   siteSettings: SiteSettings;
   setSiteSettings: (settings: SiteSettings) => void;
   currency: Currency;
   setCurrency: (c: Currency) => void;
+  currencyRates: CurrencyRates;
+  setCurrencyRates: (rates: CurrencyRates) => void;
   formatPrice: (priceInPKR: number) => string;
   hotels: Hotel[];
   setHotels: React.Dispatch<React.SetStateAction<Hotel[]>>;
@@ -68,6 +71,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [siteSettings, setSiteSettings] = useState<SiteSettings>(INITIAL_SITE_SETTINGS);
   const [currency, setCurrency] = useState<Currency>('PKR');
+  const [currencyRates, setCurrencyRates] = useState<CurrencyRates>({ SAR: 74.1, USD: 278.4 });
   const [hotels, setHotels] = useState<Hotel[]>(INITIAL_HOTELS);
   
   const [bookings, setBookings] = useState<Booking[]>([]);
@@ -116,8 +120,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   };
 
   const formatPrice = (priceInPKR: number) => {
-    const rate = CURRENCY_RATES[currency];
-    const converted = priceInPKR * rate;
+    let converted = priceInPKR;
+    if (currency === 'SAR') {
+        converted = priceInPKR / currencyRates.SAR;
+    } else if (currency === 'USD') {
+        converted = priceInPKR / currencyRates.USD;
+    }
+
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: currency,
@@ -309,7 +318,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   return (
     <AppContext.Provider value={{
-      siteSettings, setSiteSettings, currency, setCurrency, formatPrice, hotels, setHotels, addHotel, updateHotel, deleteHotel,
+      siteSettings, setSiteSettings, currency, setCurrency, currencyRates, setCurrencyRates, formatPrice, hotels, setHotels, addHotel, updateHotel, deleteHotel,
       addRoomToHotel, updateRoomInHotel, deleteRoomFromHotel,
       bookings, addBooking, updateBooking, updateBookingStatus, assignBookingDetails, approveBookingRequest, rejectBookingRequest, deleteBookings, currentUser, setCurrentUser, logout,
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 

@@ -1,11 +1,5 @@
 import { Hotel, SiteSettings } from './types';
 
-export const CURRENCY_RATES = {
-  PKR: 1,
-  SAR: 1 / 74.1,
-  USD: 1 / 278.4,
-};
-
 export const INITIAL_HOTELS: Hotel[] = [
   {
     id: 'h1',

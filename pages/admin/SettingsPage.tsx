@@ -1,5 +1,4 @@
-
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAppContext } from '../../context/AppContext';
 import { Button, Card, Input, Select } from '../../components/UI';
 import { SiteSettings, PromoCode } from '../../types';
@@ -8,18 +7,29 @@ import { PageHeader } from '../../components/AdminUI';
 const SettingsPage: React.FC = () => {
   const { 
     siteSettings, setSiteSettings,
-    promoCodes, addPromoCode, deletePromoCode, formatPrice, addToast
+    promoCodes, addPromoCode, deletePromoCode, formatPrice, addToast,
+    currencyRates, setCurrencyRates
   } = useAppContext();
   
   const [formState, setFormState] = useState<SiteSettings>(siteSettings);
+  const [currencyForm, setCurrencyForm] = useState(currencyRates);
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   
   const [newPromoCode, setNewPromoCode] = useState<Omit<PromoCode, 'id'>>({ code: '', discount: 10, type: 'percentage' });
 
+  // Ensure local state is updated if context changes
+  useEffect(() => setFormState(siteSettings), [siteSettings]);
+  useEffect(() => setCurrencyForm(currencyRates), [currencyRates]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormState(prev => ({ ...prev, [name]: name.includes('Fee') ? Number(value) : value }));
+  };
+
+  const handleCurrencyChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setCurrencyForm(prev => ({ ...prev, [name]: Number(value) || 0 }));
   };
   
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'logo' | 'bannerImage') => {
@@ -36,6 +46,7 @@ const SettingsPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSiteSettings(formState);
+    setCurrencyRates(currencyForm);
     addToast('Site settings have been updated successfully.');
   };
   
@@ -103,11 +114,24 @@ const SettingsPage: React.FC = () => {
             
             {/* Financial Settings */}
             <Card className="p-8 border-none shadow-sm rounded-xl bg-white">
-                <h3 className="text-lg font-bold text-primary mb-6 border-b pb-4">Financial Settings</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <Input label="Cancellation Fee (%)" name="cancellationFee" type="number" value={formState.cancellationFee} onChange={handleChange} className={inputStyle} />
-                    <Input label="Date Change Fee (%)" name="dateChangeFee" type="number" value={formState.dateChangeFee} onChange={handleChange} className={inputStyle} />
-                </div>
+              <h3 className="text-lg font-bold text-primary mb-6 border-b pb-4">Financial Settings</h3>
+              <div className="space-y-6">
+                  <div>
+                      <h4 className="text-sm font-bold text-gray-700 mb-3">Booking Fees</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Input label="Cancellation Fee (%)" name="cancellationFee" type="number" value={formState.cancellationFee} onChange={handleChange} className={inputStyle} />
+                          <Input label="Date Change Fee (%)" name="dateChangeFee" type="number" value={formState.dateChangeFee} onChange={handleChange} className={inputStyle} />
+                      </div>
+                  </div>
+                  <div className="pt-6 border-t">
+                      <h4 className="text-sm font-bold text-gray-700 mb-3">Currency Conversion Rates</h4>
+                      <p className="text-xs text-gray-500 mb-4">Set how many Pakistani Rupees (PKR) are equivalent to 1 unit of the foreign currency.</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          <Input label="PKR per 1 SAR" name="SAR" type="number" step="0.01" value={currencyForm.SAR} onChange={handleCurrencyChange} className={inputStyle} />
+                          <Input label="PKR per 1 USD" name="USD" type="number" step="0.01" value={currencyForm.USD} onChange={handleCurrencyChange} className={inputStyle} />
+                      </div>
+                  </div>
+              </div>
             </Card>
 
             {/* Save Button */}

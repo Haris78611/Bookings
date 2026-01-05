@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
@@ -264,7 +263,7 @@ const HomePage: React.FC = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
                 {latestHotels.map((hotel, index) => (
-                  <div key={hotel.id} className={`animate-fade-up stagger-${index + 1}`} style={{animationFillMode: 'forwards', opacity: 0}}>
+                  <div key={hotel.id} className={`animate-fade-up stagger-${index + 1}`}>
                     <HotelCard hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
                   </div>
                 ))}

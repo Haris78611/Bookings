@@ -77,14 +77,14 @@ const AuthModal: React.FC = () => {
   return (
     <Modal isOpen={isAuthModalOpen} onClose={closeAuthModal} title="Portal Authentication">
       <div className="bg-gray-50/50">
-        <div className="p-6 border-b border-gray-100 flex items-center justify-center gap-2">
+        <div className="p-4 border-b border-gray-100 flex items-center justify-center gap-2">
           {['customer-login', 'customer-signup'].includes(authMode) ? (
             <>
-              <Button size="sm" variant={authMode === 'customer-login' ? 'primary' : 'outline'} onClick={() => setAuthMode('customer-login')} className="!rounded-full flex-1">Customer Login</Button>
-              <Button size="sm" variant={authMode === 'customer-signup' ? 'primary' : 'outline'} onClick={() => setAuthMode('customer-signup')} className="!rounded-full flex-1">Sign Up</Button>
+              <Button size="sm" variant={authMode === 'customer-login' ? 'primary' : 'outline'} onClick={() => setAuthMode('customer-login')} className="!rounded-full flex-1 h-10">Customer Login</Button>
+              <Button size="sm" variant={authMode === 'customer-signup' ? 'primary' : 'outline'} onClick={() => setAuthMode('customer-signup')} className="!rounded-full flex-1 h-10">Sign Up</Button>
             </>
           ) : (
-            <p className="text-sm font-bold text-primary">Agent Portal Access</p>
+            <p className="text-sm font-bold text-primary py-2">Agent Portal Access</p>
           )}
         </div>
         <div className="p-6 md:p-8">
@@ -92,13 +92,13 @@ const AuthModal: React.FC = () => {
         </div>
         <div className="bg-white p-4 border-t text-center">
             {['customer-login', 'customer-signup'].includes(authMode) ? (
-                <button onClick={() => setAuthMode('agent-login')} className="text-xs font-bold text-gray-400 hover:text-primary transition-all">
+                <Button variant="ghost" size="sm" onClick={() => setAuthMode('agent-login')} className="!rounded-full text-xs">
                     Are you an Agent?
-                </button>
+                </Button>
             ) : (
-                <button onClick={() => setAuthMode('customer-login')} className="text-xs font-bold text-gray-400 hover:text-primary transition-all">
+                <Button variant="ghost" size="sm" onClick={() => setAuthMode('customer-login')} className="!rounded-full text-xs">
                     Are you a Customer?
-                </button>
+                </Button>
             )}
         </div>
       </div>
