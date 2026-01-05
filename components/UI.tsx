@@ -140,7 +140,7 @@ export const Select: React.FC<React.SelectHTMLAttributes<HTMLSelectElement> & {
   </div>
 );
 
-export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode }> = ({ isOpen, onClose, title, children }) => {
+export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: string; children: React.ReactNode; size?: 'xl' | '4xl' }> = ({ isOpen, onClose, title, children, size = 'xl' }) => {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -152,10 +152,15 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
 
   if (!isOpen) return null;
 
+  const sizeClasses = {
+    'xl': 'max-w-xl',
+    '4xl': 'max-w-4xl'
+  };
+
   return (
     <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center bg-black/90 p-0 md:p-4 animate-in fade-in duration-200">
       <div 
-        className="bg-white shadow-[0_50px_100px_rgba(0,0,0,0.6)] w-full max-w-xl flex flex-col overflow-hidden relative h-[90vh] md:h-auto md:max-h-[85vh] rounded-none"
+        className={`bg-white shadow-[0_50px_100px_rgba(0,0,0,0.6)] w-full ${sizeClasses[size]} flex flex-col overflow-hidden relative h-[90vh] md:h-auto md:max-h-[85vh] rounded-none`}
       >
         <div className="px-6 py-4 md:px-8 md:py-6 border-b bg-white shrink-0 flex justify-between items-center z-50">
           <div className="flex items-center gap-3 md:gap-4">
@@ -171,7 +176,7 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
           >&times;</button>
         </div>
 
-        <div className="flex-1 bg-white p-6 md:p-8 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 bg-white overflow-y-auto custom-scrollbar">
            {children}
         </div>
       </div>

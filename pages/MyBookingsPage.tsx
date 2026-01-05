@@ -85,7 +85,15 @@ const MyBookingsPage: React.FC = () => {
         ? BookingStatus.CANCEL_REQUESTED 
         : BookingStatus.DATE_CHANGE_REQUESTED;
       
-      updateBookingStatus(selectedBooking.id, newStatus);
+      if (newStatus === BookingStatus.DATE_CHANGE_REQUESTED) {
+        updateBookingStatus(selectedBooking.id, newStatus, {
+            requestedCheckIn: modifyForm.checkIn,
+            requestedCheckOut: modifyForm.checkOut
+        });
+      } else {
+        updateBookingStatus(selectedBooking.id, newStatus);
+      }
+
       alert(`${modifyForm.requestType} request for ${selectedBooking.id} has been transmitted to the Admin Control Desk. You will be notified of the outcome.`);
       setIsModifyModalOpen(false);
     }

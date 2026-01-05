@@ -74,6 +74,8 @@ export interface Booking {
   userId?: string;
   agencyId?: string;
   createdAt: string;
+  requestedCheckIn?: string;
+  requestedCheckOut?: string;
 }
 
 export interface Agent {
@@ -83,6 +85,8 @@ export interface Agent {
   password?: string;
   status: 'Active' | 'Inactive';
   walletBalance: number;
+  iataCode?: string;
+  contactNumber?: string;
 }
 
 export interface BulkOrder {
@@ -99,7 +103,7 @@ export interface BulkOrder {
 }
 
 export interface Invoice {
-  id: string;
+  id:string;
   agencyId: string;
   amount: number;
   type: 'Credit' | 'Debit';
@@ -125,6 +129,14 @@ export interface SiteSettings {
   facebookUrl: string;
   instagramUrl: string;
   whatsappNumber: string;
+  twitterUrl?: string;
   cancellationFee: number;
   dateChangeFee: number;
+}
+
+export interface Notification {
+  id: string;
+  to: string;
+  subject: string;
+  sentAt: string;
 }

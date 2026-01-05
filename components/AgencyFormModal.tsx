@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Agent } from '../types';
 import { Modal, Input, Button, Select } from './UI';
@@ -10,56 +11,103 @@ interface AgencyFormModalProps {
 }
 
 const AgencyFormModal: React.FC<AgencyFormModalProps> = ({ isOpen, onClose, onSubmit, agency }) => {
-  const [formData, setFormData] = useState({
-    agencyName: '',
-    email: '',
-    // Fix: Add type assertion to ensure status is of the correct union type.
-    status: 'Active' as 'Active' | 'Inactive',
+  const getInitialState = () => ({
+    agencyName: agency?.agencyName || '',
+    email: agency?.email || '',
+    status: agency?.status || 'Active',
+    password: '', // Always start with an empty password field
+    iataCode: agency?.iataCode || '',
+    contactNumber: agency?.contactNumber || '',
   });
 
+  const [formData, setFormData] = useState(getInitialState());
+
   useEffect(() => {
-    if (agency) {
-      setFormData({
-        agencyName: agency.agencyName,
-        email: agency.email,
-        status: agency.status,
-      });
-    } else {
-      // Fix: Add type assertion here too for consistency on reset.
-      setFormData({ agencyName: '', email: '', status: 'Active' as 'Active' | 'Inactive' });
+    // Reset form state when modal opens or agency data changes
+    if (isOpen) {
+      setFormData(getInitialState());
     }
   }, [agency, isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    // Fix: Handle 'status' separately to cast the value to the correct type.
-    if (name === 'status') {
-      setFormData(prev => ({ ...prev, status: value as 'Active' | 'Inactive' }));
-    } else {
-      setFormData(prev => ({ ...prev, [name]: value }));
-    }
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    const submissionData: Partial<Agent> = { ...formData };
+    if (!submissionData.password) {
+      delete submissionData.password; // Don't send empty password to update
+    }
+    onSubmit(submissionData);
+    onClose(); // Close modal on submit
   };
 
+  const inputStyle = "!rounded-lg bg-gray-50 border-gray-200 shadow-inner";
+
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title={agency ? 'Edit Agency' : 'Add New Agency'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input name="agencyName" label="Agency Name" value={formData.agencyName} onChange={handleChange} required />
-        <Input name="email" label="Contact Email" type="email" value={formData.email} onChange={handleChange} required />
-        <Select
-          name="status"
-          label="Status"
-          value={formData.status}
-          onChange={handleChange}
-          options={[{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }]}
-        />
-        <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit">{agency ? 'Save Changes' : 'Create Agency'}</Button>
+    <Modal isOpen={isOpen} onClose={onClose} title={agency ? 'Edit Agency Profile' : 'Add New Agency'} size="xl">
+      <form onSubmit={handleSubmit}>
+        <div className="p-6 md:p-8 space-y-6 bg-gray-50/50">
+          <Input
+            label="Agency Name"
+            name="agencyName"
+            value={formData.agencyName}
+            onChange={handleChange}
+            className={inputStyle}
+            required
+          />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="Contact Email"
+                name="email"
+                type="email"
+                value={formData.email}
+                onChange={handleChange}
+                className={inputStyle}
+                required
+              />
+              <Input
+                label="Contact Number"
+                name="contactNumber"
+                type="tel"
+                value={formData.contactNumber}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Input
+                label="IATA Code (Optional)"
+                name="iataCode"
+                value={formData.iataCode}
+                onChange={handleChange}
+                className={inputStyle}
+              />
+              <Select
+                label="Status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className={inputStyle}
+                options={[{ label: 'Active', value: 'Active' }, { label: 'Inactive', value: 'Inactive' }]}
+              />
+          </div>
+          <Input
+            label="Set Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            className={inputStyle}
+            placeholder={agency ? 'Leave blank to keep current password' : ''}
+            required={!agency}
+          />
+        </div>
+        <div className="bg-white p-4 flex justify-end gap-2 border-t">
+          <Button type="button" variant="outline" onClick={onClose} className="!rounded-lg">Cancel</Button>
+          <Button type="submit" variant="primary" className="!rounded-lg">{agency ? 'Save Changes' : 'Create Agency'}</Button>
         </div>
       </form>
     </Modal>

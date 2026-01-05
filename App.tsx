@@ -29,23 +29,6 @@ const LoginPage = () => {
   const [credentials, setCredentials] = React.useState({ email: '', password: '' });
 
   const handleLogin = (role: UserRole) => {
-    // Exact match for Admin credentials as requested
-    if (role === UserRole.ADMIN) {
-      if (credentials.email.trim() === '990990' && credentials.password === 'Haris@1122@11') {
-        setCurrentUser({
-          id: 'ADM-1',
-          name: 'System Administrator',
-          email: 'admin@umrahstay.com',
-          role: UserRole.ADMIN
-        });
-        navigate('/admin');
-        return;
-      } else {
-        alert("Invalid Administrative Credentials. Please use the designated ID and Password.");
-        return;
-      }
-    }
-
     // Agent Login - Must match the agency ID in AppContext (id: '1234')
     if (role === UserRole.AGENT) {
       setCurrentUser({
@@ -104,7 +87,7 @@ const LoginPage = () => {
 
           <div className="grid grid-cols-2 gap-3">
             <Button onClick={() => handleLogin(UserRole.AGENT)} fullWidth variant="outline" size="sm" className="!rounded-lg font-black">Agent Portal</Button>
-            <Button onClick={() => handleLogin(UserRole.ADMIN)} fullWidth variant="ghost" size="sm" className="!rounded-lg border border-gray-100 font-black">Control Desk</Button>
+            <Button onClick={() => navigate('/admin')} fullWidth variant="ghost" size="sm" className="!rounded-lg border border-gray-100 font-black">Control Desk</Button>
           </div>
           
           <div className="mt-8 p-4 bg-gray-50 border border-dashed border-gray-200 text-[9px] font-medium text-gray-400 leading-relaxed rounded-lg">
@@ -186,10 +169,8 @@ const App: React.FC = () => {
       <Router>
         <ScrollToTop />
         <Routes>
-          <Route path="/admin" element={<AdminPortal />} />
-          <Route path="/admin/:view" element={<AdminPortal />} />
-          <Route path="/agent" element={<AgentPortal />} />
-          <Route path="/agent/:view" element={<AgentPortal />} />
+          <Route path="/admin/*" element={<AdminPortal />} />
+          <Route path="/agent/*" element={<AgentPortal />} />
 
           <Route path="/*" element={
             <>

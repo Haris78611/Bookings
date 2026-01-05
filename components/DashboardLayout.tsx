@@ -16,6 +16,8 @@ const BulkIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-
 const RequestsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 8a3 3 0 100-6 3 3 0 000 6z" /></svg>;
 const LogoutIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>;
 const NotificationIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>;
+const PromoIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z" /></svg>;
+
 
 const adminNav = [
     { name: 'Dashboard', path: '/admin', icon: <DashboardIcon /> },
@@ -26,6 +28,7 @@ const adminNav = [
     { name: 'Agencies', path: '/admin/agencies', icon: <AgenciesIcon /> },
     { name: 'Invoices', path: '/admin/invoices', icon: <InvoicesIcon /> },
     { name: 'Financials', path: '/admin/financials', icon: <FinancialsIcon /> },
+    { name: 'Promo Codes', path: '/admin/promo-codes', icon: <PromoIcon /> },
     { name: 'Notifications', path: '/admin/notifications', icon: <NotificationIcon /> },
     { name: 'Settings', path: '/admin/settings', icon: <SettingsIcon /> },
 ];

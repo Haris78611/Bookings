@@ -106,6 +106,7 @@ export const INITIAL_SITE_SETTINGS: SiteSettings = {
   facebookUrl: 'https://facebook.com/umrahstay',
   instagramUrl: 'https://instagram.com/umrahstay',
   whatsappNumber: '+923001234567',
+  twitterUrl: 'https://twitter.com/umrahstay',
   cancellationFee: 10,
   dateChangeFee: 5
 };

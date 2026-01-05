@@ -5,36 +5,54 @@ import { useAppContext } from '../context/AppContext';
 import { Button, Card, Badge, TableWrapper, Input, Select, Modal } from '../components/UI';
 import { UserRole, Currency, BulkOrderStatus, BulkOrder, BookingStatus, Booking } from '../types';
 import DashboardLayout from '../components/DashboardLayout';
+import ReportGenerationModal from '../components/ReportGenerationModal';
 
 const DashboardView: React.FC = () => {
   const { currentUser, agencies, formatPrice, bookings } = useAppContext();
   const agent = agencies.find(a => a.id === currentUser?.agencyId);
   const agentBookings = bookings.filter(b => b.agencyId === agent?.id);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   
+  if (!agent) return null;
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
-          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">💳</div>
-          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Wallet Balance</p><p className="text-[#005B5C] text-2xl font-bold">{formatPrice(agent?.walletBalance || 0)}</p></div>
-        </Card>
-        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
-          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">🏢</div>
-          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Bookings</p><p className="text-[#005B5C] text-2xl font-bold">{agentBookings.length}</p></div>
-        </Card>
-        <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
-          <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">📋</div>
-          <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Agency Status</p><p className="text-[#005B5C] text-2xl font-bold">{agent?.status}</p></div>
+    <>
+      <div className="space-y-8 animate-in fade-in duration-500">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+            <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">💳</div>
+            <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Wallet Balance</p><p className="text-[#005B5C] text-2xl font-bold">{formatPrice(agent?.walletBalance || 0)}</p></div>
+          </Card>
+          <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+            <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">🏢</div>
+            <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Total Bookings</p><p className="text-[#005B5C] text-2xl font-bold">{agentBookings.length}</p></div>
+          </Card>
+          <Card className="p-8 border-none shadow-sm rounded-xl flex items-center gap-6 bg-white">
+            <div className="bg-[#FDE2D1] p-4 rounded-xl text-[#E29578] text-2xl">📋</div>
+            <div><p className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Agency Status</p><p className="text-[#005B5C] text-2xl font-bold">{agent?.status}</p></div>
+          </Card>
+        </div>
+        <Card className="p-8 border-none shadow-sm rounded-xl bg-white border border-gray-50">
+          <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+              <div>
+                <h3 className="text-[#005B5C] text-lg font-bold mb-4">Welcome, {agent?.agencyName}!</h3>
+                <p className="text-gray-500 text-sm leading-relaxed max-w-4xl font-medium">
+                  This is your central hub for managing hotel bookings for your clients. 
+                  You can create new bulk orders or view and manage your existing agency bookings using the sections in the sidebar.
+                </p>
+              </div>
+              <Button variant="secondary" className="!rounded-lg" onClick={() => setIsReportModalOpen(true)}>
+                Generate Report
+              </Button>
+            </div>
         </Card>
       </div>
-      <Card className="p-8 border-none shadow-sm rounded-xl bg-white border border-gray-50">
-        <h3 className="text-[#005B5C] text-lg font-bold mb-4">Welcome, {agent?.agencyName}!</h3>
-        <p className="text-gray-500 text-sm leading-relaxed max-w-4xl font-medium">
-          This is your central hub for managing hotel bookings for your clients. 
-          You can create new bulk orders or view and manage your existing agency bookings using the sections in the sidebar.
-        </p>
-      </Card>
-    </div>
+      <ReportGenerationModal 
+        isOpen={isReportModalOpen}
+        onClose={() => setIsReportModalOpen(false)}
+        agent={agent}
+      />
+    </>
   );
 };
 
