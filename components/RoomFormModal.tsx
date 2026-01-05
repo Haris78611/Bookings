@@ -12,7 +12,7 @@ interface RoomFormModalProps {
 }
 
 const RoomFormModal: React.FC<RoomFormModalProps> = ({ isOpen, onClose, room, hotelId }) => {
-  const { addRoomToHotel, updateRoomInHotel } = useAppContext();
+  const { addRoomToHotel, updateRoomInHotel, addToast } = useAppContext();
   const [formData, setFormData] = useState({
     type: '',
     description: '',
@@ -51,11 +51,12 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({ isOpen, onClose, room, ho
     e.preventDefault();
     const roomData: Partial<Room> = {
       ...formData,
-      amenities: formData.amenities.split(',').map(a => a.trim()),
+      amenities: formData.amenities.split(',').map(a => a.trim()).filter(a => a),
     };
     
     if (room) {
       updateRoomInHotel(hotelId, { ...room, ...roomData } as Room);
+      addToast(`Room "${room.type}" updated.`);
     } else {
       const newRoom: Room = {
         id: `R-${Date.now()}`,
@@ -63,28 +64,33 @@ const RoomFormModal: React.FC<RoomFormModalProps> = ({ isOpen, onClose, room, ho
         ...roomData
       } as Room;
       addRoomToHotel(hotelId, newRoom);
+      addToast(`New room "${newRoom.type}" added.`);
     }
     onClose();
   };
 
+  const inputStyle = "!rounded-lg bg-gray-50 border-gray-200 shadow-inner";
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={room ? 'Edit Room' : 'Add New Room'}>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <Input name="type" label="Room Type" value={formData.type} onChange={handleChange} required />
-        <div>
-          <label className="text-xs font-bold uppercase">Description</label>
-          <textarea name="description" value={formData.description} onChange={handleChange} className="w-full border p-2 rounded" />
+      <form onSubmit={handleSubmit}>
+        <div className="p-6 md:p-8 space-y-6 bg-gray-50/50">
+            <Input name="type" label="Room Type" value={formData.type} onChange={handleChange} required className={inputStyle} />
+            <div>
+                <label className="block text-[8px] md:text-[9px] font-black text-gray-400 uppercase tracking-[0.25em] mb-2 ml-1">Description</label>
+                <textarea name="description" value={formData.description} onChange={handleChange} className={`block w-full p-3 md:p-4 bg-gray-50 border border-gray-100 text-gray-900 rounded-lg shadow-inner focus:ring-0 focus:border-[#005B5C] focus:bg-white outline-none transition-all font-bold text-xs md:text-sm`} rows={2}/>
+            </div>
+            <Input name="amenities" label="Amenities (comma-separated)" value={formData.amenities} onChange={handleChange} className={inputStyle} />
+            <div className="grid grid-cols-3 gap-4">
+                <Input name="purchasePricePerNight" label="Purchase Price" type="number" value={formData.purchasePricePerNight} onChange={handleChange} className={inputStyle} />
+                <Input name="agentPricePerNight" label="Agent Price" type="number" value={formData.agentPricePerNight} onChange={handleChange} className={inputStyle} />
+                <Input name="customerPricePerNight" label="Customer Price" type="number" value={formData.customerPricePerNight} onChange={handleChange} className={inputStyle} />
+            </div>
+            <Input name="capacity" label="Capacity" type="number" value={formData.capacity} onChange={handleChange} className={inputStyle} />
         </div>
-        <Input name="amenities" label="Amenities (comma-separated)" value={formData.amenities} onChange={handleChange} />
-        <div className="grid grid-cols-3 gap-2">
-          <Input name="purchasePricePerNight" label="Purchase Price" type="number" value={formData.purchasePricePerNight} onChange={handleChange} />
-          <Input name="agentPricePerNight" label="Agent Price" type="number" value={formData.agentPricePerNight} onChange={handleChange} />
-          <Input name="customerPricePerNight" label="Customer Price" type="number" value={formData.customerPricePerNight} onChange={handleChange} />
-        </div>
-        <Input name="capacity" label="Capacity" type="number" value={formData.capacity} onChange={handleChange} />
-        <div className="flex justify-end gap-2 pt-4">
-          <Button type="button" variant="outline" onClick={onClose}>Cancel</Button>
-          <Button type="submit">{room ? 'Save Changes' : 'Add Room'}</Button>
+        <div className="bg-white p-4 flex justify-end gap-2 border-t">
+          <Button type="button" variant="outline" onClick={onClose} className="!rounded-lg">Cancel</Button>
+          <Button type="submit" className="!rounded-lg">{room ? 'Save Changes' : 'Add Room'}</Button>
         </div>
       </form>
     </Modal>

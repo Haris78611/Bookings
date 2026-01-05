@@ -286,11 +286,19 @@ const TrackBookingPage: React.FC = () => {
                     </div>
 
                     <div className="flex justify-between items-end mb-16">
-                      <div>
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Amount Paid</p>
-                        <p className="text-5xl font-black text-[#006D77] tracking-tighter">{formatPrice(result.totalPrice)}</p>
-                        <p className="text-sm font-black text-green-600 uppercase tracking-widest mt-2">Status: {result.status}</p>
-                      </div>
+                       {result.showPriceOnVoucher !== false ? (
+                        <div>
+                          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Amount Paid</p>
+                          <p className="text-5xl font-black text-[#006D77] tracking-tighter">{formatPrice(result.totalPrice)}</p>
+                          <p className="text-sm font-black text-green-600 uppercase tracking-widest mt-2">Status: {result.status}</p>
+                        </div>
+                      ) : (
+                        <div>
+                          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Amount</p>
+                          <p className="text-2xl font-black text-[#006D77] tracking-tighter">CONFIDENTIAL</p>
+                          <p className="text-sm font-black text-green-600 uppercase tracking-widest mt-2">Status: {result.status}</p>
+                        </div>
+                      )}
                       <div className="text-right">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Scan to Verify Registry</p>
                         <img 

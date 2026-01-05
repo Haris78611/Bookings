@@ -76,6 +76,7 @@ export interface Booking {
   createdAt: string;
   requestedCheckIn?: string;
   requestedCheckOut?: string;
+  showPriceOnVoucher?: boolean;
 }
 
 export interface Agent {
@@ -89,14 +90,24 @@ export interface Agent {
   contactNumber?: string;
 }
 
-export interface BulkOrder {
-  id: string;
-  agencyId: string;
+export interface BulkOrderItem {
+  id: string; 
   hotelId: string;
+  hotelName: string;
   roomId: string;
+  roomType: string;
   checkIn: string;
   checkOut: string;
   quantity: number;
+  assignedCount: number;
+  pricePerNight: number;
+  subtotal: number;
+}
+
+export interface BulkOrder {
+  id: string;
+  agencyId: string;
+  items: BulkOrderItem[];
   totalCost: number;
   status: BulkOrderStatus;
   createdAt: string;

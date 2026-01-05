@@ -71,10 +71,17 @@ const VoucherTemplate: React.FC<{ booking: Booking, agentName?: string }> = ({ b
                 </div>
 
                 <div className="flex justify-between items-end mb-16">
-                    <div>
-                        <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Amount Paid</p>
-                        <p className="text-5xl font-black text-[#006D77] tracking-tighter">{formatPrice(booking.totalPrice)}</p>
-                    </div>
+                    {booking.showPriceOnVoucher !== false ? (
+                      <div>
+                          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Amount Paid</p>
+                          <p className="text-5xl font-black text-[#006D77] tracking-tighter">{formatPrice(booking.totalPrice)}</p>
+                      </div>
+                    ) : (
+                      <div>
+                          <p className="text-xs font-black text-gray-400 uppercase tracking-widest mb-1">Total Amount</p>
+                          <p className="text-2xl font-black text-[#006D77] tracking-tighter">CONFIDENTIAL</p>
+                      </div>
+                    )}
                     <div className="text-right">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Scan to Verify Registry</p>
                         <img src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(window.location.origin + '/#/track?id=' + booking.id)}`} alt="Verification QR" className="w-24 h-24 border-2 border-[#006D77]/10 p-1 bg-white" />

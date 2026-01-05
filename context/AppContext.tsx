@@ -39,6 +39,7 @@ interface AppContextType {
   addBulkOrder: (order: BulkOrder) => void;
   deleteBulkOrder: (id: string) => void;
   updateBulkOrderStatus: (id: string, status: BulkOrderStatus) => void;
+  assignBulkOrderItem: (orderId: string, itemId: string) => void;
   invoices: Invoice[];
   promoCodes: PromoCode[];
   addPromoCode: (promo: PromoCode) => void;
@@ -167,6 +168,21 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   const deleteBulkOrder = (id: string) => setBulkOrders(prev => prev.filter(o => o.id !== id));
   const updateBulkOrderStatus = (id: string, status: BulkOrderStatus) => setBulkOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o));
 
+  const assignBulkOrderItem = (orderId: string, itemId: string) => {
+    setBulkOrders(prev => prev.map(order => {
+      if (order.id === orderId) {
+        const updatedItems = order.items.map(item => {
+          if (item.id === itemId && item.assignedCount < item.quantity) {
+            return { ...item, assignedCount: item.assignedCount + 1 };
+          }
+          return item;
+        });
+        return { ...order, items: updatedItems };
+      }
+      return order;
+    }));
+  };
+
   const addPromoCode = (promo: PromoCode) => setPromoCodes(prev => [promo, ...prev]);
   const deletePromoCode = (id: string) => setPromoCodes(prev => prev.filter(p => p.id !== id));
 
@@ -178,7 +194,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       addRoomToHotel, updateRoomInHotel, deleteRoomFromHotel,
       bookings, addBooking, updateBookingStatus, approveBookingRequest, rejectBookingRequest, deleteBookings, currentUser, setCurrentUser, logout,
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 
-      bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, invoices, promoCodes, addPromoCode, deletePromoCode,
+      bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, assignBulkOrderItem, invoices, promoCodes, addPromoCode, deletePromoCode,
       notifications,
       emailNotifications,
       toasts, addToast, removeToast

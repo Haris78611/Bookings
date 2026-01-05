@@ -6,14 +6,19 @@ import { Button, Card, Select } from '../../components/UI';
 import { BookingStatus } from '../../types';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
 import AdminEditBookingModal from '../../components/AdminEditBookingModal';
+import BookingDetailsModal from '../../components/BookingDetailsModal';
 import { Booking } from '../../types';
 
 const BookingsPage: React.FC = () => {
   const { bookings, updateBookingStatus, deleteBookings, agencies, addToast } = useAppContext();
   const [selected, setSelected] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingBooking, setEditingBooking] = useState<Booking | null>(null);
+  
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingBooking, setViewingBooking] = useState<Booking | null>(null);
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -43,6 +48,11 @@ const BookingsPage: React.FC = () => {
   const openEditModal = (booking: Booking) => {
     setEditingBooking(booking);
     setIsEditModalOpen(true);
+  };
+  
+  const openViewModal = (booking: Booking) => {
+    setViewingBooking(booking);
+    setIsViewModalOpen(true);
   };
   
   const handleStatusChange = (bookingId: string, newStatus: BookingStatus) => {
@@ -95,6 +105,7 @@ const BookingsPage: React.FC = () => {
                       />
                     </td>
                     <td className="py-4 px-4 text-right font-bold text-xs space-x-2">
+                      <Button size="sm" variant="ghost" className="!rounded-md" onClick={() => openViewModal(b)}>View</Button>
                       <Button size="sm" variant="outline" className="!rounded-md" onClick={() => openEditModal(b)}>Edit</Button>
                       <Link to={`/admin/voucher/${b.id}`}><Button size="sm" variant="secondary" className="!rounded-md">Voucher</Button></Link>
                     </td>
@@ -110,6 +121,11 @@ const BookingsPage: React.FC = () => {
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         booking={editingBooking}
+      />
+      <BookingDetailsModal 
+        isOpen={isViewModalOpen}
+        onClose={() => setIsViewModalOpen(false)}
+        booking={viewingBooking}
       />
     </>
   );

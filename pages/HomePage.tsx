@@ -65,7 +65,7 @@ const HomePage: React.FC = () => {
     return result;
   }, [hotels, filters, searchInitiated]);
 
-  const featuredHotels = hotels.filter(h => h.isFeatured).slice(0, 3);
+  const latestHotels = hotels.slice(0, 6);
 
   const handleReset = () => {
     setFilters(prev => ({
@@ -263,11 +263,21 @@ const HomePage: React.FC = () => {
                 <div className="h-1 w-12 bg-[#006D77] mx-auto rounded-full"></div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-                {featuredHotels.map((hotel, index) => (
+                {latestHotels.map((hotel, index) => (
                   <div key={hotel.id} className={`animate-fade-up stagger-${index + 1}`} style={{animationFillMode: 'forwards', opacity: 0}}>
                     <HotelCard hotel={hotel} formatPrice={formatPrice} navigate={navigate} />
                   </div>
                 ))}
+              </div>
+              <div className="flex justify-center pt-8">
+                  <Button 
+                      variant="secondary" 
+                      size="lg"
+                      onClick={() => navigate('/search')}
+                      className="!rounded-none shadow-xl px-12"
+                  >
+                      View More Hotels
+                  </Button>
               </div>
             </div>
           )}

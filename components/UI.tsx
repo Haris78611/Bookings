@@ -158,7 +158,7 @@ export const Modal: React.FC<{ isOpen: boolean; onClose: () => void; title: stri
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center bg-black/90 p-0 md:p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[1000] flex items-end md:items-center justify-center bg-black/50 backdrop-blur-sm p-0 md:p-4 animate-in fade-in duration-200">
       <div 
         className={`bg-white shadow-[0_50px_100px_rgba(0,0,0,0.6)] w-full ${sizeClasses[size]} flex flex-col overflow-hidden relative h-[90vh] md:h-auto md:max-h-[85vh] rounded-none`}
       >
