@@ -77,6 +77,9 @@ const HomePage: React.FC = () => {
     }));
   };
 
+  const inputClasses = "w-full bg-gray-50 border-transparent p-4 rounded-lg font-bold text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition";
+  const labelClasses = "block text-xs font-semibold text-gray-500 mb-2 ml-1";
+
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
@@ -105,55 +108,51 @@ const HomePage: React.FC = () => {
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
-                  <div className="text-left md:col-span-2 lg:col-span-2">
-                    <label className="block text-[11px] md:text-xs text-gray-500 font-bold mb-1.5 ml-1">City</label>
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
+                  <div className="text-left lg:col-span-2">
+                    <label className={labelClasses}>City</label>
                     <div className="relative flex items-center">
-                      <div className="absolute left-3.5 text-gray-400 pointer-events-none">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                      <div className="absolute left-4 text-gray-400 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                       </div>
                       <select 
-                        className="w-full bg-white border border-gray-200 p-3 pl-10 pr-10 rounded-lg text-gray-700 font-bold text-sm outline-none appearance-none cursor-pointer focus:border-[#006D77]/50 transition-all"
+                        className={`${inputClasses} pl-12`}
                         value={filters.city}
                         onChange={(e) => handleFilterChange('city', e.target.value)}
                       >
                         <option value="Makkah">Makkah</option>
                         <option value="Madina">Madina</option>
                       </select>
-                      <div className="absolute right-3.5 text-gray-400 pointer-events-none text-[8px]">▼</div>
+                      <div className="absolute right-4 text-gray-400 pointer-events-none text-[8px]">▼</div>
                     </div>
                   </div>
 
                   <div className="text-left">
-                    <label className="block text-[11px] md:text-xs text-gray-500 font-bold mb-1.5 ml-1">Check-in</label>
-                    <div className="relative">
-                      <input 
-                        type="date" 
-                        className="w-full bg-white border border-gray-200 p-3 px-4 rounded-lg text-gray-700 font-bold text-sm outline-none cursor-pointer focus:border-[#006D77]/50 transition-all" 
-                        value={filters.checkIn}
-                        onChange={(e) => handleFilterChange('checkIn', e.target.value)}
-                        required 
-                      />
-                    </div>
+                    <label className={labelClasses}>Check-in</label>
+                    <input 
+                      type="date" 
+                      className={inputClasses} 
+                      value={filters.checkIn}
+                      onChange={(e) => handleFilterChange('checkIn', e.target.value)}
+                      required 
+                    />
                   </div>
 
                   <div className="text-left">
-                    <label className="block text-[11px] md:text-xs text-gray-500 font-bold mb-1.5 ml-1">Check-out</label>
-                    <div className="relative">
-                      <input 
-                        type="date" 
-                        className="w-full bg-white border border-gray-200 p-3 px-4 rounded-lg text-gray-700 font-bold text-sm outline-none cursor-pointer focus:border-[#006D77]/50 transition-all" 
-                        value={filters.checkOut}
-                        onChange={(e) => handleFilterChange('checkOut', e.target.value)}
-                        required 
-                      />
-                    </div>
+                    <label className={labelClasses}>Check-out</label>
+                    <input 
+                      type="date" 
+                      className={inputClasses}
+                      value={filters.checkOut}
+                      onChange={(e) => handleFilterChange('checkOut', e.target.value)}
+                      required 
+                    />
                   </div>
                 </div>
 
                 <button 
                   type="submit" 
-                  className="w-full bg-[#E29578] hover:bg-[#d88465] text-white p-3.5 rounded-lg font-bold text-base flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99]"
+                  className="w-full bg-[#E29578] hover:bg-[#d88465] text-white p-4 rounded-lg font-bold text-base flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.99]"
                   disabled={isSearching}
                 >
                   {isSearching ? (

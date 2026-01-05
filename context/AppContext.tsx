@@ -74,8 +74,9 @@ interface AppContextType {
   customerLogin: (email: string, pass: string) => Promise<boolean>;
   customerSignUp: (name: string, email: string, pass: string) => Promise<boolean>;
   agentLogin: (agencyId: string, pass: string) => Promise<boolean>;
+  adminLogin: (email: string, pass: string) => Promise<boolean>;
 
-  addBulkOrder: (order: Omit<BulkOrder, 'id' | 'createdAt' | 'status'>) => Promise<void>;
+  addBulkOrder: (order: BulkOrder) => Promise<void>;
   updateBulkOrderStatus: (id: string, status: BulkOrderStatus) => Promise<void>;
   deleteBulkOrder: (id: string) => Promise<void>;
   assignBulkOrderItem: (orderId: string, itemId: string, booking: Booking) => Promise<void>;
@@ -181,6 +182,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // --- API-driven Actions ---
     
     // Auth
+    const adminLogin = async (email: string, password: string): Promise<boolean> => {
+        try {
+            const res = await apiCall('login', { email, password, role: 'ADMIN' });
+            if (res.success) {
+                setCurrentUser(res.user);
+                addToast(`Welcome back, Administrator!`);
+                return true;
+            }
+        } catch (error: any) {
+            addToast(error.message || 'Invalid credentials.', 'error');
+        }
+        return false;
+    };
     const customerLogin = async (email: string, password: string): Promise<boolean> => {
         try {
             const res = await apiCall('login', { email, password, role: 'CUSTOMER' });
@@ -264,14 +278,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     
     // Bulk Orders
-    const addBulkOrder = async (order: Omit<BulkOrder, 'id' | 'createdAt' | 'status'>) => {
-        const newOrder = {
-            ...order,
-            id: `BO-${Date.now()}`,
-            createdAt: new Date().toISOString(),
-            status: BookingStatus.PENDING
-        };
-        await apiCall('createBulkOrder', newOrder); 
+    const addBulkOrder = async (order: BulkOrder) => {
+        await apiCall('createBulkOrder', order); 
         await fetchData(); 
     };
     const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { await apiCall('updateBulkOrderStatus', { id, status }); await fetchData(); };
@@ -315,7 +323,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             addBulkOrder, updateBulkOrderStatus, deleteBulkOrder, assignBulkOrderItem,
             addPromoCode, deletePromoCode, validatePromoCode,
             isAuthModalOpen, authMode, openAuthModal, closeAuthModal, setAuthMode,
-            customerLogin, customerSignUp, agentLogin
+            customerLogin, customerSignUp, agentLogin, adminLogin
         }}>
             {isLoading && !siteSettings ? (
                 <div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center gap-4">

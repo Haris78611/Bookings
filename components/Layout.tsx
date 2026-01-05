@@ -10,11 +10,8 @@ export const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const announcementMessages = siteSettings.announcement.split('|').map(msg => msg.trim()).filter(Boolean);
 
-  const isLogoImage = siteSettings.logo && (
-    siteSettings.logo.startsWith('data:image') || 
-    siteSettings.logo.startsWith('http') ||
-    siteSettings.logo.includes('.')
-  );
+  const isUrlOrPath = (str: string) => str && (str.startsWith('data:') || str.startsWith('http') || str.includes('/') || str.endsWith('.png') || str.endsWith('.jpg') || str.endsWith('.jpeg') || str.endsWith('.svg') || str.endsWith('.webp'));
+  const isLogoImage = isUrlOrPath(siteSettings.logo);
 
   return (
     <>

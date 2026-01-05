@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../../context/AppContext';
@@ -6,26 +5,25 @@ import { UserRole } from '../../types';
 import { Card, Button, Input } from '../../components/UI';
 
 const AdminLoginPage: React.FC = () => {
-    const { setCurrentUser } = useAppContext();
+    const { adminLogin } = useAppContext();
     const navigate = useNavigate();
-    const [credentials, setCredentials] = useState({ id: '', password: '' });
+    const [credentials, setCredentials] = useState({ email: 'admin@umrahstay.com', password: '' });
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+        setIsLoading(true);
 
-        if (credentials.id.trim() === '990990' && credentials.password === 'Haris@1122@11') {
-            setCurrentUser({
-                id: 'ADM-1',
-                name: 'System Administrator',
-                email: 'admin@umrahstay.com',
-                role: UserRole.ADMIN
-            });
+        const success = await adminLogin(credentials.email, credentials.password);
+
+        if (success) {
             navigate('/admin');
         } else {
             setError('Invalid administrative credentials. Access denied.');
         }
+        setIsLoading(false);
     };
     
     return (
@@ -38,10 +36,11 @@ const AdminLoginPage: React.FC = () => {
                 </div>
                 <form onSubmit={handleSubmit} className="space-y-5 text-left">
                     <Input 
-                        label="Admin Registry ID" 
-                        placeholder="e.g. 990990" 
-                        value={credentials.id} 
-                        onChange={e => setCredentials({...credentials, id: e.target.value})} 
+                        label="Admin Email"
+                        type="email"
+                        placeholder="admin@umrahstay.com" 
+                        value={credentials.email} 
+                        onChange={e => setCredentials({...credentials, email: e.target.value})} 
                     />
                     <Input 
                         label="Security Password" 
@@ -54,7 +53,9 @@ const AdminLoginPage: React.FC = () => {
                     {error && <p className="text-red-500 text-xs font-semibold text-center pt-2">{error}</p>}
                     
                     <div className="pt-4">
-                        <Button type="submit" fullWidth variant="primary" size="lg" className="h-14">Secure Login</Button>
+                        <Button type="submit" fullWidth variant="primary" size="lg" className="h-14" disabled={isLoading}>
+                            {isLoading ? 'Verifying...' : 'Secure Login'}
+                        </Button>
                     </div>
                 </form>
             </Card>
