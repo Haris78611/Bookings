@@ -57,7 +57,7 @@ const DashboardView: React.FC = () => {
 };
 
 const BulkBookingView: React.FC = () => {
-  const { currentUser, agencies, formatPrice, hotels, bulkOrders, addBulkOrder, deleteBulkOrder, updateAgentWallet, addBooking } = useAppContext();
+  const { currentUser, agencies, formatPrice, hotels, bulkOrders, addBulkOrder, deleteBulkOrder, updateAgentWallet, addBooking, addToast } = useAppContext();
   const agent = agencies.find(a => a.id === currentUser?.agencyId)!;
   const agentBulkOrders = bulkOrders.filter(o => o.agencyId === agent.id);
 
@@ -72,14 +72,14 @@ const BulkBookingView: React.FC = () => {
   const handleBulkSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!purchaseForm.hotelId || !purchaseForm.roomId || !selectedRoom) {
-      alert("Please select a valid hotel and room."); return;
+      addToast("Please select a valid hotel and room.", "error"); return;
     }
     const nights = (new Date(purchaseForm.checkOut).getTime() - new Date(purchaseForm.checkIn).getTime()) / 86400000;
-    if (nights <= 0) { alert("Check-out must be after check-in."); return; }
+    if (nights <= 0) { addToast("Check-out must be after check-in.", "error"); return; }
     
     const totalCost = selectedRoom.agentPricePerNight * purchaseForm.quantity * nights;
     if (agent.walletBalance < totalCost) {
-      alert(`Insufficient Wallet Balance. Needed: ${formatPrice(totalCost)}`); return;
+      addToast(`Insufficient Wallet Balance. Needed: ${formatPrice(totalCost)}`, "error"); return;
     }
 
     const order: BulkOrder = {
@@ -88,7 +88,7 @@ const BulkBookingView: React.FC = () => {
     };
     addBulkOrder(order);
     updateAgentWallet(agent.id, totalCost, 'Debit', `Bulk Purchase: ${order.id}`);
-    alert(`Bulk purchase ${order.id} confirmed.`);
+    addToast(`Bulk purchase ${order.id} confirmed.`);
     setPurchaseForm({ hotelId: '', roomId: '', checkIn: '2026-04-01', checkOut: '2026-05-01', quantity: 1 });
   };
   
@@ -98,6 +98,13 @@ const BulkBookingView: React.FC = () => {
     setIsAssignModalOpen(true);
   };
   
+  const handleDeleteOrder = (orderId: string) => {
+    if (window.confirm('Are you sure you want to delete this bulk purchase? This action cannot be undone.')) {
+        deleteBulkOrder(orderId);
+        addToast(`Bulk order ${orderId} deleted.`, 'error');
+    }
+  }
+
   const submitAssignment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignTarget) return;
@@ -111,7 +118,7 @@ const BulkBookingView: React.FC = () => {
     });
     
     setIsAssignModalOpen(false);
-    alert(`Voucher issued for ${assignForm.guestName}.`);
+    addToast(`Voucher issued for ${assignForm.guestName}.`);
   };
 
   return (
@@ -140,7 +147,7 @@ const BulkBookingView: React.FC = () => {
                 agentBulkOrders.map(o => {
                   const hotel = hotels.find(h => h.id === o.hotelId);
                   const room = hotel?.rooms.find(r => r.id === o.roomId);
-                  return <tr key={o.id}><td className="py-4 px-4 font-bold">{o.id}</td><td><div><p className="font-bold text-gray-800">{hotel?.name}</p><p className="text-[10px] text-gray-400">{room?.type}</p></div></td><td className="py-4 px-4 font-bold">{o.quantity}</td><td className="py-4 px-4 font-bold text-primary">{formatPrice(o.totalCost)}</td><td className="py-4 px-4 text-right space-x-2"><Button size="sm" onClick={() => handleAssign(o)}>Assign</Button><Button variant="danger" size="sm" onClick={() => deleteBulkOrder(o.id)}>X</Button></td></tr>
+                  return <tr key={o.id}><td className="py-4 px-4 font-bold">{o.id}</td><td><div><p className="font-bold text-gray-800">{hotel?.name}</p><p className="text-[10px] text-gray-400">{room?.type}</p></div></td><td className="py-4 px-4 font-bold">{o.quantity}</td><td className="py-4 px-4 font-bold text-primary">{formatPrice(o.totalCost)}</td><td className="py-4 px-4 text-right space-x-2"><Button size="sm" onClick={() => handleAssign(o)}>Assign</Button><Button variant="danger" size="sm" onClick={() => handleDeleteOrder(o.id)}>X</Button></td></tr>
                 })}
               </tbody>
            </table>
@@ -176,7 +183,7 @@ const MyBookingsView: React.FC = () => {
 };
 
 const SettingsView: React.FC = () => {
-    const { currentUser, agencies, updateAgency } = useAppContext();
+    const { currentUser, agencies, updateAgency, addToast } = useAppContext();
     const agent = agencies.find(a => a.id === currentUser?.agencyId)!;
     const [form, setForm] = useState({ agencyName: agent.agencyName, email: agent.email });
 
@@ -185,7 +192,7 @@ const SettingsView: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         updateAgency({ ...agent, ...form });
-        alert("Settings updated.");
+        addToast("Settings updated successfully.");
     };
 
     return (

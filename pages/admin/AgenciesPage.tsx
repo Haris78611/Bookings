@@ -9,7 +9,7 @@ import WalletModal from '../../components/WalletModal';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
 
 const AgenciesPage: React.FC = () => {
-    const { agencies, addAgency, updateAgency, formatPrice } = useAppContext();
+    const { agencies, addAgency, updateAgency, deleteAgency, formatPrice, addToast } = useAppContext();
     const [isFormModalOpen, setFormModalOpen] = useState(false);
     const [isWalletModalOpen, setWalletModalOpen] = useState(false);
     const [selectedAgency, setSelectedAgency] = useState<Agent | null>(null);
@@ -21,15 +21,27 @@ const AgenciesPage: React.FC = () => {
     const handleSubmit = (agencyData: Partial<Agent>) => {
       if (selectedAgency) {
         updateAgency({ ...selectedAgency, ...agencyData } as Agent);
+        addToast('Agency updated successfully.');
       } else {
         addAgency({ id: `AG-${Date.now()}`, walletBalance: 0, status: 'Active', ...agencyData } as Agent);
+        addToast('New agency added successfully.');
       }
       setFormModalOpen(false);
     };
 
+    const handleDelete = (agencyId: string, agencyName: string) => {
+        if(window.confirm(`Are you sure you want to delete agency "${agencyName}"? This action is irreversible.`)) {
+            deleteAgency(agencyId);
+            addToast(`Agency "${agencyName}" deleted.`, 'error');
+        }
+    }
+
     const handleRefresh = () => {
         setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 800);
+        setTimeout(() => {
+            setIsRefreshing(false);
+            addToast("Agency data synchronized.");
+        }, 800);
     };
 
     return (
@@ -52,6 +64,7 @@ const AgenciesPage: React.FC = () => {
                                         <Link to={`/admin/bookings?agencyId=${a.id}`} className="inline-block bg-teal-50 text-teal-700 hover:bg-teal-100 px-3 py-1.5 rounded-md font-black uppercase tracking-widest text-[10px]">Bookings</Link>
                                         <Button size="sm" variant="outline" className="!rounded-md" onClick={() => handleOpenForm(a)}>Edit</Button>
                                         <Button size="sm" variant="secondary" className="!rounded-md" onClick={() => handleOpenWallet(a)}>Wallet</Button>
+                                        <Button size="sm" variant="danger" className="!rounded-md" onClick={() => handleDelete(a.id, a.agencyName)}>Delete</Button>
                                     </td>
                                 </tr>
                             ))}

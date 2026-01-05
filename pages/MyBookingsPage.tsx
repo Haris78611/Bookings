@@ -6,7 +6,7 @@ import { BookingStatus, Booking } from '../types';
 import { useNavigate } from 'react-router-dom';
 
 const MyBookingsPage: React.FC = () => {
-  const { currentUser, bookings, formatPrice, updateBookingStatus, siteSettings } = useAppContext();
+  const { currentUser, bookings, formatPrice, updateBookingStatus, siteSettings, addToast } = useAppContext();
   const navigate = useNavigate();
 
   const [isModifyModalOpen, setIsModifyModalOpen] = useState(false);
@@ -60,7 +60,7 @@ const MyBookingsPage: React.FC = () => {
       pdf.save(`Voucher_${booking.id}.pdf`);
     } catch (error) {
       console.error("PDF generation error:", error);
-      alert("Error generating digital voucher. Please try again.");
+      addToast("Error generating digital voucher. Please try again.", "error");
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -94,7 +94,7 @@ const MyBookingsPage: React.FC = () => {
         updateBookingStatus(selectedBooking.id, newStatus);
       }
 
-      alert(`${modifyForm.requestType} request for ${selectedBooking.id} has been transmitted to the Admin Control Desk. You will be notified of the outcome.`);
+      addToast(`${modifyForm.requestType} request for ${selectedBooking.id} has been sent.`);
       setIsModifyModalOpen(false);
     }
   };

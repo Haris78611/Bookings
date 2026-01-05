@@ -13,6 +13,7 @@ import TrackBookingPage from './pages/TrackBookingPage';
 import SupportPage from './pages/SupportPage';
 import { UserRole } from './types';
 import { Card, Button, Input } from './components/UI';
+import { ToastContainer } from './components/Toast';
 
 // Helper component to reset scroll to top on navigation
 const ScrollToTop = () => {
@@ -168,6 +169,7 @@ const App: React.FC = () => {
     <AppProvider>
       <Router>
         <ScrollToTop />
+        <ToastContainer />
         <Routes>
           <Route path="/admin/*" element={<AdminPortal />} />
           <Route path="/agent/*" element={<AgentPortal />} />

@@ -15,7 +15,7 @@ interface InvoiceReportModalProps {
 type TimeRange = '7d' | '30d' | 'month' | 'year' | 'all';
 
 const InvoiceReportModal: React.FC<InvoiceReportModalProps> = ({ isOpen, onClose }) => {
-  const { invoices, agencies, formatPrice } = useAppContext();
+  const { invoices, agencies, formatPrice, addToast } = useAppContext();
   const [timeRange, setTimeRange] = useState<TimeRange>('30d');
   const [selectedAgencyId, setSelectedAgencyId] = useState<string>('all');
 
@@ -40,7 +40,7 @@ const InvoiceReportModal: React.FC<InvoiceReportModalProps> = ({ isOpen, onClose
     });
 
     if (filteredInvoices.length === 0) {
-        alert('No data found for the selected criteria.');
+        addToast('No data found for the selected criteria.', 'error');
         return;
     }
 

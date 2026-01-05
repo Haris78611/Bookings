@@ -2,7 +2,8 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { 
   Hotel, Booking, User, Currency, Agent, BulkOrder, Invoice, SiteSettings, 
-  UserRole, BookingStatus, BulkOrderStatus, PromoCode, Room, Notification
+  UserRole, BookingStatus, BulkOrderStatus, PromoCode, Room, Notification,
+  Toast
 } from '../types';
 import { INITIAL_HOTELS, INITIAL_SITE_SETTINGS, CURRENCY_RATES } from '../constants';
 
@@ -44,6 +45,9 @@ interface AppContextType {
   deletePromoCode: (id: string) => void;
   notifications: string[];
   emailNotifications: Notification[];
+  toasts: Toast[];
+  addToast: (message: string, type?: 'success' | 'error') => void;
+  removeToast: (id: number) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -75,6 +79,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     { id: 'N2', to: 'pilgrim@registry.com', subject: 'Booking BK12345 Confirmed', sentAt: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString() },
     { id: 'N3', to: 'universal@travel.com', subject: 'Bulk Purchase Order Processed', sentAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString() },
   ]);
+  const [toasts, setToasts] = useState<Toast[]>([]);
+
+  const removeToast = (id: number) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
+  const addToast = (message: string, type: 'success' | 'error' = 'success') => {
+    const id = Date.now();
+    setToasts(prev => [{ id, message, type }, ...prev]);
+    setTimeout(() => {
+      removeToast(id);
+    }, 5000);
+  };
 
   const formatPrice = (priceInPKR: number) => {
     const rate = CURRENCY_RATES[currency];
@@ -163,7 +180,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
       agencies, addAgency, updateAgency, deleteAgency, updateAgentWallet, 
       bulkOrders, addBulkOrder, deleteBulkOrder, updateBulkOrderStatus, invoices, promoCodes, addPromoCode, deletePromoCode,
       notifications,
-      emailNotifications
+      emailNotifications,
+      toasts, addToast, removeToast
     }}>
       {children}
     </AppContext.Provider>

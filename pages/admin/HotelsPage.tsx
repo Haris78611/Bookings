@@ -8,7 +8,7 @@ import HotelForm from '../../components/HotelForm';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
 
 const HotelsPage: React.FC = () => {
-    const { hotels, addHotel, updateHotel, deleteHotel } = useAppContext();
+    const { hotels, addHotel, updateHotel, deleteHotel, addToast } = useAppContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingHotel, setEditingHotel] = useState<Hotel | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -26,19 +26,31 @@ const HotelsPage: React.FC = () => {
     const handleSubmit = (hotelData: Hotel | Omit<Hotel, 'id'>) => {
       if ('id' in hotelData) {
         updateHotel(hotelData);
+        addToast(`Hotel "${hotelData.name}" updated successfully.`);
       } else {
         const newHotel: Hotel = { 
           id: `H-${Date.now()}`, 
           ...hotelData,
         };
         addHotel(newHotel);
+        addToast(`Hotel "${newHotel.name}" created successfully.`);
       }
       handleCloseModal();
     };
 
+    const handleDelete = (hotel: Hotel) => {
+      if (window.confirm(`Are you sure you want to delete "${hotel.name}"? This action is irreversible.`)) {
+        deleteHotel(hotel.id);
+        addToast(`Hotel "${hotel.name}" has been deleted.`, 'error');
+      }
+    };
+
     const handleRefresh = () => {
         setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 800);
+        setTimeout(() => {
+          setIsRefreshing(false);
+          addToast('Hotel data synchronized.');
+        }, 800);
     };
 
     return (
@@ -60,7 +72,7 @@ const HotelsPage: React.FC = () => {
                             <td className="py-4 px-4 font-medium">{h.rooms.length}</td>
                             <td className="py-4 px-4 text-right font-bold text-xs space-x-4">
                                <button onClick={() => handleOpenModal(h)} className="text-secondary hover:underline uppercase tracking-widest">Manage</button>
-                               <button onClick={() => deleteHotel(h.id)} className="text-red-500 hover:underline uppercase tracking-widest">Delete</button>
+                               <button onClick={() => handleDelete(h)} className="text-red-500 hover:underline uppercase tracking-widest">Delete</button>
                             </td>
                           </tr>
                         ))}

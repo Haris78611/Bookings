@@ -9,7 +9,7 @@ import AdminEditBookingModal from '../../components/AdminEditBookingModal';
 import { Booking } from '../../types';
 
 const BookingsPage: React.FC = () => {
-  const { bookings, updateBookingStatus, deleteBookings, agencies } = useAppContext();
+  const { bookings, updateBookingStatus, deleteBookings, agencies, addToast } = useAppContext();
   const [selected, setSelected] = useState<string[]>([]);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -34,13 +34,29 @@ const BookingsPage: React.FC = () => {
   
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 800);
+    setTimeout(() => {
+      setIsRefreshing(false);
+      addToast('Bookings data synchronized.');
+    }, 800);
   };
   
   const openEditModal = (booking: Booking) => {
     setEditingBooking(booking);
     setIsEditModalOpen(true);
   };
+  
+  const handleStatusChange = (bookingId: string, newStatus: BookingStatus) => {
+    updateBookingStatus(bookingId, newStatus);
+    addToast(`Booking ${bookingId} status updated to ${newStatus}.`);
+  };
+
+  const handleDeleteSelected = () => {
+    if (window.confirm(`Are you sure you want to delete ${selected.length} booking(s)? This cannot be undone.`)) {
+        deleteBookings(selected);
+        addToast(`${selected.length} booking(s) deleted successfully.`, 'error');
+        setSelected([]);
+    }
+  }
 
   return (
     <>
@@ -54,7 +70,7 @@ const BookingsPage: React.FC = () => {
         {selected.length > 0 && 
           <div className="p-4 bg-primary/5 border-b border-primary/10 text-primary flex items-center justify-between">
             <span className="font-bold text-xs uppercase tracking-widest">{selected.length} Selected</span>
-            <Button variant="danger" size="sm" onClick={() => deleteBookings(selected)} className="!rounded-lg">Delete Selected</Button>
+            <Button variant="danger" size="sm" onClick={handleDeleteSelected} className="!rounded-lg">Delete Selected</Button>
           </div>
         }
         <TableWrapper>
@@ -73,7 +89,7 @@ const BookingsPage: React.FC = () => {
                     <td className="py-4 px-4">
                       <Select 
                         value={b.status} 
-                        onChange={e => updateBookingStatus(b.id, e.target.value as BookingStatus)} 
+                        onChange={e => handleStatusChange(b.id, e.target.value as BookingStatus)} 
                         className="!text-[10px] !font-black !py-1.5 !pl-3 !pr-8 !rounded-md w-full" 
                         options={Object.values(BookingStatus).map(s => ({label: s, value: s}))}
                       />

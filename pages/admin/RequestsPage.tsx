@@ -6,7 +6,7 @@ import { Booking, BookingStatus } from '../../types';
 import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../components/AdminUI';
 
 const RequestsPage: React.FC = () => {
-  const { bookings, approveBookingRequest, rejectBookingRequest } = useAppContext();
+  const { bookings, approveBookingRequest, rejectBookingRequest, addToast } = useAppContext();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const modificationRequests = bookings.filter(b => 
@@ -16,17 +16,20 @@ const RequestsPage: React.FC = () => {
   
   const handleApprove = (bookingId: string) => {
       approveBookingRequest(bookingId);
-      alert('Request approved.');
+      addToast('Request approved. Booking has been updated.');
   };
 
   const handleReject = (bookingId: string) => {
       rejectBookingRequest(bookingId);
-      alert('Request rejected.');
+      addToast('Request rejected. Booking reverted to original state.', 'error');
   };
   
   const handleRefresh = () => {
     setIsRefreshing(true);
-    setTimeout(() => setIsRefreshing(false), 800);
+    setTimeout(() => {
+        setIsRefreshing(false);
+        addToast('Modification requests synchronized.');
+    }, 800);
   };
   
   const getStatusBadgeVariant = (status: BookingStatus) => {

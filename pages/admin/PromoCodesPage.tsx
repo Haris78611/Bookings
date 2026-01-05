@@ -7,17 +7,28 @@ import { PageHeader, RefreshButton, EmptyState, TableWrapper } from '../../compo
 import PromoCodeFormModal from '../../components/PromoCodeFormModal';
 
 const PromoCodesPage: React.FC = () => {
-    const { promoCodes, addPromoCode, deletePromoCode, formatPrice } = useAppContext();
+    const { promoCodes, addPromoCode, deletePromoCode, formatPrice, addToast } = useAppContext();
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     const handleSubmit = (data: Omit<PromoCode, 'id'>) => {
         addPromoCode({ id: `PC-${Date.now()}`, ...data });
+        addToast(`Promo code "${data.code}" created successfully.`);
     };
+    
+    const handleDelete = (code: PromoCode) => {
+        if(window.confirm(`Are you sure you want to delete the promo code "${code.code}"?`)) {
+            deletePromoCode(code.id);
+            addToast(`Promo code "${code.code}" deleted.`, 'error');
+        }
+    }
 
     const handleRefresh = () => {
         setIsRefreshing(true);
-        setTimeout(() => setIsRefreshing(false), 800);
+        setTimeout(() => {
+            setIsRefreshing(false);
+            addToast('Promo code data synchronized.');
+        }, 800);
     };
 
     return (
@@ -49,7 +60,7 @@ const PromoCodesPage: React.FC = () => {
                                         <Button
                                             variant="danger"
                                             size="sm"
-                                            onClick={() => deletePromoCode(code.id)}
+                                            onClick={() => handleDelete(code)}
                                             className="!rounded-md"
                                         >
                                             Delete

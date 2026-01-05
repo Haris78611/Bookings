@@ -140,3 +140,9 @@ export interface Notification {
   subject: string;
   sentAt: string;
 }
+
+export interface Toast {
+  id: number;
+  message: string;
+  type: 'success' | 'error';
+}

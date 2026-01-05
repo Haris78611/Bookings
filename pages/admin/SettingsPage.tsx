@@ -8,7 +8,7 @@ import { PageHeader } from '../../components/AdminUI';
 const SettingsPage: React.FC = () => {
   const { 
     siteSettings, setSiteSettings,
-    promoCodes, addPromoCode, deletePromoCode, formatPrice
+    promoCodes, addPromoCode, deletePromoCode, formatPrice, addToast
   } = useAppContext();
   
   const [formState, setFormState] = useState<SiteSettings>(siteSettings);
@@ -36,17 +36,17 @@ const SettingsPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setSiteSettings(formState);
-    alert('Site settings have been updated successfully.');
+    addToast('Site settings have been updated successfully.');
   };
   
   const handleAddPromoCode = (e: React.FormEvent) => {
     e.preventDefault();
     if (newPromoCode.code && newPromoCode.discount > 0) {
         addPromoCode({ id: `PC-${Date.now()}`, ...newPromoCode });
-        alert(`Promo code "${newPromoCode.code}" added.`);
+        addToast(`Promo code "${newPromoCode.code}" added.`);
         setNewPromoCode({ code: '', discount: 10, type: 'percentage' });
     } else {
-        alert('Please enter a valid code and discount value.');
+        addToast('Please enter a valid code and discount value.', 'error');
     }
   };
 

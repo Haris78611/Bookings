@@ -36,7 +36,7 @@ const RoomGallery: React.FC<{ images: string[] }> = ({ images }) => {
 
 const HotelDetailsPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { hotels, formatPrice, currentUser, addBooking } = useAppContext();
+  const { hotels, formatPrice, currentUser, addBooking, addToast } = useAppContext();
   const navigate = useNavigate();
   
   const hotel = hotels.find(h => h.id === id);
@@ -69,7 +69,7 @@ const HotelDetailsPage: React.FC = () => {
     if (!room) return;
 
     if (!bookingDetails.name || !bookingDetails.email || !bookingDetails.phone) {
-      alert("Mandatory Registry Data Missing.");
+      addToast("Please fill in all required fields.", "error");
       return;
     }
 

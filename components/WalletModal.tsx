@@ -11,7 +11,7 @@ interface WalletModalProps {
 }
 
 const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, agent }) => {
-  const { updateAgentWallet, formatPrice } = useAppContext();
+  const { updateAgentWallet, formatPrice, addToast } = useAppContext();
   const [amount, setAmount] = useState<number>(0);
   const [type, setType] = useState<'Credit' | 'Debit'>('Credit');
   const [description, setDescription] = useState('');
@@ -28,16 +28,16 @@ const WalletModal: React.FC<WalletModalProps> = ({ isOpen, onClose, agent }) => 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!agent || amount <= 0 || !description.trim()) {
-        alert("Please provide a valid amount and description for the transaction.");
+        addToast("Please provide a valid amount and description.", "error");
         return;
     }
     if (type === 'Debit' && amount > agent.walletBalance) {
-        alert("Debit amount cannot exceed the agent's current wallet balance.");
+        addToast("Debit amount cannot exceed the agent's wallet balance.", "error");
         return;
     }
 
     updateAgentWallet(agent.id, amount, type, description);
-    alert(`Wallet for ${agent.agencyName} has been updated successfully.`);
+    addToast(`Wallet for ${agent.agencyName} has been updated successfully.`);
     onClose();
   };
 

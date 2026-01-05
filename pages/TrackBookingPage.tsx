@@ -6,7 +6,7 @@ import { Button, Card, Badge, Modal, Input, Select } from '../components/UI';
 import { BookingStatus, Booking } from '../types';
 
 const TrackBookingPage: React.FC = () => {
-  const { bookings, formatPrice, siteSettings, updateBookingStatus } = useAppContext();
+  const { bookings, formatPrice, siteSettings, updateBookingStatus, addToast } = useAppContext();
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -71,7 +71,7 @@ const TrackBookingPage: React.FC = () => {
       pdf.save(`Voucher_${booking.id}.pdf`);
     } catch (error) {
       console.error("PDF generation error:", error);
-      alert("Error generating digital voucher.");
+      addToast("Error generating digital voucher.", "error");
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -101,7 +101,7 @@ const TrackBookingPage: React.FC = () => {
         updateBookingStatus(result.id, newStatus);
       }
       
-      alert(`${modifyForm.requestType} request for ${result.id} has been transmitted to the Admin Control Desk.`);
+      addToast(`${modifyForm.requestType} request for ${result.id} has been sent.`);
       setIsModifyModalOpen(false);
     }
   };
@@ -302,7 +302,6 @@ const TrackBookingPage: React.FC = () => {
                     </div>
 
                     <div className="h-px bg-gray-100 mb-8"></div>
-
                     <footer className="flex justify-between items-start">
                       <div className="flex-1">
                         <h4 className="text-sm font-black text-gray-800 mb-4 uppercase tracking-widest">Important Notes:</h4>
