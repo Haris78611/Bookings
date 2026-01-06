@@ -77,8 +77,8 @@ const HomePage: React.FC = () => {
     }));
   };
 
-  const inputClasses = "w-full bg-gray-50 border-transparent p-4 rounded-lg font-bold text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-primary focus:bg-white transition";
-  const labelClasses = "block text-xs font-semibold text-gray-500 mb-2 ml-1";
+  const searchLabelClasses = "block text-sm font-semibold text-gray-800 mb-2";
+  const searchInputBaseClasses = "w-full bg-white border border-gray-300 p-4 rounded-xl font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#006D77] transition";
 
   return (
     <div className="min-h-screen">
@@ -99,64 +99,76 @@ const HomePage: React.FC = () => {
             </p>
           </div>
           
-          <div className="max-w-5xl mx-auto animate-fade-up stagger-1" style={{animationFillMode: 'forwards'}}>
-            <div className="bg-white p-4 md:p-6 rounded-xl shadow-2xl border border-gray-100">
+          <div className="max-w-4xl mx-auto animate-fade-up stagger-1" style={{animationFillMode: 'forwards'}}>
+            <div className="bg-white p-6 rounded-2xl shadow-2xl">
               <form onSubmit={handleSearch} className="flex flex-col">
-                <div className="flex justify-end mb-3 pr-1">
-                  <Link to="/track" className="text-[12px] md:text-sm font-bold text-[#006D77] hover:underline flex items-center gap-1">
+                <div className="flex justify-end mb-4">
+                  <Link to="/track" className="text-sm font-bold text-[#006D77] hover:underline">
                     Manage Booking
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-5">
-                  <div className="text-left lg:col-span-2">
-                    <label className={labelClasses}>City</label>
-                    <div className="relative flex items-center">
-                      <div className="absolute left-4 text-gray-400 pointer-events-none">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+                  <div className="text-left">
+                    <label className={searchLabelClasses}>City</label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                       </div>
                       <select 
-                        className={`${inputClasses} pl-12`}
+                        className={`${searchInputBaseClasses} pl-11`}
                         value={filters.city}
                         onChange={(e) => handleFilterChange('city', e.target.value)}
                       >
                         <option value="Makkah">Makkah</option>
                         <option value="Madina">Madina</option>
                       </select>
-                      <div className="absolute right-4 text-gray-400 pointer-events-none text-[8px]">▼</div>
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                        <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
+                      </div>
                     </div>
                   </div>
 
                   <div className="text-left">
-                    <label className={labelClasses}>Check-in</label>
-                    <input 
-                      type="date" 
-                      className={inputClasses} 
-                      value={filters.checkIn}
-                      onChange={(e) => handleFilterChange('checkIn', e.target.value)}
-                      required 
-                    />
+                    <label className={searchLabelClasses}>Check-in</label>
+                    <div className="relative">
+                      <input 
+                        type="date" 
+                        className={`${searchInputBaseClasses} pr-11`}
+                        value={filters.checkIn}
+                        onChange={(e) => handleFilterChange('checkIn', e.target.value)}
+                        required 
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      </div>
+                    </div>
                   </div>
 
                   <div className="text-left">
-                    <label className={labelClasses}>Check-out</label>
-                    <input 
-                      type="date" 
-                      className={inputClasses}
-                      value={filters.checkOut}
-                      onChange={(e) => handleFilterChange('checkOut', e.target.value)}
-                      required 
-                    />
+                    <label className={searchLabelClasses}>Check-out</label>
+                    <div className="relative">
+                      <input 
+                        type="date" 
+                        className={`${searchInputBaseClasses} pr-11`}
+                        value={filters.checkOut}
+                        onChange={(e) => handleFilterChange('checkOut', e.target.value)}
+                        required 
+                      />
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <button 
                   type="submit" 
-                  className="w-full bg-[#E29578] hover:bg-[#d88465] text-white p-4 rounded-lg font-bold text-base flex items-center justify-center gap-2 shadow-lg transition-all active:scale-[0.99]"
+                  className="w-full bg-[#E29578] hover:bg-opacity-90 text-white p-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg transition-all active:scale-[0.99]"
                   disabled={isSearching}
                 >
                   {isSearching ? (
-                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   ) : (
                     <>
                       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -282,7 +294,18 @@ const HomePage: React.FC = () => {
         </div>
       </div>
       <style>{`
-        input[type="date"]::-webkit-calendar-picker-indicator { display: none; }
+        input[type="date"]::-webkit-calendar-picker-indicator {
+          background: transparent;
+          bottom: 0;
+          color: transparent;
+          cursor: pointer;
+          height: auto;
+          left: 0;
+          position: absolute;
+          right: 0;
+          top: 0;
+          width: auto;
+        }
       `}</style>
     </div>
   );

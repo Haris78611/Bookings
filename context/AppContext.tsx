@@ -293,13 +293,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     const deletePromoCode = async (id: string) => { await apiCall('deletePromoCode', { id }); await fetchData(); };
     const validatePromoCode = async (code: string): Promise<PromoCode | null> => {
-        try {
-            const res = await apiCall('validatePromoCode', { code });
-            return res.success ? res.promo : null;
-        } catch (error) {
-            addToast("Invalid promo code.", 'error');
-            return null;
+        // Rerouted to check against local state instead of a non-functional API endpoint.
+        const promo = promoCodes.find(p => p.code.toLowerCase() === code.toLowerCase().trim());
+        if (promo) {
+            return promo;
         }
+        addToast("Invalid or expired promo code.", 'error');
+        return null;
     };
 
     // Settings
