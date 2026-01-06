@@ -138,7 +138,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         try {
             const data = await apiCall('getAllData');
             _setSiteSettings(data.siteSettings);
-            _setCurrencyRates({ SAR: data.siteSettings.sar_rate || 74.1, USD: data.siteSettings.usd_rate || 278.4});
             setHotels(data.hotels || []);
             setBookings(data.bookings || []);
             setAgencies(data.agencies || []);
@@ -278,38 +277,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     
     // Bulk Orders
-    const addBulkOrder = async (order: BulkOrder) => { setBulkOrders(prev => [order, ...prev]); };
-    const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { setBulkOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o)); };
-    const deleteBulkOrder = async (id: string) => { setBulkOrders(prev => prev.filter(o => o.id !== id)); };
+    const addBulkOrder = async (order: BulkOrder) => { await apiCall('createBulkOrder', order); await fetchData(); };
+    const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { await apiCall('updateBulkOrderStatus', { id, status }); await fetchData(); };
+    const deleteBulkOrder = async (id: string) => { await apiCall('deleteBulkOrder', { id }); await fetchData(); };
     const assignBulkOrderItem = async (orderId: string, itemId: string, booking: Booking) => {
-        setBulkOrders(prev => prev.map(order => {
-            if (order.id === orderId) {
-                return {
-                    ...order,
-                    items: order.items.map(item => {
-                        if (item.id === itemId) {
-                            const nights = Math.max(1, (new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 3600 * 24));
-                            const newAssignment: Assignment = { bookingId: booking.id, checkIn: booking.checkIn, checkOut: booking.checkOut, nights };
-                            return {
-                                ...item,
-                                assignments: [...(item.assignments || []), newAssignment]
-                            };
-                        }
-                        return item;
-                    })
-                };
-            }
-            return order;
-        }));
+        await apiCall('assignBulkOrderItem', { itemId, booking });
+        await fetchData();
     };
 
     // Promo Codes
     const addPromoCode = async (promoCode: Omit<PromoCode, 'id'>) => {
-        const newCode: PromoCode = { ...promoCode, id: `PC${Date.now()}` };
-        setPromoCodes(prev => [...prev, newCode]);
+        await apiCall('createPromoCode', promoCode); 
+        await fetchData(); 
     };
     const deletePromoCode = async (id: string) => {
-        setPromoCodes(prev => prev.filter(p => p.id !== id));
+        await apiCall('deletePromoCode', { id }); 
+        await fetchData(); 
     };
     const validatePromoCode = async (code: string): Promise<PromoCode | null> => {
         const promo = promoCodes.find(p => p.code.toLowerCase() === code.toLowerCase().trim());
@@ -319,8 +302,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
 
     // Settings
-    const setSiteSettings = async (settings: SiteSettings) => { await apiCall('updateSettings', { ...settings, ...currencyRates }); await fetchData(); };
-    const setCurrencyRates = async (rates: CurrencyRates) => { if(siteSettings) { await apiCall('updateSettings', { ...siteSettings, ...rates }); await fetchData(); }};
+    const setSiteSettings = async (settings: SiteSettings) => { 
+        await apiCall('updateSettings', settings); 
+        await fetchData(); 
+    };
+    const setCurrencyRates = async (rates: CurrencyRates) => { 
+        _setCurrencyRates(rates);
+        addToast("Currency rates updated for this session only.", "success");
+    };
 
     if (error) {
         return <div className="h-screen w-screen flex items-center justify-center bg-red-50 text-red-700 p-8"><strong>Error:</strong> {error}</div>;
