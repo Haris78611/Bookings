@@ -10,10 +10,14 @@ const PromoCodesPage: React.FC = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
-    const handleSubmit = (data: Omit<PromoCode, 'id'>) => {
-        // FIX: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<PromoCode, "id">'. The addPromoCode function generates the ID internally.
-        addPromoCode(data);
-        addToast(`Promo code "${data.code}" created successfully.`);
+    const handleSubmit = async (data: Omit<PromoCode, 'id'>) => {
+        try {
+            await addPromoCode(data);
+            addToast(`Promo code "${data.code}" created successfully.`);
+            setIsModalOpen(false);
+        } catch(err: any) {
+            addToast(err.message || "Failed to create promo code.", "error");
+        }
     };
     
     const handleDelete = (code: PromoCode) => {

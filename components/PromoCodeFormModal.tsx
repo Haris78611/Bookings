@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { PromoCode } from '../types';
 import { Modal, Input, Button, Select } from './UI';
@@ -21,11 +20,6 @@ const PromoCodeFormModal: React.FC<PromoCodeFormModalProps> = ({ isOpen, onClose
       return;
     }
     onSubmit({ code, discount, type });
-    onClose();
-    // Reset form
-    setCode('');
-    setDiscount(0);
-    setType('percentage');
   };
 
   return (

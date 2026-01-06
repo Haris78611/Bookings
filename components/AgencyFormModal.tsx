@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Agent } from '../types';
 import { Modal, Input, Button, Select } from './UI';
@@ -41,7 +40,6 @@ const AgencyFormModal: React.FC<AgencyFormModalProps> = ({ isOpen, onClose, onSu
       delete submissionData.password; // Don't send empty password to update
     }
     onSubmit(submissionData);
-    onClose(); // Close modal on submit
   };
 
   const inputStyle = "!rounded-lg bg-gray-50 border-gray-200 shadow-inner";

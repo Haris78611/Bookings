@@ -50,13 +50,16 @@ const SettingsPage: React.FC = () => {
     addToast('Site settings have been updated successfully.');
   };
   
-  const handleAddPromoCode = (e: React.FormEvent) => {
+  const handleAddPromoCode = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPromoCode.code && newPromoCode.discount > 0) {
-        // FIX: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<PromoCode, "id">'. The addPromoCode function generates the ID internally.
-        addPromoCode(newPromoCode);
-        addToast(`Promo code "${newPromoCode.code}" added.`);
-        setNewPromoCode({ code: '', discount: 10, type: 'percentage' });
+        try {
+            await addPromoCode(newPromoCode);
+            addToast(`Promo code "${newPromoCode.code}" added.`);
+            setNewPromoCode({ code: '', discount: 10, type: 'percentage' });
+        } catch (err: any) {
+            addToast(err.message || 'Failed to add promo code.', 'error');
+        }
     } else {
         addToast('Please enter a valid code and discount value.', 'error');
     }

@@ -26,15 +26,19 @@ const AgenciesPage: React.FC = () => {
     const handleOpenForm = (agency: Agent | null = null) => { setSelectedAgency(agency); setFormModalOpen(true); };
     const handleOpenWallet = (agency: Agent) => { setSelectedAgency(agency); setWalletModalOpen(true); };
     
-    const handleSubmit = (agencyData: Partial<Agent>) => {
-      if (selectedAgency) {
-        updateAgency({ ...selectedAgency, ...agencyData } as Agent);
-        addToast('Agency updated successfully.');
-      } else {
-        addAgency(agencyData as Omit<Agent, 'id' | 'walletBalance'>);
-        addToast('New agency added successfully.');
+    const handleSubmit = async (agencyData: Partial<Agent>) => {
+      try {
+        if (selectedAgency) {
+          await updateAgency({ ...selectedAgency, ...agencyData } as Agent);
+          addToast('Agency updated successfully.');
+        } else {
+          await addAgency(agencyData as Omit<Agent, 'id' | 'walletBalance'>);
+          addToast('New agency added successfully.');
+        }
+        setFormModalOpen(false);
+      } catch (err: any) {
+        addToast(err.message || 'Failed to save agency.', 'error');
       }
-      setFormModalOpen(false);
     };
 
     const handleDelete = (agencyId: string, agencyName: string) => {
