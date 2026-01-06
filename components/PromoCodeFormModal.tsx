@@ -26,7 +26,7 @@ const PromoCodeFormModal: React.FC<PromoCodeFormModalProps> = ({ isOpen, onClose
     <Modal isOpen={isOpen} onClose={onClose} title="Add New Promo Code">
       <form onSubmit={handleSubmit} className="space-y-4">
         <Input label="Promo Code" value={code} onChange={e => setCode(e.target.value.toUpperCase())} required />
-        <Input label="Discount Value" type="number" value={discount} onChange={e => setDiscount(Number(e.target.value))} required />
+        <Input label="Discount Value" type="number" value={discount === 0 ? '' : discount} onChange={e => setDiscount(Number(e.target.value))} required />
         <Select
           label="Discount Type"
           value={type}

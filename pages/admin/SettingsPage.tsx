@@ -16,7 +16,7 @@ const SettingsPage: React.FC = () => {
   const logoInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   
-  const [newPromoCode, setNewPromoCode] = useState<Omit<PromoCode, 'id'>>({ code: '', discount: 10, type: 'percentage' });
+  const [newPromoCode, setNewPromoCode] = useState<Omit<PromoCode, 'id'>>({ code: '', discount: 0, type: 'percentage' });
 
   // Ensure local state is updated if context changes
   useEffect(() => setFormState(siteSettings), [siteSettings]);
@@ -56,7 +56,7 @@ const SettingsPage: React.FC = () => {
         try {
             await addPromoCode(newPromoCode);
             addToast(`Promo code "${newPromoCode.code}" added.`);
-            setNewPromoCode({ code: '', discount: 10, type: 'percentage' });
+            setNewPromoCode({ code: '', discount: 0, type: 'percentage' });
         } catch (err: any) {
             addToast(err.message || 'Failed to add promo code.', 'error');
         }
@@ -151,7 +151,7 @@ const SettingsPage: React.FC = () => {
             <h3 className="text-lg font-bold text-primary mb-6 border-b pb-4">Promo Code Management</h3>
             <form onSubmit={handleAddPromoCode} className="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end mb-8">
                 <Input label="New Code" value={newPromoCode.code} onChange={(e) => setNewPromoCode({...newPromoCode, code: e.target.value.toUpperCase()})} className={inputStyle} placeholder="RAMADAN25" />
-                <Input label="Discount" type="number" value={newPromoCode.discount} onChange={(e) => setNewPromoCode({...newPromoCode, discount: Number(e.target.value)})} className={inputStyle} />
+                <Input label="Discount" type="number" value={newPromoCode.discount === 0 ? '' : newPromoCode.discount} onChange={(e) => setNewPromoCode({...newPromoCode, discount: Number(e.target.value)})} className={inputStyle} />
                 <Select label="Type" value={newPromoCode.type} onChange={(e) => setNewPromoCode({...newPromoCode, type: e.target.value as 'percentage' | 'fixed'})} options={[{label: 'Percentage %', value: 'percentage'}, {label: 'Fixed Amount', value: 'fixed'}]} className={inputStyle} />
                 <Button type="submit" variant="primary" className="!rounded-lg h-14">Add Code</Button>
             </form>
