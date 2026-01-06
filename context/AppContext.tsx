@@ -132,8 +132,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [authMode, setAuthMode] = useState<AuthMode>('customer-login');
     
     // --- Initial Data Fetch ---
-    const fetchData = async () => {
-        setIsLoading(true);
+    const fetchData = async (isBackground = false) => {
+        if (!isBackground) setIsLoading(true);
         setError(null);
         try {
             const data = await apiCall('getAllData');
@@ -149,7 +149,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             setError(err.message || 'Failed to fetch data from server.');
             addToast(err.message || 'Failed to fetch data from server.', 'error');
         } finally {
-            setIsLoading(false);
+            if (!isBackground) setIsLoading(false);
         }
     };
     
@@ -241,12 +241,12 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const logout = () => setCurrentUser(null);
     
     // Hotels & Rooms
-    const addHotel = async (hotel: Omit<Hotel, 'id'>) => { await apiCall('createHotel', hotel); await fetchData(); };
-    const updateHotel = async (hotel: Hotel) => { await apiCall('updateHotel', hotel); await fetchData(); };
-    const deleteHotel = async (id: string) => { await apiCall('deleteHotel', { id }); await fetchData(); };
-    const addRoomToHotel = async (hotelId: string, room: Omit<Room, 'id'>) => { await apiCall('createRoom', { hotelId, room }); await fetchData(); };
-    const updateRoomInHotel = async (hotelId: string, room: Room) => { await apiCall('updateRoom', { hotelId, room }); await fetchData(); };
-    const deleteRoomFromHotel = async (hotelId: string, roomId: string) => { await apiCall('deleteRoom', { hotelId, roomId }); await fetchData(); };
+    const addHotel = async (hotel: Omit<Hotel, 'id'>) => { await apiCall('createHotel', hotel); await fetchData(true); };
+    const updateHotel = async (hotel: Hotel) => { await apiCall('updateHotel', hotel); await fetchData(true); };
+    const deleteHotel = async (id: string) => { await apiCall('deleteHotel', { id }); await fetchData(true); };
+    const addRoomToHotel = async (hotelId: string, room: Omit<Room, 'id'>) => { await apiCall('createRoom', { hotelId, room }); await fetchData(true); };
+    const updateRoomInHotel = async (hotelId: string, room: Room) => { await apiCall('updateRoom', { hotelId, room }); await fetchData(true); };
+    const deleteRoomFromHotel = async (hotelId: string, roomId: string) => { await apiCall('deleteRoom', { hotelId, roomId }); await fetchData(true); };
 
     // Bookings
     const addBooking = async (booking: Omit<Booking, 'id' | 'createdAt' | 'status'> | Booking) => {
@@ -257,42 +257,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             status: BookingStatus.PENDING,
         };
         const res = await apiCall('createBooking', bookingToSend);
-        await fetchData();
+        await fetchData(true);
         return res.success ? bookingToSend.id : null;
     };
-    const updateBooking = async (bookingId: string, updatedDetails: Partial<Booking>) => { await apiCall('updateBooking', { id: bookingId, ...updatedDetails }); await fetchData(); };
-    const updateBookingStatus = async (id: string, status: BookingStatus, details?: any) => { await apiCall('updateBookingStatus', { id, status, details }); await fetchData(); };
-    const assignBookingDetails = async (bookingId: string, details: any) => { await apiCall('assignBookingDetails', { bookingId, ...details }); await fetchData(); };
-    const approveBookingRequest = async (id: string) => { await apiCall('approveBookingRequest', { id }); await fetchData(); };
-    const rejectBookingRequest = async (id: string) => { await apiCall('rejectBookingRequest', { id }); await fetchData(); };
-    const deleteBookings = async (ids: string[]) => { await apiCall('deleteBookings', { ids }); await fetchData(); };
+    const updateBooking = async (bookingId: string, updatedDetails: Partial<Booking>) => { await apiCall('updateBooking', { id: bookingId, ...updatedDetails }); await fetchData(true); };
+    const updateBookingStatus = async (id: string, status: BookingStatus, details?: any) => { await apiCall('updateBookingStatus', { id, status, details }); await fetchData(true); };
+    const assignBookingDetails = async (bookingId: string, details: any) => { await apiCall('assignBookingDetails', { bookingId, ...details }); await fetchData(true); };
+    const approveBookingRequest = async (id: string) => { await apiCall('approveBookingRequest', { id }); await fetchData(true); };
+    const rejectBookingRequest = async (id: string) => { await apiCall('rejectBookingRequest', { id }); await fetchData(true); };
+    const deleteBookings = async (ids: string[]) => { await apiCall('deleteBookings', { ids }); await fetchData(true); };
 
     // Agencies
-    const addAgency = async (agency: Omit<Agent, 'id' | 'walletBalance'>) => { await apiCall('createAgency', agency); await fetchData(); };
-    const updateAgency = async (agency: Agent) => { await apiCall('updateAgency', agency); await fetchData(); };
-    const deleteAgency = async (id: string) => { await apiCall('deleteAgency', { id }); await fetchData(); };
+    const addAgency = async (agency: Omit<Agent, 'id' | 'walletBalance'>) => { await apiCall('createAgency', agency); await fetchData(true); };
+    const updateAgency = async (agency: Agent) => { await apiCall('updateAgency', agency); await fetchData(true); };
+    const deleteAgency = async (id: string) => { await apiCall('deleteAgency', { id }); await fetchData(true); };
     const updateAgentWallet = async (agencyId: string, amount: number, type: 'Credit' | 'Debit', description: string) => {
         await apiCall('updateWallet', { agencyId, amount, type, description });
-        await fetchData();
+        await fetchData(true);
     };
     
     // Bulk Orders
-    const addBulkOrder = async (order: BulkOrder) => { await apiCall('createBulkOrder', order); await fetchData(); };
-    const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { await apiCall('updateBulkOrderStatus', { id, status }); await fetchData(); };
-    const deleteBulkOrder = async (id: string) => { await apiCall('deleteBulkOrder', { id }); await fetchData(); };
+    const addBulkOrder = async (order: BulkOrder) => { await apiCall('createBulkOrder', order); await fetchData(true); };
+    const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { await apiCall('updateBulkOrderStatus', { id, status }); await fetchData(true); };
+    const deleteBulkOrder = async (id: string) => { await apiCall('deleteBulkOrder', { id }); await fetchData(true); };
     const assignBulkOrderItem = async (orderId: string, itemId: string, booking: Booking) => {
         await apiCall('assignBulkOrderItem', { itemId, booking });
-        await fetchData();
+        await fetchData(true);
     };
 
     // Promo Codes
     const addPromoCode = async (promoCode: Omit<PromoCode, 'id'>) => {
         await apiCall('createPromoCode', promoCode); 
-        await fetchData(); 
+        await fetchData(true); 
     };
     const deletePromoCode = async (id: string) => {
         await apiCall('deletePromoCode', { id }); 
-        await fetchData(); 
+        await fetchData(true); 
     };
     const validatePromoCode = async (code: string): Promise<PromoCode | null> => {
         const promo = promoCodes.find(p => p.code.toLowerCase() === code.toLowerCase().trim());
@@ -304,7 +304,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Settings
     const setSiteSettings = async (settings: SiteSettings) => { 
         await apiCall('updateSettings', settings); 
-        await fetchData(); 
+        await fetchData(true); 
     };
     const setCurrencyRates = async (rates: CurrencyRates) => { 
         _setCurrencyRates(rates);
@@ -330,7 +330,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             isAuthModalOpen, authMode, openAuthModal, closeAuthModal, setAuthMode,
             customerLogin, customerSignUp, agentLogin, adminLogin
         }}>
-            {isLoading && !siteSettings ? (
+            {isLoading ? (
                 <div className="fixed inset-0 bg-white z-[9999] flex flex-col items-center justify-center gap-4">
                     <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
                     <p className="text-primary font-bold tracking-widest uppercase text-sm">Initializing Registry...</p>
