@@ -77,8 +77,8 @@ const HomePage: React.FC = () => {
     }));
   };
 
-  const searchLabelClasses = "block text-xs font-bold text-white/70 uppercase tracking-widest mb-2";
-  const searchInputBaseClasses = "w-full bg-black/20 border border-white/10 p-4 rounded-xl font-bold text-white placeholder-white/60 appearance-none focus:outline-none focus:bg-black/30 transition-colors duration-300";
+  const searchLabelClasses = "block text-sm font-semibold text-gray-700 mb-2";
+  const searchInputBaseClasses = "w-full bg-white border border-gray-300 p-3 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-teal-500 appearance-none";
 
   return (
     <div className="min-h-screen">
@@ -100,9 +100,9 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="max-w-4xl mx-auto animate-fade-up stagger-1" style={{animationFillMode: 'forwards'}}>
-            <div className="bg-gray-900/60 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
+            <div className="bg-white p-6 rounded-2xl shadow-xl text-gray-800">
               <div className="flex justify-end mb-4">
-                  <Link to="/track" className="text-xs font-bold text-white/80 hover:text-white uppercase tracking-widest">
+                  <Link to="/track" className="text-sm font-bold text-teal-600 hover:text-teal-700">
                       Manage Booking
                   </Link>
               </div>
@@ -111,20 +111,17 @@ const HomePage: React.FC = () => {
                       <div className="text-left">
                           <label className={searchLabelClasses}>City</label>
                           <div className="relative">
-                              <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-white/70 pointer-events-none">
+                              <div className="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-500 pointer-events-none">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                               </div>
                               <select 
-                                  className={`${searchInputBaseClasses} pl-11`}
+                                  className={`${searchInputBaseClasses} pl-10`}
                                   value={filters.city}
                                   onChange={(e) => handleFilterChange('city', e.target.value)}
                               >
-                                  <option value="Makkah" className="text-black">Makkah</option>
-                                  <option value="Madina" className="text-black">Madina</option>
+                                  <option value="Makkah">Makkah</option>
+                                  <option value="Madina">Madina</option>
                               </select>
-                              <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-white/70 pointer-events-none">
-                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
-                              </div>
                           </div>
                       </div>
 
@@ -133,12 +130,12 @@ const HomePage: React.FC = () => {
                           <div className="relative">
                               <input 
                                   type="date" 
-                                  className={`${searchInputBaseClasses} pr-11`}
+                                  className={`${searchInputBaseClasses} pr-10`}
                                   value={filters.checkIn}
                                   onChange={(e) => handleFilterChange('checkIn', e.target.value)}
                                   required 
                               />
-                              <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-white/70 pointer-events-none">
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 pointer-events-none">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                               </div>
                           </div>
@@ -149,22 +146,22 @@ const HomePage: React.FC = () => {
                           <div className="relative">
                               <input 
                                   type="date" 
-                                  className={`${searchInputBaseClasses} pr-11`}
+                                  className={`${searchInputBaseClasses} pr-10`}
                                   value={filters.checkOut}
                                   onChange={(e) => handleFilterChange('checkOut', e.target.value)}
                                   required 
                               />
-                              <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-white/70 pointer-events-none">
+                              <div className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-500 pointer-events-none">
                                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                               </div>
                           </div>
                       </div>
                   </div>
 
-                  <div className="mt-8 text-center">
+                  <div className="mt-8">
                       <button 
                           type="submit" 
-                          className="text-white/90 hover:text-white font-bold text-lg flex items-center justify-center gap-3 transition-colors disabled:opacity-50 mx-auto px-8 py-4 rounded-2xl hover:bg-white/10"
+                          className="w-full bg-[#d5846b] text-white font-bold py-4 rounded-lg text-lg flex items-center justify-center gap-2 hover:bg-[#c97b61] transition-colors disabled:opacity-70"
                           disabled={isSearching}
                       >
                           {isSearching ? (
@@ -307,7 +304,6 @@ const HomePage: React.FC = () => {
           top: 0;
           width: auto;
         }
-        input[type="date"] { color-scheme: dark; }
       `}</style>
     </div>
   );
