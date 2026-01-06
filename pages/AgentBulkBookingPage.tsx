@@ -52,17 +52,33 @@ const AgentBulkBookingPage: React.FC = () => {
 
   const handleRemoveFromCart = (itemId: string) => setCart(prev => prev.filter(item => item.id !== itemId));
 
-  const handleConfirmPurchase = () => {
-    if (cart.length === 0) { addToast("Purchase cart is empty.", "error"); return; }
-    if (agent.walletBalance < cartTotal) { addToast(`Insufficient Wallet Balance. Needed: ${formatPrice(cartTotal)}`, "error"); return; }
+  const handleConfirmPurchase = async () => {
+    if (cart.length === 0) {
+      addToast("Purchase cart is empty.", "error");
+      return;
+    }
+    if (agent.walletBalance < cartTotal) {
+      addToast(`Insufficient Wallet Balance. Needed: ${formatPrice(cartTotal)}`, "error");
+      return;
+    }
 
     const newOrder: BulkOrder = {
-      id: `BO-${Date.now()}`, agencyId: agent.id, items: cart, totalCost: cartTotal,
-      status: BulkOrderStatus.PENDING, createdAt: new Date().toISOString()
+      id: `BO-${Date.now()}`,
+      agencyId: agent.id,
+      items: cart,
+      totalCost: cartTotal,
+      status: BulkOrderStatus.PENDING,
+      createdAt: new Date().toISOString()
     };
-    addBulkOrder(newOrder);
-    addToast(`Bulk purchase request ${newOrder.id} submitted for approval.`);
-    setCart([]);
+    
+    try {
+      await addBulkOrder(newOrder);
+      addToast(`Bulk purchase request ${newOrder.id} submitted for approval.`);
+      setCart([]);
+    } catch (error) {
+        console.error("Failed to submit bulk order:", error);
+        addToast("Failed to submit bulk purchase request. Please try again.", "error");
+    }
   };
   
   const handleAssign = (orderId: string, item: BulkOrderItem) => {
