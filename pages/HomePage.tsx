@@ -77,8 +77,8 @@ const HomePage: React.FC = () => {
     }));
   };
 
-  const searchLabelClasses = "block text-sm font-semibold text-gray-800 mb-2";
-  const searchInputBaseClasses = "w-full bg-white border border-gray-300 p-4 rounded-xl font-medium text-gray-800 appearance-none focus:outline-none focus:ring-2 focus:ring-[#006D77] transition";
+  const searchLabelClasses = "block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 ml-1";
+  const searchInputBaseClasses = "w-full bg-gray-50/50 border-2 border-transparent p-4 rounded-xl font-semibold text-primary placeholder-primary/30 appearance-none focus:outline-none focus:bg-white focus:border-secondary transition-colors duration-300";
 
   return (
     <div className="min-h-screen">
@@ -100,19 +100,19 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="max-w-4xl mx-auto animate-fade-up stagger-1" style={{animationFillMode: 'forwards'}}>
-            <div className="bg-white p-6 rounded-2xl shadow-2xl">
+            <div className="bg-white/80 backdrop-blur-md p-8 rounded-2xl shadow-2xl border border-white/20">
               <form onSubmit={handleSearch} className="flex flex-col">
                 <div className="flex justify-end mb-4">
-                  <Link to="/track" className="text-sm font-bold text-[#006D77] hover:underline">
+                  <Link to="/track" className="text-xs font-bold text-primary/70 hover:text-primary uppercase tracking-widest">
                     Manage Booking
                   </Link>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-6">
                   <div className="text-left">
                     <label className={searchLabelClasses}>City</label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 pointer-events-none">
+                      <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-primary/40 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
                       </div>
                       <select 
@@ -123,7 +123,7 @@ const HomePage: React.FC = () => {
                         <option value="Makkah">Makkah</option>
                         <option value="Madina">Madina</option>
                       </select>
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary/40 pointer-events-none">
                         <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd"></path></svg>
                       </div>
                     </div>
@@ -139,7 +139,7 @@ const HomePage: React.FC = () => {
                         onChange={(e) => handleFilterChange('checkIn', e.target.value)}
                         required 
                       />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary/40 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                       </div>
                     </div>
@@ -155,7 +155,7 @@ const HomePage: React.FC = () => {
                         onChange={(e) => handleFilterChange('checkOut', e.target.value)}
                         required 
                       />
-                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-gray-400 pointer-events-none">
+                      <div className="absolute inset-y-0 right-0 flex items-center pr-4 text-primary/40 pointer-events-none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                       </div>
                     </div>
@@ -164,7 +164,7 @@ const HomePage: React.FC = () => {
 
                 <button 
                   type="submit" 
-                  className="w-full bg-[#E29578] hover:bg-opacity-90 text-white p-4 rounded-xl font-bold text-lg flex items-center justify-center gap-3 shadow-lg transition-all active:scale-[0.99]"
+                  className="w-full bg-secondary hover:bg-opacity-95 text-white p-4 rounded-xl font-bold text-base flex items-center justify-center gap-3 shadow-lg shadow-secondary/30 hover:shadow-xl hover:shadow-secondary/40 transition-all active:scale-[0.98] transform"
                   disabled={isSearching}
                 >
                   {isSearching ? (

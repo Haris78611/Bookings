@@ -168,20 +168,40 @@ const HotelDetailsPage: React.FC = () => {
       <section id="rooms-section" className="bg-gray-50 py-20 border-t">
         <div className="container mx-auto px-4">
           <h2 className="text-4xl font-black text-primary text-center mb-12">Select Your Sanctuary</h2>
-          <div className="max-w-4xl mx-auto space-y-6">
+          <div className="max-w-5xl mx-auto space-y-8">
             {hotel.rooms.map(room => (
-              <Card key={room.id} className="flex flex-col md:flex-row overflow-hidden rounded-xl shadow-md">
-                <div className="md:w-64 h-48 md:h-auto shrink-0"><RoomGallery images={room.images} /></div>
-                <div className="p-6 flex flex-col flex-1">
-                  <h3 className="text-2xl font-bold">{room.type}</h3>
-                  <div className="mt-auto flex justify-between items-end pt-4 border-t">
-                    <div>
-                      <span className="text-3xl font-black text-primary">{formatPrice(room.customerPricePerNight)}</span>
-                      <span className="text-sm">/night</span>
-                    </div>
-                    <Button variant="secondary" onClick={() => handleBookNow(room.id)}>Book Now</Button>
+              <Card key={room.id} className="grid grid-cols-1 md:grid-cols-3 gap-0 overflow-hidden rounded-2xl shadow-lg border border-gray-100 hover:shadow-2xl hover:border-primary/20 transition-all duration-300">
+                  <div className="md:col-span-1 h-56 md:h-full">
+                      <RoomGallery images={room.images} />
                   </div>
-                </div>
+                  <div className="md:col-span-2 p-8 flex flex-col">
+                      <h3 className="text-2xl font-black text-primary tracking-tight">{room.type}</h3>
+                      <p className="text-sm text-gray-500 mt-2 mb-6 flex-grow">{room.description}</p>
+
+                      <div className="mb-6">
+                          <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Includes</h4>
+                          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+                              {room.amenities.map(amenity => (
+                                  <div key={amenity} className="flex items-center gap-2 text-sm text-gray-700 font-semibold">
+                                      <svg className="w-4 h-4 text-green-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                                      <span>{amenity}</span>
+                                  </div>
+                              ))}
+                          </div>
+                      </div>
+
+                      <div className="mt-auto pt-6 border-t border-gray-100 flex justify-between items-end">
+                          <div>
+                              <span className="text-[11px] text-gray-400 block font-medium">Price per night</span>
+                              <div className="text-primary font-black whitespace-nowrap">
+                                  <span className="text-3xl">{formatPrice(room.customerPricePerNight)}</span>
+                              </div>
+                          </div>
+                          <Button variant="secondary" onClick={() => handleBookNow(room.id)} className="!rounded-lg !px-8 !py-3 !text-base shadow-lg">
+                              Book Now
+                          </Button>
+                      </div>
+                  </div>
               </Card>
             ))}
           </div>
