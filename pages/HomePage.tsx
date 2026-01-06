@@ -78,7 +78,7 @@ const HomePage: React.FC = () => {
   };
 
   const searchLabelClasses = "block text-xs font-bold text-white/70 uppercase tracking-widest mb-2";
-  const searchInputBaseClasses = "w-full bg-white/20 border border-transparent p-4 rounded-2xl font-bold text-white placeholder-white/60 appearance-none focus:outline-none focus:bg-white/30 transition-colors duration-300";
+  const searchInputBaseClasses = "w-full bg-black/20 border border-white/10 p-4 rounded-xl font-bold text-white placeholder-white/60 appearance-none focus:outline-none focus:bg-black/30 transition-colors duration-300";
 
   return (
     <div className="min-h-screen">
@@ -100,13 +100,13 @@ const HomePage: React.FC = () => {
           </div>
           
           <div className="max-w-4xl mx-auto animate-fade-up stagger-1" style={{animationFillMode: 'forwards'}}>
-            <div className="bg-black/20 backdrop-blur-xl p-8 rounded-3xl border border-white/20">
-              <div className="flex justify-end">
+            <div className="bg-gray-900/60 backdrop-blur-lg p-6 rounded-2xl border border-white/10">
+              <div className="flex justify-end mb-4">
                   <Link to="/track" className="text-xs font-bold text-white/80 hover:text-white uppercase tracking-widest">
                       Manage Booking
                   </Link>
               </div>
-              <form onSubmit={handleSearch} className="mt-4">
+              <form onSubmit={handleSearch}>
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                       <div className="text-left">
                           <label className={searchLabelClasses}>City</label>

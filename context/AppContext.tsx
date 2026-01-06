@@ -278,26 +278,42 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     };
     
     // Bulk Orders
-    const addBulkOrder = async (order: BulkOrder) => {
-        // MOCK API: Add to local state instead of making an API call.
-        setBulkOrders(prev => [order, ...prev]);
+    const addBulkOrder = async (order: BulkOrder) => { setBulkOrders(prev => [order, ...prev]); };
+    const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { setBulkOrders(prev => prev.map(o => o.id === id ? { ...o, status } : o)); };
+    const deleteBulkOrder = async (id: string) => { setBulkOrders(prev => prev.filter(o => o.id !== id)); };
+    const assignBulkOrderItem = async (orderId: string, itemId: string, booking: Booking) => {
+        setBulkOrders(prev => prev.map(order => {
+            if (order.id === orderId) {
+                return {
+                    ...order,
+                    items: order.items.map(item => {
+                        if (item.id === itemId) {
+                            const nights = Math.max(1, (new Date(booking.checkOut).getTime() - new Date(booking.checkIn).getTime()) / (1000 * 3600 * 24));
+                            const newAssignment: Assignment = { bookingId: booking.id, checkIn: booking.checkIn, checkOut: booking.checkOut, nights };
+                            return {
+                                ...item,
+                                assignments: [...(item.assignments || []), newAssignment]
+                            };
+                        }
+                        return item;
+                    })
+                };
+            }
+            return order;
+        }));
     };
-    const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { await apiCall('updateBulkOrderStatus', { id, status }); await fetchData(); };
-    const deleteBulkOrder = async (id: string) => { await apiCall('deleteBulkOrder', { id }); await fetchData(); };
-    const assignBulkOrderItem = async (orderId: string, itemId: string, booking: Booking) => { await apiCall('assignBulkOrderItem', { orderId, itemId, booking }); await fetchData(); };
 
     // Promo Codes
     const addPromoCode = async (promoCode: Omit<PromoCode, 'id'>) => {
-        await apiCall('createPromoCode', promoCode); 
-        await fetchData(); 
+        const newCode: PromoCode = { ...promoCode, id: `PC${Date.now()}` };
+        setPromoCodes(prev => [...prev, newCode]);
     };
-    const deletePromoCode = async (id: string) => { await apiCall('deletePromoCode', { id }); await fetchData(); };
+    const deletePromoCode = async (id: string) => {
+        setPromoCodes(prev => prev.filter(p => p.id !== id));
+    };
     const validatePromoCode = async (code: string): Promise<PromoCode | null> => {
-        // Rerouted to check against local state instead of a non-functional API endpoint.
         const promo = promoCodes.find(p => p.code.toLowerCase() === code.toLowerCase().trim());
-        if (promo) {
-            return promo;
-        }
+        if (promo) { return promo; }
         addToast("Invalid or expired promo code.", 'error');
         return null;
     };

@@ -94,18 +94,6 @@ const MyBookingsPage: React.FC = () => {
     setIsModifyModalOpen(true);
   };
 
-  const getStatusColorClass = (status: BookingStatus) => {
-    switch (status) {
-      case BookingStatus.CONFIRMED: return 'bg-green-500';
-      case BookingStatus.CANCELLED: return 'bg-red-500';
-      case BookingStatus.PENDING: return 'bg-yellow-400';
-      case BookingStatus.CANCEL_REQUESTED:
-      case BookingStatus.DATE_CHANGE_REQUESTED:
-        return 'bg-blue-500';
-      default: return 'bg-gray-400';
-    }
-  };
-
   const getStatusBadgeClasses = (status: BookingStatus) => {
     switch (status) {
       case BookingStatus.CONFIRMED: return 'bg-green-100 text-green-800';
@@ -127,9 +115,7 @@ const MyBookingsPage: React.FC = () => {
               const hotel = hotels.find(h => h.id === booking.hotelId);
               
               return (
-                <Card key={booking.id} className="rounded-2xl shadow-lg overflow-hidden border-none">
-                  <div className="flex">
-                    <div className={`w-2.5 ${getStatusColorClass(booking.status)}`}></div>
+                <Card key={booking.id} className="rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
                     <div className="p-8 flex-1 flex flex-col gap-6">
                       <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-4">
                         <div>
@@ -178,7 +164,7 @@ const MyBookingsPage: React.FC = () => {
                            <Button 
                              variant="outline" 
                              onClick={() => openModifyModal(booking)} 
-                             className="!rounded-full px-6 !border-teal-600 !text-teal-600 !font-bold flex-1 !shadow-sm"
+                             className="!rounded-lg px-6 !border-teal-600 !text-teal-600 !font-bold flex-1 !shadow-sm"
                              disabled={booking.status === BookingStatus.CANCELLED}
                            >
                              Manage Stay
@@ -187,14 +173,13 @@ const MyBookingsPage: React.FC = () => {
                              variant="secondary" 
                              onClick={() => handleDownloadVoucher(booking)} 
                              disabled={isGeneratingPdf || booking.status !== BookingStatus.CONFIRMED}
-                             className="!rounded-full px-6 !font-bold flex-1"
+                             className="!rounded-lg px-6 !font-bold flex-1"
                            >
                             {isGeneratingPdf ? '...' : 'Download Voucher'}
                           </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
                   {/* Hidden template for PDF generation */}
                   <div style={{ position: 'absolute', top: '-10000px', left: '-10000px', width: '800px' }}>
                      <VoucherTemplate booking={booking} agent={agent} id={`voucher-template-${booking.id}`} />
