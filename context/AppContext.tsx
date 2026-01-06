@@ -279,8 +279,8 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     
     // Bulk Orders
     const addBulkOrder = async (order: BulkOrder) => {
-        await apiCall('createBulkOrder', order); 
-        await fetchData(); 
+        // MOCK API: Add to local state instead of making an API call.
+        setBulkOrders(prev => [order, ...prev]);
     };
     const updateBulkOrderStatus = async (id: string, status: BulkOrderStatus) => { await apiCall('updateBulkOrderStatus', { id, status }); await fetchData(); };
     const deleteBulkOrder = async (id: string) => { await apiCall('deleteBulkOrder', { id }); await fetchData(); };
