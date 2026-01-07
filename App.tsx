@@ -1,4 +1,4 @@
-import React, { useEffect, Suspense, lazy } from 'react';
+import React, { useEffect } from 'react';
 import { HashRouter as Router, Routes, Route, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { AppProvider, useAppContext } from './context/AppContext';
 import { Header, Footer } from './components/Layout';
@@ -6,16 +6,17 @@ import AuthModal from './components/AuthModal';
 import { Card, Button } from './components/UI';
 import { ToastContainer } from './components/Toast';
 
-// Lazy load all page-level components
-const HomePage = lazy(() => import('./pages/HomePage'));
-const SearchPage = lazy(() => import('./pages/SearchPage'));
-const HotelDetailsPage = lazy(() => import('./pages/HotelDetailsPage'));
-const AdminPortal = lazy(() => import('./pages/AdminPortal'));
-const AgentPortal = lazy(() => import('./pages/AgentPortal'));
-const MyBookingsPage = lazy(() => import('./pages/MyBookingsPage'));
-const TrackBookingPage = lazy(() => import('./pages/TrackBookingPage'));
-const SupportPage = lazy(() => import('./pages/SupportPage'));
-const LoginRedirectPage = lazy(() => import('./pages/LoginRedirectPage'));
+// Standard imports to prevent chunking at this level
+import HomePage from './pages/HomePage';
+import SearchPage from './pages/SearchPage';
+import HotelDetailsPage from './pages/HotelDetailsPage';
+import AdminPortal from './pages/AdminPortal';
+import AgentPortal from './pages/AgentPortal';
+import MyBookingsPage from './pages/MyBookingsPage';
+import TrackBookingPage from './pages/TrackBookingPage';
+import SupportPage from './pages/SupportPage';
+import LoginRedirectPage from './pages/LoginRedirectPage';
+
 
 // Helper component to reset scroll to top on navigation
 const ScrollToTop = () => {
@@ -26,7 +27,7 @@ const ScrollToTop = () => {
   return null;
 };
 
-// Loading component for Suspense fallback
+// Loading component for fallback
 const FullPageSpinner = () => (
     <div className="min-h-[70vh] flex items-center justify-center">
         <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
@@ -98,32 +99,30 @@ const App: React.FC = () => {
         <ScrollToTop />
         <ToastContainer />
         <AuthModal />
-        <Suspense fallback={<FullPageSpinner />}>
-          <Routes>
-            <Route path="/admin/*" element={<AdminPortal />} />
-            <Route path="/agent/*" element={<AgentPortal />} />
+        <Routes>
+          <Route path="/admin/*" element={<AdminPortal />} />
+          <Route path="/agent/*" element={<AgentPortal />} />
 
-            <Route path="/*" element={
-              <>
-                <Header />
-                <main className="min-h-[70vh]">
-                  <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/search" element={<SearchPage />} />
-                    <Route path="/hotel/:id" element={<HotelDetailsPage />} />
-                    <Route path="/login" element={<LoginRedirectPage />} />
-                    <Route path="/signup" element={<LoginRedirectPage />} />
-                    <Route path="/confirmation/:id" element={<BookingConfirmation />} />
-                    <Route path="/my-bookings" element={<MyBookingsPage />} />
-                    <Route path="/track" element={<TrackBookingPage />} />
-                    <Route path="/support" element={<SupportPage />} />
-                  </Routes>
-                </main>
-                <Footer />
-              </>
-            } />
-          </Routes>
-        </Suspense>
+          <Route path="/*" element={
+            <>
+              <Header />
+              <main className="min-h-[70vh]">
+                <Routes>
+                  <Route path="/" element={<HomePage />} />
+                  <Route path="/search" element={<SearchPage />} />
+                  <Route path="/hotel/:id" element={<HotelDetailsPage />} />
+                  <Route path="/login" element={<LoginRedirectPage />} />
+                  <Route path="/signup" element={<LoginRedirectPage />} />
+                  <Route path="/confirmation/:id" element={<BookingConfirmation />} />
+                  <Route path="/my-bookings" element={<MyBookingsPage />} />
+                  <Route path="/track" element={<TrackBookingPage />} />
+                  <Route path="/support" element={<SupportPage />} />
+                </Routes>
+              </main>
+              <Footer />
+            </>
+          } />
+        </Routes>
       </Router>
     </AppProvider>
   );
